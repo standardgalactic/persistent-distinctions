@@ -1,0 +1,12 @@
+{
+  "name": "persistent-distinctions-complex-systems",
+  "theory": "persistent distinctions",
+  "domain": "complex-systems",
+  "question": "What observable consequences follow if \"persistent distinctions\" is treated as an operative principle in complex-systems?",
+  "hypothesis": "If \"persistent distinctions\" is structurally relevant to complex-systems, then systems organized around that principle should exhibit measurable differences in persistence, failure, recovery, or reachable state compared with an unconstrained baseline.",
+  "null_hypothesis": "Operationalizing \"persistent distinctions\" produces no systematic difference from the baseline model in the selected measurements.",
+  "intervention": "Introduce an explicit constraint or transformation representing \"persistent distinctions\" and compare the resulting trajectories with an otherwise equivalent baseline.",
+  "measurement": "Measure persistence, divergence, recovery cost, state reachability, constraint violations, and sensitivity to perturbation.",
+  "generator": "genrepo",
+  "status": "generated"
+}
