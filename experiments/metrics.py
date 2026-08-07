@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Iterable, Protocol, Sequence, Tuple
+from typing import Any, Dict, Iterable, Protocol, Sequence, Tuple
 
 import numpy as np
 from scipy.stats import norm
