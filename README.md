@@ -1,5 +1,7 @@
 # Persistent Distinctions
 
+**Version:** 0.1.0
+
 **Domain:** Complex Systems
 
 **Theory seed:** `persistent distinctions`
@@ -15,7 +17,7 @@ What observable consequences follow if "persistent distinctions" is treated as a
 
 ## Working hypothesis
 
-If "persistent distinctions" is structurally relevant to complex-systems, then systems organized around that principle should exhibit measurable differences in persistence, failure, recovery, or reachable state compared with an unconstrained baseline.
+If "persistent distinctions" is structurally relevant to complex-systems, then systems organized around that principle should exhibit measurable differences in persistence, failure, recovery, or resilience compared to baseline models.
 
 ## Null hypothesis
 
@@ -40,6 +42,114 @@ generated observations belong in `data/`; and interpreted outputs belong in
 
 The initial repository should therefore be understood as a conjecture made
 executable rather than as a finished research result.
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.9 or higher
+- `pip` and `venv`
+
+### Installation
+
+Clone the repository and set up the environment:
+
+```bash
+git clone https://github.com/standardgalactic/persistent-distinctions-complex-systems.git
+cd persistent-distinctions-complex-systems
+
+# Install with project management script
+./scripts/manage.sh dev-install
+
+# Or manually
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+```
+
+### Project Management
+
+Use `scripts/manage.sh` for common tasks:
+
+```bash
+# Show help
+./scripts/manage.sh help
+
+# Clean build artifacts
+./scripts/manage.sh clean
+
+# Install dependencies
+./scripts/manage.sh install
+
+# Run tests with coverage
+./scripts/manage.sh test
+
+# Format code
+./scripts/manage.sh format
+
+# Check code quality
+./scripts/manage.sh lint
+
+# Run experiments
+./scripts/manage.sh run
+
+# Version management
+./scripts/manage.sh version              # Show current version
+./scripts/manage.sh version-bump         # Patch bump (0.1.0 → 0.1.1)
+./scripts/manage.sh version-minor        # Minor bump (0.1.0 → 0.2.0)
+./scripts/manage.sh version-major        # Major bump (0.1.0 → 1.0.0)
+
+# Create a release
+./scripts/manage.sh release
+```
+
+## Dependencies
+
+### Core
+
+- **numpy** – Numerical computing
+- **pandas** – Data manipulation and analysis
+- **matplotlib** – Visualization
+- **scipy** – Scientific computing
+
+### Development
+
+- **pytest** – Testing framework
+- **pytest-cov** – Code coverage
+- **black** – Code formatter
+- **flake8** – Linter
+- **isort** – Import sorter
+- **mypy** – Type checker
+- **sphinx** – Documentation generator
+
+See `pyproject.toml` and `requirements.txt` for pinned versions.
+
+## Project Layout
+
+```
+├── experiments/           # Executable investigations
+├── data/                  # Raw and generated observations
+├── results/               # Interpreted outputs and analysis
+├── tests/                 # Test suite
+├── theory.md              # Theoretical framework
+├── experiment.md          # Experiment specification
+├── project.json           # Project metadata
+├── pyproject.toml         # Python project configuration
+├── requirements.txt       # Dependency versions
+├── scripts/
+│   └── manage.sh          # Project management automation
+├── README.md              # This file
+├── LICENSE                # MIT License
+└── CONTRIBUTING.md        # Contribution guidelines
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to this research project.
+
+## License
+
+This project is licensed under the MIT License – see [LICENSE](LICENSE) for details.
 
 ## Generated project
 
