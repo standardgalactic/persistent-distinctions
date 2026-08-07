@@ -1,0 +1,26 @@
+# CODEOWNERS file for persistent-distinctions-complex-systems
+# Automatically request review from code owners
+
+# Repository
+* @standardgalactic
+
+# Theory and derivations
+/docs/theory/ @standardgalactic
+/papers/ @standardgalactic
+ROADMAP.md @standardgalactic
+
+# Core implementation
+/persistent_distinctions/ @standardgalactic
+
+# Tests and reproducibility
+/tests/ @standardgalactic
+/reproducibility/ @standardgalactic
+
+# Experiments and benchmarks
+/experiments/ @standardgalactic
+/benchmarks/ @standardgalactic
+
+# Documentation
+/docs/ @standardgalactic
+README.md @standardgalactic
+CONTRIBUTING.md @standardgalactic
