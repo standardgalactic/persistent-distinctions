@@ -4,7 +4,7 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/.. 
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/..' && pwd)"
 VERSION_FILE="${PROJECT_ROOT}/pyproject.toml"
 VENV_PATH="${PROJECT_ROOT}/.venv"
 
@@ -33,7 +33,7 @@ print_warning() {
 }
 
 get_current_version() {
-    grep "^version = " "${VERSION_FILE}" | sed 's/version = "//' | sed 's/"/'/
+    grep "^version = " "${VERSION_FILE}" | sed 's/version = "//' | sed 's/"//' 
 }
 
 set_version() {
@@ -42,11 +42,6 @@ set_version() {
     sed "s/^version = .*/version = \"${new_version}\"/" "${VERSION_FILE}" > "${temp_file}"
     mv "${temp_file}" "${VERSION_FILE}"
     print_success "Version updated to ${new_version}"
-}
-
-parse_version() {
-    local version=$1
-    echo "$version" | tr '.' '\n'
 }
 
 increment_major() {
