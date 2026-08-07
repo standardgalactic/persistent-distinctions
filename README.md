@@ -17,7 +17,7 @@ What observable consequences follow if "persistent distinctions" is treated as a
 
 ## Working hypothesis
 
-If "persistent distinctions" is structurally relevant to complex-systems, then systems organized around that principle should exhibit measurable differences in persistence, failure, recovery, or resilience compared to baseline models.
+If "persistent distinctions" is structurally relevant to complex-systems, then systems organized around that principle should exhibit measurable differences in persistence, failure, recovery, or robustness compared to equivalent systems without this organizational constraint.
 
 ## Null hypothesis
 
@@ -55,8 +55,8 @@ executable rather than as a finished research result.
 Clone the repository and set up the environment:
 
 ```bash
-git clone https://github.com/standardgalactic/persistent-distinctions-complex-systems.git
-cd persistent-distinctions-complex-systems
+git clone https://github.com/standardgalactic/persistent-distinctions.git
+cd persistent-distinctions
 
 # Install with project management script
 ./scripts/manage.sh dev-install
