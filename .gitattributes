@@ -1,0 +1,35 @@
+# Line ending normalization
+* text=auto eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.pkl binary
+*.pickle binary
+*.h5 binary
+*.hdf5 binary
+*.npy binary
+*.npz binary
+
+# Documentation
+*.md text eol=lf
+*.rst text eol=lf
+*.txt text eol=lf
+
+# Code
+*.py text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf
+*.ini text eol=lf
+
+# Data
+*.csv text eol=lf
+*.tsv text eol=lf
+*.json text eol=lf
