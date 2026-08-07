@@ -1,10 +1,10 @@
 #!/bin/bash
-# Project management script for persistent-distinctions-complex-systems
+# Project management script for persistent-distinctions
 # Supports: clean, install, test, run, version management, release
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/..' && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION_FILE="${PROJECT_ROOT}/pyproject.toml"
 VENV_PATH="${PROJECT_ROOT}/.venv"
 
@@ -76,7 +76,7 @@ ensure_venv() {
 
 cmd_help() {
     cat << EOF
-${BLUE}persistent-distinctions-complex-systems - Project Management${NC}
+${BLUE}persistent-distinctions - Project Management${NC}
 
 ${GREEN}Usage:${NC} ./scripts/manage.sh <command> [options]
 
