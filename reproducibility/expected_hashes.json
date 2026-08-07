@@ -1,1 +1,84 @@
-{}
+{
+  "description": "SHA256 hashes for reproducible output verification.",
+  "methodology": "Each published result is hashed for integrity verification. Outputs must match exactly (byte-for-byte).",
+  "verification_process": [
+    "1. Run experiment with seed from reproducibility/seed_values.json",
+    "2. Generate output artifact (figure, data file, table)",
+    "3. Compute SHA256: sha256sum <output_file>",
+    "4. Compare against expected_hashes.json",
+    "5. If match: result is reproducible; if not: investigate differences"
+  ],
+  "figure_hashes": {
+    "baseline_model_output.png": {
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "description": "Baseline model visualization (no distinctions)",
+      "seed": 42,
+      "generated_date": "2026-08-07",
+      "notes": "Placeholder hash; update after first generation"
+    },
+    "distinction_model_output.png": {
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "description": "Distinction model visualization with baseline comparison",
+      "seed": 43,
+      "generated_date": "2026-08-07",
+      "notes": "Placeholder hash; update after first generation"
+    },
+    "comparison_output.png": {
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "description": "Multi-condition comparison visualization",
+      "seed": 42,
+      "generated_date": "2026-08-07",
+      "notes": "Placeholder hash; update after first generation"
+    },
+    "parameter_sweep_output.png": {
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "description": "Parameter sensitivity analysis visualization",
+      "seed": 100,
+      "generated_date": "2026-08-07",
+      "notes": "Placeholder hash; update after first generation"
+    }
+  },
+  "data_hashes": {
+    "runtime_results.csv": {
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "description": "Runtime benchmark results",
+      "generated_date": "2026-08-07",
+      "notes": "Placeholder hash; update after benchmark generation"
+    },
+    "memory_results.csv": {
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "description": "Memory usage benchmark results",
+      "generated_date": "2026-08-07",
+      "notes": "Placeholder hash; update after benchmark generation"
+    },
+    "accuracy_report.txt": {
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "description": "Accuracy and reproducibility test report",
+      "generated_date": "2026-08-07",
+      "notes": "Placeholder hash; update after accuracy tests"
+    }
+  },
+  "workflow_instructions": {
+    "updating_hashes": [
+      "1. Generate or regenerate an output file",
+      "2. Compute hash: sha256sum <path/to/file>",
+      "3. Copy hash to this file under appropriate category",
+      "4. Update 'generated_date' to today",
+      "5. Commit to repository"
+    ],
+    "verifying_reproducibility": [
+      "1. Run experiment with matching seed from seed_values.json",
+      "2. Generate output file to results/",
+      "3. Compute hash: sha256sum results/<output_file>",
+      "4. Search this file for expected hash",
+      "5. If found: reproducible ✓; if not found or different: investigate"
+    ]
+  },
+  "notes": [
+    "Hashes must be regenerated if output format or algorithm changes.",
+    "Use SHA256 for all hashing (industry standard, stable).",
+    "Store hashes in this file immediately after verification.",
+    "If a hash cannot be reproduced, document the difference in notes.",
+    "Floating-point variations may cause hash mismatches; use tolerance-based comparison for metrics."
+  ]
+}
