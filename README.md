@@ -148,6 +148,7 @@ See `pyproject.toml` and `requirements.txt` for pinned versions.
 The `experiments` package now includes an extensible simulation framework:
 
 - `experiments.core` — `SystemState`, general `Distinction`, and `DistinctionSet`
+- `experiments.framework` — baseline/intervention comparative runner with perturbation scheduling
 - `experiments.metrics` — built-in metrics plus a pluggable `MetricRegistry`
 - `experiments.models` — `BaseComplexSystemModel`, `SimulationResult`, and runners
 - `experiments.protocols` — typing protocols for models, metrics, perturbations, observers

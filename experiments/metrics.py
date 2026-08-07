@@ -66,6 +66,22 @@ def divergence_metric(
     return float(np.mean(distances))
 
 
+def state_reachability_metric(states: Sequence[SystemState], bins: int = 10) -> float:
+    """Estimate normalized reachability from discretized unique states."""
+    if len(states) == 0:
+        raise ValueError("states cannot be empty")
+    if bins <= 1:
+        raise ValueError("bins must be greater than 1")
+
+    visited = set()
+    for state in states:
+        clipped = np.clip(state.agent_features, 0.0, 1.0)
+        discretized = np.floor(clipped * bins).astype(int)
+        discretized = np.clip(discretized, 0, bins - 1)
+        visited.add(tuple(discretized.reshape(-1).tolist()))
+    return float(len(visited) / len(states))
+
+
 def recovery_cost_metric(
     baseline_trajectory: Sequence[SystemState], disruption_point: int
 ) -> float:
@@ -95,6 +111,21 @@ def distinctiveness_score(system_state: SystemState, distinction: Distinction) -
     """Quantify distinction clarity as normalized score in ``[0, 1]``."""
     score = float(distinction.evaluate(system_state))
     return float(np.clip(score, 0.0, 1.0))
+
+
+def constraint_violation_metric(states: Sequence[SystemState], distinction: Distinction) -> float:
+    """Return fraction of states where distinction persistence is violated."""
+    if len(states) == 0:
+        raise ValueError("states cannot be empty")
+    violations = [not distinction.is_satisfied(state) for state in states]
+    return float(np.mean(violations))
+
+
+def perturbation_sensitivity_metric(
+    reference_states: Sequence[SystemState], perturbed_states: Sequence[SystemState]
+) -> float:
+    """Measure sensitivity as average divergence between aligned trajectories."""
+    return divergence_metric(reference_states, perturbed_states)
 
 
 def mean(values: Iterable[float]) -> float:
@@ -136,6 +167,9 @@ def default_metric_registry() -> MetricRegistry:
     registry = MetricRegistry()
     registry.register("persistence", persistence_metric)
     registry.register("divergence", divergence_metric)
+    registry.register("state_reachability", state_reachability_metric)
     registry.register("recovery_cost", recovery_cost_metric)
     registry.register("distinctiveness", distinctiveness_score)
+    registry.register("constraint_violation", constraint_violation_metric)
+    registry.register("sensitivity", perturbation_sensitivity_metric)
     return registry
