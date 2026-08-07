@@ -18,3 +18,37 @@ Thumbs.db
 *~
 
 results/*.tmp
+
+# Build artifacts
+build/
+dist/
+*.egg
+
+# Test coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Sphinx
+docs/_build/
+
+# Environment files
+.env
+.env.local
