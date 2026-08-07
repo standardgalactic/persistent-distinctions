@@ -143,6 +143,43 @@ See `pyproject.toml` and `requirements.txt` for pinned versions.
 └── CONTRIBUTING.md        # Contribution guidelines
 ```
 
+## Core Research Framework
+
+The `experiments` package now includes an extensible simulation framework:
+
+- `experiments.core` — `SystemState`, general `Distinction`, and `DistinctionSet`
+- `experiments.metrics` — built-in metrics plus a pluggable `MetricRegistry`
+- `experiments.models` — `BaseComplexSystemModel`, `SimulationResult`, and runners
+- `experiments.protocols` — typing protocols for models, metrics, perturbations, observers
+
+### Example Usage
+
+```python
+from experiments.core import Distinction, DistinctionSet
+from experiments.metrics import default_metric_registry
+from experiments.models import run_simulation
+from experiments.models.baseline import BaselineComplexSystemModel
+
+model = BaselineComplexSystemModel(n_agents=10, n_features=3, interaction_strength=0.2, seed=42)
+distinctions = DistinctionSet(
+    [
+        Distinction(
+            name="feature-0-invariant",
+            parameters={"feature_index": 0, "target_value": 0.5, "tolerance": 0.1, "min_fraction": 0.6},
+        )
+    ]
+)
+
+result = run_simulation(
+    model,
+    steps=50,
+    distinctions=distinctions,
+    registry=default_metric_registry(),
+)
+
+print(len(result.trajectory), result.metric_history[-1] if result.metric_history else {})
+```
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to this research project.
