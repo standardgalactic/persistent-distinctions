@@ -1,0 +1,16 @@
+recursive-include experiments *.py
+recursive-include tests *.py
+recursive-include docs *.rst
+include README.md
+include LICENSE
+include CHANGELOG.md
+include ROADMAP.md
+include CITATION.cff
+include pyproject.toml
+include requirements.txt
+include .python-version
+include .editorconfig
+include .gitattributes
+include .pre-commit-config.yaml
+include pytest.ini
+include tox.ini
