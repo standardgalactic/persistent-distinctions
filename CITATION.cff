@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: Persistent Distinctions in Complex Systems
+message: If you use this software, please cite it using these metadata.
+type: software
+authors:
+  - family-names: standardgalactic
+    given-names: ""
+repository-code: https://github.com/standardgalactic/persistent-distinctions-complex-systems
+url: https://github.com/standardgalactic/persistent-distinctions-complex-systems
+abstract: |
+  An experimental investigation of persistent distinctions as an operative principle
+  in complex-systems. This repository operationalizes theoretical propositions into
+  executable experimental frameworks for simulation, measurement, and validation.
+keywords:
+  - complex-systems
+  - research
+  - simulation
+  - persistent-distinctions
+  - computational-modeling
+license: MIT
+version: 0.1.0
+date-released: 2026-08-07
