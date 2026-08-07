@@ -1,1 +1,109 @@
-{}
+{
+  "description": "Random seeds for reproducible stochastic simulations.",
+  "methodology": "Each seed is derived from a cryptographic random source and frozen for published results.",
+  "baseline_experiments": {
+    "baseline_no_distinction": {
+      "seed": 42,
+      "description": "Baseline run without distinctions",
+      "parameters": {
+        "n_agents": 20,
+        "n_features": 3,
+        "interaction_strength": 0.3,
+        "steps": 100
+      }
+    },
+    "baseline_with_distinction_feature_0": {
+      "seed": 43,
+      "description": "Baseline with distinction on feature 0",
+      "parameters": {
+        "n_agents": 20,
+        "n_features": 3,
+        "interaction_strength": 0.3,
+        "steps": 100,
+        "distinction": {
+          "feature_index": 0,
+          "target_value": 0.5,
+          "tolerance": 0.15,
+          "min_fraction": 0.6
+        }
+      }
+    },
+    "baseline_with_distinction_feature_1": {
+      "seed": 44,
+      "description": "Baseline with distinction on feature 1",
+      "parameters": {
+        "n_agents": 20,
+        "n_features": 3,
+        "interaction_strength": 0.3,
+        "steps": 100,
+        "distinction": {
+          "feature_index": 1,
+          "target_value": 0.3,
+          "tolerance": 0.15,
+          "min_fraction": 0.6
+        }
+      }
+    }
+  },
+  "scaling_experiments": {
+    "agent_scaling": {
+      "base_seed": 100,
+      "description": "Agent count scaling: seeds 100-109 for 10 agent sizes",
+      "agent_counts": [5, 10, 15, 20, 25, 30, 40, 50, 75, 100],
+      "parameters": {
+        "n_features": 3,
+        "interaction_strength": 0.3,
+        "steps": 50
+      }
+    },
+    "feature_scaling": {
+      "base_seed": 200,
+      "description": "Feature count scaling: seeds 200-205 for 6 feature sizes",
+      "feature_counts": [1, 2, 3, 4, 5, 6],
+      "parameters": {
+        "n_agents": 20,
+        "interaction_strength": 0.3,
+        "steps": 50
+      }
+    },
+    "step_scaling": {
+      "base_seed": 300,
+      "description": "Step count scaling: seeds 300-304 for 5 step sizes",
+      "step_counts": [10, 25, 50, 100, 200],
+      "parameters": {
+        "n_agents": 20,
+        "n_features": 3,
+        "interaction_strength": 0.3
+      }
+    }
+  },
+  "robustness_tests": {
+    "perturbation_sensitivity": {
+      "base_seed": 400,
+      "description": "Test sensitivity to initial state perturbations",
+      "perturbation_levels": [0.01, 0.05, 0.1, 0.2],
+      "parameters": {
+        "n_agents": 20,
+        "n_features": 3,
+        "interaction_strength": 0.3,
+        "steps": 100
+      }
+    },
+    "interaction_strength_sweep": {
+      "base_seed": 500,
+      "description": "Test robustness across interaction strengths",
+      "interaction_strengths": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
+      "parameters": {
+        "n_agents": 20,
+        "n_features": 3,
+        "steps": 100
+      }
+    }
+  },
+  "notes": [
+    "Seeds are fixed to ensure reproducibility of published results.",
+    "For exploratory work, new seeds can be generated via: np.random.randint(0, 2**32)",
+    "Each experiment should use its assigned seed to avoid conflicts.",
+    "If results need to be regenerated, use the seed specified in this manifest."
+  ]
+}

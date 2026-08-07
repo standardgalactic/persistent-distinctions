@@ -1,0 +1,169 @@
+{
+  "description": "Exact experimental parameters for published results.",
+  "version": "0.1.0",
+  "baseline_experiments": {
+    "baseline_no_distinction_v1": {
+      "model_type": "BaselineComplexSystemModel",
+      "seed": 42,
+      "parameters": {
+        "n_agents": 20,
+        "n_features": 3,
+        "interaction_strength": 0.3
+      },
+      "simulation_config": {
+        "steps": 100,
+        "distinctions": []
+      },
+      "output_format": "trajectory_with_metrics",
+      "description": "Baseline run demonstrating system dynamics without constraints",
+      "date_published": "2026-08-07",
+      "author": "standardgalactic",
+      "notes": "Reference experiment for comparison baseline"
+    },
+    "distinction_feature_0_invariant_v1": {
+      "model_type": "BaselineComplexSystemModel",
+      "seed": 43,
+      "parameters": {
+        "n_agents": 20,
+        "n_features": 3,
+        "interaction_strength": 0.3
+      },
+      "simulation_config": {
+        "steps": 100,
+        "distinctions": [
+          {
+            "name": "feature-0-invariant",
+            "type": "feature_invariant",
+            "parameters": {
+              "feature_index": 0,
+              "target_value": 0.5,
+              "tolerance": 0.15,
+              "min_fraction": 0.6
+            }
+          }
+        ]
+      },
+      "output_format": "trajectory_with_metrics",
+      "description": "System dynamics under feature-0 invariance constraint",
+      "date_published": "2026-08-07",
+      "author": "standardgalactic",
+      "notes": "Tests whether maintaining feature 0 near 0.5 affects system stability"
+    },
+    "distinction_feature_1_invariant_v1": {
+      "model_type": "BaselineComplexSystemModel",
+      "seed": 44,
+      "parameters": {
+        "n_agents": 20,
+        "n_features": 3,
+        "interaction_strength": 0.3
+      },
+      "simulation_config": {
+        "steps": 100,
+        "distinctions": [
+          {
+            "name": "feature-1-invariant",
+            "type": "feature_invariant",
+            "parameters": {
+              "feature_index": 1,
+              "target_value": 0.3,
+              "tolerance": 0.15,
+              "min_fraction": 0.6
+            }
+          }
+        ]
+      },
+      "output_format": "trajectory_with_metrics",
+      "description": "System dynamics under feature-1 invariance constraint",
+      "date_published": "2026-08-07",
+      "author": "standardgalactic",
+      "notes": "Tests whether different target values affect constraint effectiveness"
+    }
+  },
+  "benchmark_experiments": {
+    "runtime_scaling_v1": {
+      "benchmark_type": "runtime",
+      "dimensions": ["agents", "features", "steps"],
+      "seeds": {
+        "agents": [100, 101, 102, 103, 104, 105, 106, 107, 108, 109],
+        "features": [200, 201, 202, 203, 204, 205],
+        "steps": [300, 301, 302, 303, 304]
+      },
+      "configuration": {
+        "base_parameters": {
+          "n_agents": 20,
+          "n_features": 3,
+          "interaction_strength": 0.3
+        },
+        "runs_per_size": 3,
+        "target_step_count": 50
+      },
+      "description": "Measure execution time scaling across system sizes",
+      "date_published": "2026-08-07",
+      "author": "standardgalactic"
+    },
+    "memory_profiling_v1": {
+      "benchmark_type": "memory",
+      "dimensions": ["agents", "features", "steps"],
+      "seeds": {
+        "agents": [110, 111, 112, 113, 114],
+        "features": [210, 211, 212, 213, 214],
+        "steps": [310, 311, 312, 313, 314]
+      },
+      "configuration": {
+        "base_parameters": {
+          "n_agents": 20,
+          "n_features": 3,
+          "interaction_strength": 0.3
+        },
+        "target_step_count": 20
+      },
+      "description": "Profile peak and differential memory usage",
+      "date_published": "2026-08-07",
+      "author": "standardgalactic"
+    },
+    "accuracy_tests_v1": {
+      "benchmark_type": "accuracy",
+      "test_categories": [
+        "reproducibility",
+        "state_bounds",
+        "metric_stability",
+        "distinction_enforcement"
+      ],
+      "configuration": {
+        "reproducibility_runs": 3,
+        "state_bounds_runs": 5,
+        "metric_stability_runs": 3,
+        "base_seed": 400
+      },
+      "description": "Verify numerical accuracy and reproducibility",
+      "date_published": "2026-08-07",
+      "author": "standardgalactic"
+    }
+  },
+  "environmental_metadata": {
+    "python_version": "3.9+",
+    "os": "Linux/macOS/Windows",
+    "dependencies": [
+      "numpy",
+      "pandas",
+      "matplotlib",
+      "scipy"
+    ],
+    "reproducibility_notes": [
+      "Results should be identical when run with same seed on same OS/Python version.",
+      "Floating-point arithmetic may vary slightly across platforms; use atol=1e-10 for comparisons.",
+      "Random number generator (Numpy MT19937) produces deterministic sequences from fixed seed."
+    ]
+  },
+  "validation_checklist": {
+    "before_publishing": [
+      "✓ Experiment run with assigned seed",
+      "✓ Output files generated to results/",
+      "✓ SHA256 hashes computed and verified",
+      "✓ Hashes recorded in expected_hashes.json",
+      "✓ Parameters exactly match this file",
+      "✓ All output files reproducible within tolerance",
+      "✓ Results documented in ROADMAP.md or paper"
+    ]
+  }
+}
