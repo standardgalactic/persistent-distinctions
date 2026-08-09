@@ -4,4 +4,9 @@ set -Eeuo pipefail
 
 cd "$(dirname "$0")"
 
-python3 experiments/experiment.py
+PYTHON_BIN="python3"
+if [[ -x ".venv/bin/python" ]]; then
+  PYTHON_BIN=".venv/bin/python"
+fi
+
+"${PYTHON_BIN}" -m experiments.experiment
