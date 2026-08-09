@@ -1,159 +1,116 @@
 # Persistent Distinctions
 
-**Version:** 0.1.0
-
-**Domain:** Complex Systems
-
+**Version:** 0.1.0  
+**Domain:** Complex systems  
 **Theory seed:** `persistent distinctions`
 
-This repository is a small experimental investigation generated from a
-theoretical proposition. Its purpose is not to assume that the proposition is
-correct, but to turn it into something sufficiently explicit that consequences
-can be inspected, simulated, measured, criticized, or rejected.
+This repository turns a theoretical proposition into an inspectable experiment.
+It does not assume the proposition is true. Instead, it makes the idea concrete
+enough to simulate, measure, critique, and potentially reject.
 
-## Research question
+## Research framing
 
-What observable consequences follow if "persistent distinctions" is treated as an operative principle in complex-systems?
+### Research question
 
-## Working hypothesis
+What observable consequences follow when **persistent distinctions** are treated
+as an organizing principle in complex systems?
 
-If "persistent distinctions" is structurally relevant to complex-systems, then systems organized around that principle should exhibit measurable differences in persistence, failure, recovery, or robustness compared to equivalent systems without this organizational constraint.
+### Working hypothesis
 
-## Null hypothesis
+If persistent distinctions are structurally relevant, then systems organized
+around them should show measurable differences in persistence, failure,
+recovery, or robustness compared with equivalent baseline systems.
 
-Operationalizing "persistent distinctions" produces no systematic difference from the baseline model in the selected measurements.
+### Null hypothesis
 
-## Operationalization
+Operationalizing persistent distinctions yields no systematic difference from
+the baseline in the selected measurements.
 
-Introduce an explicit constraint or transformation representing "persistent distinctions" and compare the resulting trajectories with an otherwise equivalent baseline.
+### Operationalization
 
-## Measurements
+Apply an explicit constraint or transformation representing persistent
+distinctions, then compare resulting trajectories against an otherwise
+equivalent baseline.
 
-Measure persistence, divergence, recovery cost, state reachability, constraint violations, and sensitivity to perturbation.
+### Measurements
 
-## Experimental structure
+Track persistence, divergence, recovery cost, state reachability, constraint
+violations, and perturbation sensitivity.
 
-The repository separates the conceptual seed from its operationalization. The
-theory is recorded in `theory.md`; the proposed experiment is specified in
-`experiment.md`; machine-readable project metadata is stored in
-`project.json`; executable investigations belong in `experiments/`; raw or
-generated observations belong in `data/`; and interpreted outputs belong in
-`results/`.
+## Repository structure
 
-The initial repository should therefore be understood as a conjecture made
-executable rather than as a finished research result.
+The repository separates conceptual framing from executable investigation:
 
-## Quick Start
+- `theory.md` — theoretical foundation
+- `experiment.md` — experiment specification
+- `project.json` — machine-readable project metadata
+- `experiments/` — executable investigations and simulation framework
+- `data/` — raw and generated observations
+- `results/` — interpreted outputs
+
+Treat this project as an executable conjecture, not a finished research result.
+
+## Quick start
 
 ### Prerequisites
 
-- Python 3.9 or higher
+- Python 3.9+
 - `pip` and `venv`
 
-### Installation
-
-Clone the repository and set up the environment:
+### Setup
 
 ```bash
 git clone https://github.com/standardgalactic/persistent-distinctions.git
 cd persistent-distinctions
 
-# Install with project management script
+# Recommended
 ./scripts/manage.sh dev-install
 
-# Or manually
+# Manual alternative
 python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 ```
 
-### Project Management
+### Common commands
 
-Use `scripts/manage.sh` for common tasks:
+Use `scripts/manage.sh` for day-to-day tasks:
 
 ```bash
-# Show help
-./scripts/manage.sh help
-
-# Clean build artifacts
-./scripts/manage.sh clean
-
-# Install dependencies
-./scripts/manage.sh install
-
-# Run tests with coverage
-./scripts/manage.sh test
-
-# Format code
-./scripts/manage.sh format
-
-# Check code quality
-./scripts/manage.sh lint
-
-# Run experiments
-./scripts/manage.sh run
-
-# Version management
-./scripts/manage.sh version              # Show current version
-./scripts/manage.sh version-bump         # Patch bump (0.1.0 → 0.1.1)
-./scripts/manage.sh version-minor        # Minor bump (0.1.0 → 0.2.0)
-./scripts/manage.sh version-major        # Major bump (0.1.0 → 1.0.0)
-
-# Create a release
-./scripts/manage.sh release
+./scripts/manage.sh help          # Show all commands
+./scripts/manage.sh install       # Install dependencies
+./scripts/manage.sh test          # Run tests with coverage
+./scripts/manage.sh lint          # Run black/flake8/isort checks
+./scripts/manage.sh format        # Auto-format code
+./scripts/manage.sh type-check    # Run mypy
+./scripts/manage.sh run           # Run experiments
+./scripts/manage.sh clean         # Remove build/cache artifacts
+./scripts/manage.sh version       # Show current version
+./scripts/manage.sh version-bump  # Patch bump
+./scripts/manage.sh version-minor # Minor bump
+./scripts/manage.sh version-major # Major bump
+./scripts/manage.sh release       # Create release tag
 ```
 
 ## Dependencies
 
-### Core
-
-- **numpy** – Numerical computing
-- **pandas** – Data manipulation and analysis
-- **matplotlib** – Visualization
-- **scipy** – Scientific computing
-
-### Development
-
-- **pytest** – Testing framework
-- **pytest-cov** – Code coverage
-- **black** – Code formatter
-- **flake8** – Linter
-- **isort** – Import sorter
-- **mypy** – Type checker
-- **sphinx** – Documentation generator
+Core: `numpy`, `pandas`, `matplotlib`, `scipy`  
+Development: `pytest`, `pytest-cov`, `black`, `flake8`, `isort`, `mypy`,
+`sphinx`
 
 See `pyproject.toml` and `requirements.txt` for pinned versions.
 
-## Project Layout
+## Core research framework
 
-```
-├── experiments/           # Executable investigations
-├── data/                  # Raw and generated observations
-├── results/               # Interpreted outputs and analysis
-├── tests/                 # Test suite
-├── theory.md              # Theoretical framework
-├── experiment.md          # Experiment specification
-├── project.json           # Project metadata
-├── pyproject.toml         # Python project configuration
-├── requirements.txt       # Dependency versions
-├── scripts/
-│   └── manage.sh          # Project management automation
-├── README.md              # This file
-├── LICENSE                # MIT License
-└── CONTRIBUTING.md        # Contribution guidelines
-```
+The `experiments` package provides an extensible simulation stack:
 
-## Core Research Framework
-
-The `experiments` package now includes an extensible simulation framework:
-
-- `experiments.core` — `SystemState`, general `Distinction`, and `DistinctionSet`
+- `experiments.core` — `SystemState`, `Distinction`, `DistinctionSet`
 - `experiments.framework` — baseline/intervention comparative runner with perturbation scheduling
-- `experiments.metrics` — built-in metrics plus a pluggable `MetricRegistry`
+- `experiments.metrics` — built-in metrics and pluggable `MetricRegistry`
 - `experiments.models` — `BaseComplexSystemModel`, `SimulationResult`, and runners
 - `experiments.protocols` — typing protocols for models, metrics, perturbations, observers
 
-### Example Usage
+### Example usage
 
 ```python
 from experiments.core import Distinction, DistinctionSet
@@ -183,16 +140,15 @@ print(len(result.trajectory), result.metric_history[-1] if result.metric_history
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to this research project.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-This project is licensed under the MIT License – see [LICENSE](LICENSE) for details.
+MIT License. See [LICENSE](LICENSE).
 
-## Generated project
+## Project origin
 
 This repository was scaffolded by `genrepo`.
 
-Generation does not constitute evidence for the theory. The purpose of the
-generator is to reduce the cost of moving from an abstract proposition to an
-inspectable experimental object.
+Scaffolding is not evidence for the theory; it reduces the cost of converting
+an abstract proposition into an inspectable experimental object.
