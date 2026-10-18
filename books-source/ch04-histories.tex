@@ -112,7 +112,7 @@ Let $P$ be a property of $\Hist$.
 (a) The transition is well defined by Result~\ref{prop:nerode}(b) with $u=a$, and $\Ext$ is constant on classes by definition of $\approx_P$. By induction $s_{T_P}(h)=[h]$, so $T_P$ generates $\Hist$, and $P$ is a state property because ${\approx_P}\subseteq\ker P$. (b) Suppose $s_T(h)=s_T(h')=s$. Then $\Ext(h)=\{w:\delta^{*}(s,w)\text{ is defined}\}=\Ext(h')$, and for $w\in\Ext(h)$ we have $s_T(hw)=\delta^{*}(s,w)=s_T(h'w)$, so $P(hw)=P(h'w)$ because $P$ is a state property of $T$. Hence $h\approx_P h'$. The count follows from Result~\ref{prop:coarsening}.
 \end{proof}
 
-The residual construction expresses the difference between answering a question about the present history and answering it after every further event. A representation $r$ answers $P$ now if $\ker r\subseteq\ker P$. A representation that is the state map of a transition system and answers $P$ must satisfy the much stronger condition $\ker r\subseteq{\approx_P}$. For the account with $P=q_{\mathrm{neg}}$, the relation $\approx_P$ is the kernel $\ker q^{+}$ of Result~\ref{prop:account}, the Nerode system has the states $\NN\cup\{\bot\}$ with $[b]\xrightarrow{\mathrm{d}(k)}[b+k]$, $[b]\xrightarrow{\mathrm{w}(k)}[b-k]$ for $k\le b$, $[b]\xrightarrow{\mathrm{w}(k)}\bot$ for $k>b$, and $\bot$ absorbing. Chapter~\ref{ch:quotients} showed that the single flag $q_{\mathrm{neg}}$ answers the question about the present history while the Nerode system needs the balance for as long as no overdraft has occurred. Chapter~7 takes up this contrast systematically.
+The residual construction expresses the difference between answering a question about the present history and answering it after every further event. A representation $r$ answers $P$ now if $\ker r\subseteq\ker P$. A representation that is the state map of a transition system and answers $P$ must satisfy the much stronger condition $\ker r\subseteq{\approx_P}$. For the account with $P=q_{\mathrm{neg}}$, the relation $\approx_P$ is the kernel $\ker q^{+}$ of Result~\ref{prop:account}, the Nerode system has the states $\NN\cup\{\bot\}$ with $[b]\xrightarrow{\mathrm{d}(k)}[b+k]$, $[b]\xrightarrow{\mathrm{w}(k)}[b-k]$ for $k\le b$, $[b]\xrightarrow{\mathrm{w}(k)}\bot$ for $k>b$, and $\bot$ absorbing. Chapter~\ref{ch:quotients} showed that the single flag $q_{\mathrm{neg}}$ answers the question about the present history while the Nerode system needs the balance for as long as no overdraft has occurred. Chapter~\ref{ch:incremental} takes up this contrast systematically.
 
 \section{Safety and liveness}
 
@@ -248,7 +248,7 @@ For the property $\Pi$ of Example~\ref{ex:live-component}, compute $\Pi_{\mathrm
 \end{exercise}
 
 \begin{exercise}
-Prove that $\Pi$ is a liveness property if and only if $\Pi_{\mathrm{cl}}=\Events^{\omega}$. Deduce that a property that is both safe and live is all of $\Events^{\omega}$.
+Prove that $\Pi$ is a liveness property if and only if $\Pi_{\mathrm{cl}}=\Events^{\omega}$. Deduce that a property that is both safe and live is all of $\Events^{\omega}$.\label{ex:live-closure}
 \end{exercise}
 
 \begin{exercise}

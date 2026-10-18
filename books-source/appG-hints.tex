@@ -1,0 +1,118 @@
+% appG-hints.tex
+\chapter{Hints and Solutions to Selected Exercises}\label{app:hints}
+
+This appendix gives hints, and in several cases complete solutions, for a selection of exercises of the first eight chapters. Each numerical claim was checked by enumeration before it was written down. Exercises are cited by reference so that the numbering of the main text can change without affecting the appendix.
+
+\section*{Chapter 1}
+
+\textbf{Exercise~\ref{ex:kappa7}.} With $k=3$ and $m=1$ the pair $\kappa=(\text{content},\,\text{count})$, where the count is the number of distinct contents held, has the following values. When one content has been held the current content is $c_0$, which gives one value. When two have been held the current content is any of the three, since the history may have returned to $c_0$ or stopped on the second content, which gives three values; the same holds when all three have been held. The total is $1+3+3=7$, against $8$ for the pair $(\tau,\nu)$ of Result~\ref{prop:doc-count}. The representation answers ``has $c_0$ ever been held?'' trivially, since the answer is always yes, and answers no question about $c_1$ or $c_2$ in general. For a separating pair take the history that edits to $c_1$ and back to $c_0$ and the history that edits to $c_2$ and back to $c_0$. Both have $\kappa=(c_0,2)$, and they differ on whether $c_1$ has been held.
+
+\section*{Chapter 2}
+
+\textbf{Exercise~\ref{ex:join-chain}.} Let $x\equiv y$ mean that there is a chain $x=z_0,\dots,z_k=y$ with consecutive elements related by $\sim$ or by $\approx$. This relation is reflexive (take $k=0$), symmetric (reverse the chain), and transitive (concatenate), and it contains both relations, so it contains their join. Any equivalence relation containing both must relate consecutive chain elements and hence, by transitivity, the endpoints, so the relation is contained in every upper bound and is the join. For the union, take $X=\{1,2,3\}$ with $\sim$ identifying $1,2$ and $\approx$ identifying $2,3$: the union relates $1$ to $2$ and $2$ to $3$ and does not relate $1$ to $3$.
+
+\textbf{Exercise~\ref{ex:k-classes}.} If $r$ answers $q$ then $q=g\circ r$ for some $g$, so $q(x)$ depends only on $r(x)$ and $\ker q$ has at most $|r(X)|=k$ classes. For the failure of the converse take $X=\{1,2,3\}$, let $r$ send $1,2$ to $a$ and $3$ to $b$, and let $q$ separate $2$ from $\{1,3\}$. Both have two classes, yet $r(1)=r(2)$ and $q(1)\ne q(2)$, so $r$ does not answer $q$.
+
+\textbf{Exercise~\ref{ex:joint-classes}.} The classes of $\ker(f,g)$ refine those of $\ker f$ and of $\ker g$, so there are at least $a$ and at least $b$ of them. Each class is determined by a pair of values, so there are at most $ab$. On the six cases $\{0,\dots,5\}$ let $f(i)=i\bmod2$. With $g(i)=i\bmod3$ the pair determines $i$ by the Chinese remainder theorem, so the joint kernel has $6=2\cdot3$ classes, the maximum. With $g(i)=i\bmod4$ the value of $g$ determines that of $f$, so the joint kernel has $4=\max(2,4)$ classes, the minimum.
+
+\section*{Chapter 3}
+
+\textbf{Exercise~\ref{ex:fifteen}.} The elements of $\mathcal R_2$ on five cases are the partitions into two blocks, of which there are $S(5,2)=15$. Five have blocks of sizes $1$ and $4$ and ten have blocks of sizes $2$ and $3$. A question that separates one named case $a$ from the other four has kernel $\{a\}\mid\text{rest}$, and a two-block partition answers it only if that kernel is coarser than the partition, which forces equality. Exactly one of the fifteen answers the question.
+
+\textbf{Exercise~\ref{ex:stirling}.} Classify partitions of $\{1,\dots,n\}$ into $k$ blocks by the last element. Either it forms a block alone, leaving a partition of the first $n-1$ elements into $k-1$ blocks, or it joins one of the $k$ blocks of a partition of the first $n-1$ elements into $k$ blocks. Hence $S(n,k)=kS(n-1,k)+S(n-1,k-1)$. With $S(5,3)=25$ and $S(5,2)=15$ one gets $S(6,3)=3\cdot25+15=90$.
+
+\section*{Chapter 4}
+
+\textbf{Exercise~\ref{ex:live-closure}.} Suppose $\Pi$ is live, so that $\sat_\Pi(u)$ holds for every finite word. Then every infinite word has all of its prefixes satisfying $\sat_\Pi$, and so lies in $\Pi_{\mathrm{cl}}$, which therefore equals $\Events^{\omega}$. Conversely, suppose $\Pi_{\mathrm{cl}}=\Events^{\omega}$ and let $u$ be a finite word. Choose any infinite word $\sigma$ with prefix $u$. It lies in $\Pi_{\mathrm{cl}}$, so every prefix of it, in particular $u$, satisfies $\sat_\Pi$. If $\Pi$ is also safe then $\Pi=\Pi_{\mathrm{cl}}$ by Result~\ref{prop:safety-closure}, which is $\Events^{\omega}$.
+
+\section*{Chapter 5}
+
+\textbf{Exercise~\ref{ex:windows}.} A representation whose classes are intervals and which has $k$ values is determined by $k-1$ cut points in $\{1,\dots,n-1\}$, a cut at $c$ meaning that $c-1$ and $c$ lie in different classes. The window $w_{s,t}$ is constant on every class exactly when no class straddles $s$ or $t$, that is, when both $s$ and $t$ are cut points. The number of served windows is therefore at most $\binom{k-1}{2}$, and it equals this when the cut points are chosen as any $k-1$ values and every pair among them is used. For three values this gives one window. Without the interval restriction take $s_1<s_2<s_3$ in $\{1,\dots,n-1\}$ and the three classes $A=[s_1,s_2)$, $B=[s_2,s_3)$ and the rest. The representation serves $w_{s_1,s_2}$, $w_{s_2,s_3}$ and $w_{s_1,s_3}$, the last being the indicator of $A\cup B$.
+
+\section*{Chapter 6}
+
+\textbf{Exercise~\ref{ex:marg-sum}.} The eight listed thresholds separate every pair of the $6\cdot4=24$ cases, so the joint kernel is the identity relation, every policy is sufficient for the family's representation, and the marginal cost of $[b+a\ge4]$ is $0$.
+
+\textbf{Exercise~\ref{ex:mod-marg}.} The pair of residues modulo $2$ and modulo $3$ determines the residue modulo $6$, so $X/\kappa(\Phi)$ has $6$ classes. Adding $x\bmod4$ gives the residue modulo $12$, which is $12$ classes, so the marginal cost is $6$. Adding $x\bmod6$ gives no new classes, so its marginal cost is $0$. In general, if the moduli present have least common multiple $L$ and $|X|\ge\operatorname{lcm}(L,p)$, the marginal cost of $x\bmod p$ is $\operatorname{lcm}(L,p)-L$.
+
+\section*{Chapter 7}
+
+\textbf{Exercise~\ref{ex:lifetime}.} Two histories are continuation equivalent exactly when they have used the same number of the $m$ permitted uses, so there are $m+1$ classes. The question ``is another use permitted?'' has two answers, so its one-shot size is $2$.
+
+\textbf{Exercise~\ref{ex:rate-cap}.} Count the classes by the number $u$ of uses. At $u=0$ no clock is running, which gives one class. At each $u$ with $1\le u\le m-1$ the remaining wait takes $w$ distinguishable values, which gives $(m-1)w$ classes. At $u=m$ no further use is ever permitted, so the clock is irrelevant and there is one class. The total is $(m-1)w+2$, which is $5$ for $w=3$ and $m=2$. The product $w(m+1)=9$ is larger because the clock carries no information when no use has occurred and when the cap is spent.
+
+\section*{Chapter 8}
+
+\textbf{Exercise~\ref{ex:moduli-pairs}.} For the moduli $3$ and $4$, which are coprime, the pair has $12$ classes, equal to the product. For the moduli $4$ and $6$ the pair has $12$ classes, the least common multiple, against the product $24$. The deficit arises because the reachable pairs of residues are constrained by $\gcd(4,6)=2$.
+
+\section*{Chapter 9}
+
+\textbf{Exercise~\ref{ex:binned-table}.} For $q=0.8$, $B=6$ and $j=0$ the errors for $t=1,\dots,5$ are $0.200$, $0.360$, $0.250$, $0.147$ and $0.066$ (the minimum of $1-q^{s}$ and $q^{s}-q^{6}$ with $s=t$). The worst threshold is $t=2$. The continuous maximizer solves $q^{s}=(1+q^{6})/2$, that is $s\approx2.06$, with value $(1-q^{6})/2\approx0.369$. It is not an integer because the equation is solved by a real number determined by $q$ and $B$, while thresholds are integers; the integer maximizer is whichever neighbour of $s$ gives the larger minimum, and here it is the lower one.
+
+\section*{Chapter 10}
+
+\textbf{Exercise~\ref{ex:twelve}.} Enumerating the $31$ words of length at most $4$ gives the twelve values $(b,\text{flag})$ with $(-4,1),(-3,1),(-2,1),(-1,1),(0,0),(0,1),(1,0),(1,1),(2,0),(2,1),(3,0),(4,0)$. Negative balances occur only with the flag set, since reaching a negative balance is overdrawing, and balances $3$ and $4$ occur only with the flag unset, since a history of length at most $4$ with balance $3$ or $4$ has no room for a withdrawal that precedes it. This removes six of the eighteen pairs. The five values with flag $0$, namely $b=0,1,2,3,4$, lie in the interior of $\varphi$, because the evidence determines $\varphi$ and each of these values is realized.
+
+\section*{Chapter 11}
+
+\textbf{Exercise~\ref{ex:recency16}.} The sixteen lists are the empty list, three of length one, six of length two and six of length three. The pair $(\lambda,S)$ identifies two lists exactly when they begin with the same author and have the same set of three authors, so the lists $(a,b,c)$ and $(a,c,b)$ share a value, and there are three such values, one for each leading author. The lists of length at most two have one preimage each. This gives $16-3=13$ values of $(\lambda,S)$, in agreement with $1+3\cdot2^{2}=13$.
+
+\textbf{Exercise~\ref{ex:first-author}.} The record $(\phi,\lambda)$ takes the value of the empty record and one value for each ordered pair of authors, in all $|U|^{2}+1$ values, and it is maintainable because a further revision leaves $\phi$ unchanged and replaces $\lambda$. The family consisting of $\phi_i$ and $S_i$ is served by pairs (first author, set of authors) with the first author in the set, which has $1+|U|2^{|U|-1}$ values, so the count $|U|^{2}+1$ does not hold; for $|U|=3$ the two counts are $10$ and $13$.
+
+\section*{Chapter 12}
+
+\textbf{Exercise~\ref{ex:overlap-parity}.} Each pair of the three parities is a pair of independent unbiased bits, so a binary cell serves at most one of them. Three binary derived cells are therefore needed for depth one if the cells are binary. The three parities satisfy $(x_1\oplus x_2)\oplus(x_2\oplus x_3)=x_1\oplus x_3$, so their joint kernel has four classes, and a single four-valued cell storing the pair $(x_1\oplus x_2,x_2\oplus x_3)$ serves all three at depth one. The packing bound counts $\lfloor\log_2 s\rfloor=2$ questions per four-valued cell and would suggest two cells for three questions; the true requirement is one, because the proof of Result~\ref{prop:packing} uses the independence of the block parities to say that $|T|$ questions have $2^{|T|}$ joint classes, and here three questions have only $4$.
+
+\textbf{Exercise~\ref{ex:update-work}.} A write to an original cell changes the parity of the single block containing it, so it changes exactly one stored parity. In the packed index that parity lives in one derived cell, and in the unpacked index in one derived cell as well, so each write causes one derived-cell update in both. Packing groups parities that are written independently, which lowers the number of cells and does not lower the number of parities that a write must refresh.
+
+\section*{Chapter 13}
+
+\textbf{Exercise~\ref{ex:count-r3}.} There are $3^{3}=27$ ordered pairs of disjoint subsets of a three-element set. The pairs with $A=\varnothing$ number $8$, those with $B=\varnothing$ number $8$, and the pair with both empty is counted twice, so $15$ pairs have an empty set. The remaining $27-15=12$ pairs have both sets non-empty and disjoint, and these are the joint obstructions; the formula gives $3^{3}-2^{4}+1=12$.
+
+\section*{Chapter 14}
+
+\textbf{Exercise~\ref{ex:thirteen}.} Simulating the shared-clock semantics for deadlines $(2,2,2)$ from the all-zero vector gives $13$ reachable live vectors. They are the all-zero vector, the six vectors with one nonzero coordinate, and the six vectors with two nonzero coordinates that are different. The invariant is that the nonzero coordinates are pairwise distinct, because obligations opened at different events have been advanced by different numbers of events, and an event that opens or discharges one coordinate cannot make two pending coordinates equal. Three nonzero coordinates would need three distinct values in $\{1,2\}$, which is impossible. The $14$ unreachable vectors of $\{0,1,2\}^{3}$ are exactly those with two equal nonzero coordinates.
+
+\textbf{Exercises~\ref{ex:doomed-21} and~\ref{ex:doomed-32}.} For deadlines $(2,1)$ the doomed state is $(1,1)$: every event either advances a coordinate with one step left to violation or discharges only one of the two, so some obligation is violated on the next event. It is reached by $a_1a_2$, and any single event from it violates. A monitor for realized violation signals on the third event of $a_1a_2e$, and a monitor for inevitable violation signals after the second, one event earlier. For deadlines $(3,2)$ the word $a_1$ gives $(3,0)$, then $a_2$ gives $(2,2)$ and $e$ gives $(1,1)$, which is doomed. The pairs $(r_1,0)$ with $1\le r_1\le k_1$ are reached by $a_1$ followed by $k_1-r_1$ copies of $e$, and the pairs $(0,r_2)$ symmetrically.
+
+\section*{Chapter 15}
+
+\textbf{Exercise~\ref{ex:undo-depth}.} Computing continuation classes by Moore's algorithm for undo stacks of depth $d$ gives $2^{d+1}$ classes for $k=2$, namely $4,8,16$ for $d=1,2,3$, and $3^{d+1}$ for $k=3$, namely $9,27,81$. The general pattern is $k^{d+1}$ classes: the current content and the $d$ stored contents, with trivial positions identified with the empty slots as in the proof of Result~\ref{prop:undo-identity}.
+
+\textbf{Exercise~\ref{ex:redo}.} With redo and undo of depth one, the reachable configurations for $k=2$ number $9$ and the continuation classes number $6$. Classes that differ only in whether an undone content can be restored by redo are separated by the word $\mathrm{redo}$ followed by a report, and classes that differ in the previous content are separated by $\mathrm{undo}$ followed by a report, as before.
+
+\section*{Chapter 16}
+
+\textbf{Exercise~\ref{ex:fail-batch}.} For $c=\tfrac12$ the law is $\Pr[N=n]=2^{-n}$, which sums to $1$, with $\mathbb E[N]=\sum n2^{-n}=2$ and expected surplus $\mathbb E[N-1]=1$. For a batch of $1000$ units with $c=0.001$, the probability of at least one surplus application in the apply-first order is $1-(1-c)^{1000}=1-0.999^{1000}\approx0.632$, and the probability of at least one lost unit in the record-first order is the same number, since each unit independently has probability $c$ of each fault.
+
+\textbf{Exercise~\ref{ex:two-crash}.} Each delivery either crashes before the effect, with probability $c_1$, which changes nothing, or applies the effect and then crashes with probability $c_2$. Conditioned on reaching the application step, the delivery ends the process with probability $1-c_2$, so $\Pr[N=n]=c_2^{\,n-1}(1-c_2)$ whenever $c_1<1$. The crash before the effect only delays the process. Reliability effort belongs in the gap between applying and recording.
+
+\section*{Chapter 17}
+
+\textbf{Exercise~\ref{ex:seven-sets}.} For $m=2$ the primitives are $c_{11},c_{12},c_{21},c_{22}$ and a shed set is admissible when some pair survives intact. The seven admissible sets are $\varnothing$, the four singletons, $\{c_{11},c_{12}\}$ and $\{c_{21},c_{22}\}$. The equal-weight test with threshold $3$ admits the shed sets that leave at least three primitives, which are the five sets of size at most one. It rejects the two admissible two-element sets, and these are the two misclassified sets.
+
+\textbf{Exercise~\ref{ex:r-prims}.} A shed set is inadmissible if and only if it contains at least one primitive from each of the $m$ alternatives, and for each alternative there are $2^{r}-1$ subsets that do. So $(2^{r}-1)^{m}$ shed sets are inadmissible and $2^{rm}-(2^{r}-1)^{m}$ are admissible. For $r=3$ and $m=3$ this is $512-343=169$, a fraction $169/512\approx0.330$.
+
+\textbf{Exercise~\ref{ex:sound-test}.} A test that admits only the empty shed set is sound for every dependency system, since the empty set is admissible whenever the requirement is satisfiable. For $m=2$ the best sound additive test admits six of the seven admissible sets and rejects one. Give weight $1$ to $c_{11},c_{12}$, weight $2$ to $c_{21},c_{22}$ and threshold $2$ on the total shed weight: this admits $\varnothing$, the four singletons and $\{c_{11},c_{12}\}$ and rejects every inadmissible set. No additive sound test admits both two-element admissible sets, since adding the two inequalities $w_{11}+w_{12}\le\tau$ and $w_{21}+w_{22}\le\tau$ contradicts the sum of $w_{11}+w_{21}>\tau$ and $w_{12}+w_{22}>\tau$.
+
+\section*{Chapter 18}
+
+\textbf{Exercise~\ref{ex:restore-account}.} Write $\beta=\beta(h)$. After $\mathrm{d}(x)\,\mathrm{w}(x)$ the balance is $\beta$ again. The overdraft flag could only change if an intermediate prefix were below zero, but the intermediate balance is $\beta+x$, which is negative only if $\beta<-x<0$, and then $h$ was already flagged. So the flag is unchanged and the pair is restored for every continuation. After $\mathrm{w}(x)\,\mathrm{d}(x)$ the balance is $\beta$ again, so relative to $\{\beta\}$ the withdrawal is restored at every history. The flag becomes $q_{\mathrm{neg}}(h)\vee[\beta-x<0]$, so restoration relative to $\{\beta,q_{\mathrm{neg}}\}$ fails exactly at the histories with $q_{\mathrm{neg}}(h)=0$ and $x>\beta$, where the history had never been below zero and the withdrawal overdraws.
+
+\section*{Chapter 19}
+
+\textbf{Exercise~\ref{ex:equal-split}.} With $n=3$ and $B=60$ the equal split gives each replica $20$, and the served amount is $\sum_r\min(d_r,20)$. It is $50$ on $(30,20,10)$, $20$ on $(60,0,0)$ and $60$ on $(20,20,20)$. The demands served least are those concentrated at a single replica, with served amount $B/n=20$.
+
+\textbf{Exercise~\ref{ex:bounded-demand}.} The served amount $\sum_r\min(d_r,B/n)$ is concave in $d$, so its minimum over the polytope $\{0\le d_r\le B/m,\ \sum_r d_r=B\}$ is at an extreme point, and for integer $m$ the extreme points have $m$ coordinates equal to $B/m$ and the rest $0$. Each of the $m$ coordinates is served $B/n$ since $B/m\ge B/n$, so the worst served fraction is $m/n$. Knowing that no replica carries more than a $1/m$ share improves the guarantee from $1/n$ to $m/n$.
+
+\section*{Chapter 20}
+
+\textbf{Exercise~\ref{ex:mask-chain}.} A right reaches $q$ along a chain only if every edge passes it, so the rights obtained along a chain are the intersection of the masks along it, and the obtainable set is the union over chains of these intersections together with the initial holdings. For the three masks $\{r,s\}$, $\{s,t\}$, $\{s\}$ the intersection is $\{s\}$.
+
+\section*{Chapter 21}
+
+\textbf{Exercise~\ref{ex:interval-check}.} For $n=6$ the thresholds are $\pi_1,\dots,\pi_7$. The exactly served thresholds are $t=1$, $t=7$, $t=3$ (between $2$ and $3$) and $t=6$ (between $5$ and $6$), which is four, equal to $k+1$. The remaining thresholds $t=2,4,5$ each split one interval into two nonconstant parts and have error $1/6$, since the interval $\{1,2\}$ or $\{3,4,5\}$ contributes the smaller of two masses, $1/6$ in each case. The worst error is $1/6=\lfloor3/2\rfloor/6$, as the formula of part (b) states.
+
+\section*{Chapter 22}
+
+\textbf{Exercise~\ref{ex:mod4-policy}.} For $x\in\{1,\dots,8\}$ the policy takes the values $1,0,0,1,1,0,0,1$. Adjacent disagreements occur between $1$ and $2$, $3$ and $4$, $5$ and $6$, and $7$ and $8$, which is four. Each adjacent pair $\{t-1,t\}$ is separated only by the threshold observation at $t$, so thresholds $t=2,4,6,8$ must be selected, and these four suffice. The minimum sufficient subfamily has four members, equal to the number of $x$ with $\pi(x)\ne\pi(x+1)$.

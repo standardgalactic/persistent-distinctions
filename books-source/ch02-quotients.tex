@@ -111,7 +111,7 @@ Let $\{f_i:X\to Y_i\}_{i\in I}$ be a family of questions and let $f_I:X\to\prod_
 Two cases have the same image under $f_I$ exactly when they have the same image under every $f_i$, which gives the first claim. By Result~\ref{thm:factorization}, $r$ answers $f_i$ if and only if $\ker r\subseteq\ker f_i$, and $\ker r$ is contained in every $\ker f_i$ if and only if it is contained in their intersection.
 \end{proof}
 
-Consequently the coarsest equivalence relation through which all of the $f_i$ factor is $\bigcap_i\ker f_i$, realized by the quotient map onto $X/\bigcap_i\ker f_i$. This is the object that Chapters~5 and~6 study under the names of the minimal sufficient representation for a policy and for a family of policies.
+Consequently the coarsest equivalence relation through which all of the $f_i$ factor is $\bigcap_i\ker f_i$, realized by the quotient map onto $X/\bigcap_i\ker f_i$. This is the object that Chapters~\ref{ch:fixed} and~\ref{ch:families} study under the names of the minimal sufficient representation for a policy and for a family of policies.
 
 \section{A worked quotient: the account}
 
@@ -129,7 +129,7 @@ If $q(h)=q(h')=1$ then $q(hw)=q(h'w)=1$ for every $w$, so $q^{+}(h)=q^{+}(h')$. 
 Every $n\in\NN$ occurs as a balance with $q=0$, realized by $\mathrm{d}(n)$ for $n\ge1$ and by the empty history for $n=0$, and $\bot$ occurs, realized by $\mathrm{w}(1)$.
 \end{proof}
 
-The comparison with the question asked once is immediate. The question $q$ has two classes, so a single bit suffices to answer it about the present history. Keeping the answer available after every further event requires the whole of $\NN\cup\{\bot\}$, and it requires no more: after an overdraft the balance can be forgotten, because every later answer is already $1$. The pair $(\beta,q)$ over-records in exactly this region, since it distinguishes histories with different balances and $q=1$ that the future can never separate. Chapter~7 develops this phenomenon in general.
+The comparison with the question asked once is immediate. The question $q$ has two classes, so a single bit suffices to answer it about the present history. Keeping the answer available after every further event requires the whole of $\NN\cup\{\bot\}$, and it requires no more: after an overdraft the balance can be forgotten, because every later answer is already $1$. The pair $(\beta,q)$ over-records in exactly this region, since it distinguishes histories with different balances and $q=1$ that the future can never separate. Chapter~\ref{ch:incremental} develops this phenomenon in general.
 
 
 \section{A second worked quotient: two questions about a monitor}\label{sec:monitor-quotient}
@@ -154,11 +154,11 @@ For the cases of Example~\ref{ex:document} with $m=1$ and $C=\{0,1\}$, compute t
 \end{exercise}
 
 \begin{exercise}
-Prove that the join in Result~\ref{prop:lattice} of two equivalence relations $\sim$ and $\approx$ can be described as follows: $x$ and $y$ are related if and only if there is a finite sequence $x=z_0,z_1,\dots,z_k=y$ such that consecutive elements are related by $\sim$ or by $\approx$. Show by example that the union of two equivalence relations is in general not transitive.
+Prove that the join in Result~\ref{prop:lattice} of two equivalence relations $\sim$ and $\approx$ can be described as follows: $x$ and $y$ are related if and only if there is a finite sequence $x=z_0,z_1,\dots,z_k=y$ such that consecutive elements are related by $\sim$ or by $\approx$. Show by example that the union of two equivalence relations is in general not transitive.\label{ex:join-chain}
 \end{exercise}
 
 \begin{exercise}
-Show that if a representation $r:X\to R$ with $|r(X)|=k$ answers a question $q$, then $\ker q$ has at most $k$ classes. Show by a small example that the converse fails: a question whose kernel has at most $k$ classes need not be answered by $r$.
+Show that if a representation $r:X\to R$ with $|r(X)|=k$ answers a question $q$, then $\ker q$ has at most $k$ classes. Show by a small example that the converse fails: a question whose kernel has at most $k$ classes need not be answered by $r$.\label{ex:k-classes}
 \end{exercise}
 
 \begin{exercise}
@@ -175,7 +175,7 @@ Replace the threshold $3$ by $t$ in Result~\ref{prop:monitor-quotients} and comp
 \end{exercise}
 
 \begin{exercise}
-Prove that if $\ker f$ has $a$ classes and $\ker g$ has $b$ classes, then $\ker(f,g)$ has at least $\max(a,b)$ and at most $ab$ classes, and exhibit questions on a set of six cases for which each extreme is attained. Which extreme does Result~\ref{prop:monitor-quotients} resemble, and why is it strictly between?
+Prove that if $\ker f$ has $a$ classes and $\ker g$ has $b$ classes, then $\ker(f,g)$ has at least $\max(a,b)$ and at most $ab$ classes, and exhibit questions on a set of six cases for which each extreme is attained. Which extreme does Result~\ref{prop:monitor-quotients} resemble, and why is it strictly between?\label{ex:joint-classes}
 \end{exercise}
 
 \begin{exercise}

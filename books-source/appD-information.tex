@@ -25,7 +25,7 @@ Since $r(X)$ is a function of $X$, $I(X;Y)=I(X,r(X);Y)$. By the chain rule, $I(X
 In the statistical sense, $r$ is sufficient for $Y$ when $Y$ and $X$ are conditionally independent given $r(X)$; the result says this is exactly when $r$ loses no information about $Y$.
 
 \begin{newresult}[Deterministic sufficiency]\label{pd:det}
-If the target is a deterministic function $Y=f(X)$ then $r$ is sufficient in the sense of the first volume ($\ker r\subseteq\ker f$ on the support of $X$) iff $H(Y\mid r(X))=0$ iff $I(r(X);Y)=H(Y)$.
+If the target is a deterministic function $Y=f(X)$ then $r$ is sufficient in the sense of Chapter~\ref{ch:fixed} ($\ker r\subseteq\ker f$ on the support of $X$) iff $H(Y\mid r(X))=0$ iff $I(r(X);Y)=H(Y)$.
 \end{newresult}
 \assumes{$\Pr(X=x)>0$ for all $x$ in the support.}
 \begin{proof}
@@ -56,7 +56,7 @@ Suppose $r(X)$ is a coarsening that identifies $M_0\ge2$ equally likely values o
 \end{newresult}
 \assumes{Uniform conditional law.}
 \begin{proof}
-The error probability of any estimator is at least $1-\max_y\Pr(Y=y\mid r(X))=1-1/M_0$, since a guess from a uniform distribution on $M_0$ values is correct with probability at most $1/M_0$. (Fano gives the weaker bound $P_e\ge(\log M_0-1)/\log(M_0-1)$.)
+The error probability of any estimator is at least $1-\max_y\Pr(Y=y\mid r(X))=1-1/M_0$, since a guess from a uniform distribution on $M_0$ values is correct with probability at most $1/M_0$. (For $M_0\ge3$ Fano's inequality gives the weaker bound $P_e\ge(\log M_0-1)/\log(M_0-1)$, obtained from $\log M_0=H(Y\mid r(X))\le h(P_e)+P_e\log(M_0-1)$ and $h\le1$; for $M_0=2$ it gives $h(P_e)\ge1$, hence $P_e=\tfrac12$, which agrees with the exact value.)
 \end{proof}
 
 This is the quantitative form of the corollary on non-recovery in Chapter~\ref{ch:quotients}: once the representation merges two cases, no computation can tell them apart better than chance.

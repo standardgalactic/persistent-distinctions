@@ -131,7 +131,7 @@ Compute $W_1$ and $W_2$ by hand for the unit-control line with $N=2$ and $V=1$, 
 \end{exercise}
 
 \begin{exercise}
-Modify Result~\ref{prop:line-w2} so that the controller also has a brake \texttt{hold} that sets $v^{+}=0$ from any state. Show that $W_2$ is then nonempty, and find the states of $W_2$ when $N=3$, $V=1$.
+Modify Result~\ref{prop:line-w2} so that the controller also has a brake \texttt{hold} that sets $v^{+}=0$ from any state. For $V=1$ show that \texttt{hold} reaches, from every state, a successor that another control already reaches, so that $W_2$ remains empty. For $N=6$ and $V=2$ run the iteration for $W_2$ and report the result, and explain why an extra brake does not create two durable options even when it produces a new successor, given that each of the two options must itself retain two options.\label{ex:hold}
 \end{exercise}
 
 \begin{exercise}

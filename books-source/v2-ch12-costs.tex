@@ -20,7 +20,7 @@ A \emph{cost algebra} is a semiring $(K,\oplus,\otimes,\mathbf 0,\mathbf 1)$ in 
 \begin{established}[Algebraic path problems]\label{thm:lehmann}
 If the semiring is closed (infinite sums of the relevant kind exist and distribute), the path costs between all pairs of an $n$-vertex graph are computed in $O(n^{3})$ semiring operations by the Floyd--Warshall--Kleene recursion. Dijkstra's algorithm computes single-source costs when the semiring is totally ordered and $\otimes$ is monotone.
 \end{established}
-\source{Lehmann (1977); Tarjan (1981).}
+\source{Lehmann, ``Algebraic structures for transitive closure,'' \emph{Theoretical Computer Science} 4 (1977); Tarjan, ``A unified approach to path problems,'' \emph{Journal of the ACM} 28 (1981).}
 
 \begin{newresult}[The algebra changes the optimal path]\label{prop:algebras}
 There is a graph with two paths from $s$ to $t$ for which the path optimal in the additive algebra is not optimal in the bottleneck algebra and conversely. Under the Boolean algebra the two paths are equally good.
@@ -144,7 +144,7 @@ Show that the product of Result~\ref{prop:vector-product} can be pruned to the s
 \end{exercise}
 
 \begin{exercise}
-For the task graph with tasks $a,b,c,d$ of durations $2,3,1,4$ where $d$ depends on $a$ and $b$, and $c$ is independent, compute $L$, $E$, and the bounds of Result~\ref{prop:time-energy} for $p=2$.
+For the task graph with tasks $a,b,c,d$ of durations $2,3,1,4$ where $d$ depends on $a$ and $b$, and $c$ is independent, compute $L$, $E$, and the bounds of Result~\ref{prop:time-energy} for $p=2$.\label{ex2:abcd}
 \end{exercise}
 
 \begin{exercise}
@@ -156,7 +156,7 @@ Prove that the Lagrangian dual value in Result~\ref{prop:lagrange} is nonincreas
 \end{exercise}
 
 \begin{exercise}
-Verify by drawing the schedules that the nine-task example of Section~\ref{sec:anomaly} completes at time $12$ with three workers and $15$ with four under the list order $T_1,\dots,T_9$, and find a priority order for which four workers finish at time $12$, and show that no schedule can finish before $12$.
+Verify by drawing the schedules that the nine-task example of Section~\ref{sec:anomaly} completes at time $12$ with three workers and $15$ with four under the list order $T_1,\dots,T_9$, and find a priority order for which four workers finish at time $12$, and show that no schedule can finish before $12$.\label{ex2:nine-task}
 \end{exercise}
 
 \begin{exercise}

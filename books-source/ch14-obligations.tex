@@ -108,7 +108,17 @@ $(3,2,1)$ & $15$ & $13$ & $12$ & $4$ & $25$\\
 \bottomrule
 \end{tabular}
 \end{center}
-For equal deadlines $k=1,\dots,7$ the minimal realized monitor has exactly $k^{2}+k+2$ states, one more than the reachable live states, so that no two live states are merged; this is a computation and is not proved here. The pattern in the table is suggestive. For two obligations a doomed state is reachable exactly when the deadlines differ; for $(3,2,1)$ there are four doomed states, and the realized monitor is smaller than the number of reachable states plus one, so merging does occur once three obligations compete; and the shared-clock monitors are consistently smaller than the disjoint ones, by a margin that grows with the number of obligations (from $5$ to $4$ for $(1,1)$ and from $28$ to $14$ for $(2,2,2)$). The data are evidence about the shape of an answer and not an answer to the problem.
+For two obligations the data are explained by the following result, which settles the count for equal deadlines.
+
+\begin{newresult}[No live states merge for two shared-clock obligations]\label{prop:shared-two-minimal}
+For two obligations with deadlines $k_1,k_2\ge1$ on a shared clock, the live states reachable from $(0,0)$ are pairwise inequivalent in the continuation equivalence of the property of non-violation. Hence the minimal realized monitor has exactly one more state than there are reachable live states, the extra state being the violation sink. For equal deadlines $k$ it has $k^{2}+k+2$ states.
+\end{newresult}
+\assumes{Two obligations on the shared alphabet $\{a_1,b_1,a_2,b_2,e\}$ with the semantics above; states are allowance vectors.}
+\begin{proof}
+Let $(x,y)$ be a live state. The word $b_1e^{\,n}$ acts as follows: $b_1$ sets the first coordinate to $0$ and advances the second coordinate, which becomes the violation value at once if $y=1$ and becomes $y-1$ if $y\ge2$; thereafter $e^{\,n}$ advances the second coordinate by one step each, and it violates exactly at $n=y-1$. Therefore the shortest word of the form $b_1e^{\,n}$ that violates from $(x,y)$ has length $y$, and no such word violates if $y=0$. In the same way the shortest violating word of the form $b_2e^{\,n}$ has length $x$, and none exists if $x=0$. Two distinct live states differ in $x$ or in $y$ and are therefore separated by one of these words. A live state is separated from the violation sink by the empty extension, which is already a violation at the sink and not at a live state. So no two states of the reachable machine are equivalent, and the minimal realized monitor is the reachable machine. For equal deadlines the count of live states is $k^{2}+k+1$ by Result~\ref{prop:shared-equal}.
+\end{proof}
+
+The argument uses that only two coordinates are present: with three obligations the word $b_1e^{\,n}$ reveals only the larger of the two remaining coordinates, and merging does occur, as the table shows for $(3,2,1)$. The pattern in the table is suggestive. For two obligations a doomed state is reachable exactly when the deadlines differ; for $(3,2,1)$ there are four doomed states, and the realized monitor is smaller than the number of reachable states plus one, so merging does occur once three obligations compete; and the shared-clock monitors are consistently smaller than the disjoint ones, by a margin that grows with the number of obligations (from $5$ to $4$ for $(1,1)$ and from $28$ to $14$ for $(2,2,2)$). The data are evidence about the shape of an answer and not an answer to the problem.
 
 \section*{Exercises}
 \addcontentsline{toc}{section}{Exercises}
@@ -135,14 +145,14 @@ An obligation of the form $\mathbf G(a\to\mathbf F b)$ is a liveness property. S
 
 
 \begin{exercise}
-List the $13$ live states of the shared-clock monitor for three obligations of deadline $2$ and verify by hand that the number of reachable states is smaller than the $27$ of the disjoint case. Identify which vectors of the product are unreachable and give the invariant that excludes them.
+List the $13$ live states of the shared-clock monitor for three obligations of deadline $2$ and verify by hand that the number of reachable states is smaller than the $27$ of the disjoint case. Identify which vectors of the product are unreachable and give the invariant that excludes them.\label{ex:thirteen}
 \end{exercise}
 
 \begin{exercise}
-For deadlines $(2,1)$ find the doomed state, a word that reaches it, and the shortest word that violates from it. Show that a monitor for inevitable violation signals strictly earlier than a monitor for realized violation on this word, and compute by how many events.
+For deadlines $(2,1)$ find the doomed state, a word that reaches it, and the shortest word that violates from it. Show that a monitor for inevitable violation signals strictly earlier than a monitor for realized violation on this word, and compute by how many events.\label{ex:doomed-21}
 \end{exercise}
 
 \begin{exercise}
-Prove that for two obligations on a shared clock with deadlines $k_1>k_2$ the live reachable states include every pair $(r_1,0)$ with $1\le r_1\le k_1$ and every pair $(0,r_2)$ with $1\le r_2\le k_2$, and that a doomed state is reachable. Find the doomed state for $(3,2)$.
+Prove that for two obligations on a shared clock with deadlines $k_1>k_2$ the live reachable states include every pair $(r_1,0)$ with $1\le r_1\le k_1$ and every pair $(0,r_2)$ with $1\le r_2\le k_2$, and that a doomed state is reachable. Find the doomed state for $(3,2)$.\label{ex:doomed-32}
 \end{exercise}
 

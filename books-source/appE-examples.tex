@@ -43,11 +43,11 @@ Change the property in \texttt{continuation.py} to ``the balance is even'' and p
 \end{exercise}
 
 \begin{exercise}
-Modify \texttt{kernel.py} so that waiting costs no battery away from the charger. Predict the kernel and check it.
+Modify \texttt{kernel.py} so that staying put costs no battery away from the charger. Show by hand that every one of the $77$ states is then in the kernel, and check that the program agrees. Then restore the cost of staying and instead let moving left cost no battery. Predict the kernel size, list the states that are lost relative to the original, and check the prediction (the answer is $67$).
 \end{exercise}
 
 \begin{exercise}
-Extend \texttt{monitor.py} to two independent obligations with bounds $2$ and $3$ and verify that the product monitor has $4\cdot5=20$ states and is minimal.
+Extend \texttt{monitor.py} to two independent obligations with bounds $2$ and $3$ and verify that the minimal product monitor has $(2+1)(3+1)+1=13$ states, and explain why this is smaller than the $4\cdot5=20$ pairs of states of the two separate monitors of Result~\ref{pc:monitor}: the two violation states merge into one sink, which removes the pairs in which either coordinate is a violation but one is not.
 \end{exercise}
 
 \begin{exercise}
