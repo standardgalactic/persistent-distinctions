@@ -1,0 +1,144 @@
+% v2-ch15-admcost.tex
+\chapter{The Cost of Future Admissibility}\label{ch:admcost}
+\spec{What does it cost to preserve at least one acceptable path, and what does it cost to preserve a broad range of alternatives?}
+{Constrained optimal control; discounted dynamic programming; viability kernels (Chapter~\ref{ch:viability}).}
+{Optimizing subject to staying in the constraint set is optimizing on the viability kernel with the actions that stay in it (Result~\ref{thm:viab-cost}); the price of viability is zero exactly when an unconstrained optimum already stays in the kernel and can be arbitrarily large otherwise (Result~\ref{prop:price}); lookahead of $|X|-1$ steps is necessary and sufficient to detect non-viability (Result~\ref{prop:lookahead}); preserving $m$ options at every time is viability in a nested family of kernels whose prices are nondecreasing in $m$ (Results~\ref{thm:m-kernel} and~\ref{prop:m-price}).}
+{None.}
+{Chapter~\ref{ch:vobl}.}
+
+Chapter~\ref{ch:viability} established when a path that stays acceptable forever exists. Whether the system takes such a path is a separate matter, because the cheapest, fastest, or most profitable behaviour often leaves the acceptable region, and because keeping the possibility of staying acceptable is not the same thing as keeping many possibilities. This chapter prices the two. The first price is the cost of keeping at least one acceptable continuation; the second is the cost of keeping several.
+
+\section{The price of viability}
+
+Let $X$ be finite, with feasibility $F$, deterministic transition $\delta$, and constraint set $K$, as in Chapter~\ref{ch:vobl}. Let $\ell:X\times U\to\mathbb R_{\ge0}$ be a stage cost and $\gamma\in[0,1)$ a discount factor. A feasible action sequence $u_0,u_1,\dots$ from $x_0$ generates a trajectory and a discounted cost $\sum_t\gamma^t\ell(x_t,u_t)$. Define the unconstrained optimum
+\[
+J(x)=\min\Bigl\{\textstyle\sum_t\gamma^t\ell(x_t,u_t)\Bigr\}
+\]
+over all feasible sequences from $x$ (the minimum exists since the system is finite), and the viable optimum $J_K(x)$ as the minimum over feasible sequences whose trajectory stays in $K$ at all times, with $J_K(x)=\infty$ if there is none. The \emph{price of viability} at $x$ is $\pi(x)=J_K(x)-J(x)\in[0,\infty]$.
+
+\begin{newresult}[Viable optimization is optimization on the kernel]\label{thm:viab-cost}
+Let $\mathcal K=\Viab(K)$ and let $F_{\mathcal K}(x)=\{u\in F(x):\delta(x,u)\in\mathcal K\}$ for $x\in\mathcal K$. Then $F_{\mathcal K}(x)\ne\varnothing$ for $x\in\mathcal K$, and $J_K$ is, on $\mathcal K$, the optimal value of the finite discounted problem with states $\mathcal K$, actions $F_{\mathcal K}$ and cost $\ell$; elsewhere $J_K=\infty$. It is the unique fixed point of $(TV)(x)=\min_{u\in F_{\mathcal K}(x)}[\ell(x,u)+\gamma V(\delta(x,u))]$ on $\mathcal K$, computed by value iteration.
+\end{newresult}
+\assumes{Finite $X$; $0\le\gamma<1$.}
+\begin{proof}
+If $x\in\mathcal K$ then by Result~\ref{thm:kernel} some action leads into $\mathcal K$, so $F_{\mathcal K}(x)\ne\varnothing$. A trajectory from $x$ that stays in $K$ forever has every one of its states in $\mathcal K$, since the tail starting at each state is a $K$-trajectory (Result~\ref{thm:kernel}(b)); so each of its actions belongs to $F_{\mathcal K}$ at the state where it is taken. Conversely every action sequence that uses only actions of $F_{\mathcal K}$ from $x\in\mathcal K$ stays in $\mathcal K\subseteq K$. Hence the sequences counted by $J_K$ are exactly those of the restricted problem, and for $x\notin\mathcal K$ there are none. The restricted problem is a finite discounted deterministic problem, so Result~\ref{thm:bellman} applies.
+\end{proof}
+
+This is the deterministic form of Result~\ref{thm:restriction}. Feasibility first, then performance on what feasibility leaves.
+
+\begin{newresult}[The price of viability]\label{prop:price}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\pi(x)=0$ if and only if some unconstrained optimal trajectory from $x$ stays in $K$.
+  \item $\pi(x)=\infty$ if and only if $x\notin\Viab(K)$.
+  \item For every $B>0$ there is a system and a state $x\in\Viab(K)$ with $\pi(x)>B$.
+\end{enumerate}
+\end{newresult}
+\assumes{As in Result~\ref{thm:viab-cost}.}
+\begin{proof}
+(a) $J_K(x)=J(x)$ if and only if a $K$-trajectory attains the unconstrained minimum. (b) is Result~\ref{thm:viab-cost}, since $J$ is finite. (c) Take states $s,d,g$ with $K=\{s,g\}$. At $s$ the action \texttt{fast} leads to $d$ at cost $0$, the action \texttt{slow} leads to $g$ at cost $c$, and the action \texttt{wait} returns to $s$ at cost $c$. At $d$ the only action is a self-loop of cost $0$, and at $g$ the only action is a self-loop of cost $c$. Then $J(s)=0$ by going to $d$ and staying. The state $s$ is in the kernel by waiting forever. A $K$-trajectory from $s$ pays $c$ at every step, since each of \texttt{wait}, \texttt{slow}, and the loop at $g$ costs $c$, so $J_K(s)=c/(1-\gamma)$ and $\pi(s)=c/(1-\gamma)$, which exceeds $B$ for large $c$.
+\end{proof}
+
+The first claim is the pleasant case: the optimum of the problem already respects the constraint, and viability is free. The third is the general condition, since nothing in the definition of the kernel relates to the stage cost. A system that is never asked to price its constraints can look as though it satisfies them for free.
+
+\section{The cost of foresight}
+
+A controller that checks only a bounded horizon cannot distinguish a state that has a long-lived future from one whose future ends. Say that $x$ is \emph{$N$-step viable} if some feasible sequence of $N$ actions from $x$ has a trajectory that stays in $K$ at every one of its $N+1$ states. By the iteration of Result~\ref{thm:kernel}(c), the $N$-step viable states are exactly the set $V_N$ of that iteration.
+
+\begin{newresult}[Lookahead needed to detect non-viability]\label{prop:lookahead}
+If $|X|=n$, then $V_{n}=\Viab(K)$: a state is viable if and only if it is $n$-step viable. For every $n\ge1$ there is a system with $n$ states and a state that is $(n-1)$-step viable and not viable.
+\end{newresult}
+\assumes{Finite $X$.}
+\begin{proof}
+The first claim is Result~\ref{thm:kernel}(c). For the second take states $x_0,\dots,x_{n-1}$ with a single action from $x_i$ to $x_{i+1}$ for $i<n-1$, no action at $x_{n-1}$, and $K=X$. The trajectory $x_0,\dots,x_{n-1}$ has $n-1$ actions and stays in $K$, so $x_0$ is $(n-1)$-step viable, while no trajectory has $n$ actions, so $x_0\notin V_n=\Viab(K)=\varnothing$.
+\end{proof}
+
+A planner that looks fewer than $n-1$ steps ahead in a system of $n$ states may therefore accept a state with no future. The bound is tight, and it grows with the number of states and not with the connectivity of the graph.
+
+\section{Preserving many options}
+
+Preserving viability preserves one acceptable continuation. A system that must keep several, so as to be able to respond to the failure of any one, has to do something stronger. For $m\ge1$ let
+\[
+\operatorname{Pre}_m(Z)=\bigl\{x:\ \bigl|\{u\in F(x):\delta(x,u)\in Z\}\bigr|\ge m\bigr\},
+\]
+the set of states with at least $m$ distinct feasible actions leading into $Z$. The \emph{$m$-option kernel} $W_m$ is the greatest set $Z\subseteq K$ with $Z\subseteq\operatorname{Pre}_m(Z)$.
+
+\begin{newresult}[The $m$-option kernels]\label{thm:m-kernel}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $W_1=\Viab(K)$ and $W_{m+1}\subseteq W_m$. The sets $W_m$ are computed by the decreasing iteration $Z_0=K$, $Z_{j+1}=K\cap\operatorname{Pre}_m(Z_j)$, which stabilizes after at most $|K|$ steps.
+  \item Every state of $W_m$ has at least $m^{k}$ feasible action sequences of length $k$ whose trajectories stay in $W_m$, for every $k$. Hence the growth rate of feasible histories (Chapter~\ref{ch:counting}) from a state of $W_m$ is at least $m$.
+  \item Define $m^{*}(x)=\max\{m:x\in W_m\}$ (the \emph{option capacity}, $0$ if $x\notin W_1$). A state from which $m$ options can be preserved forever has $m^{*}(x)\ge m$.
+\end{enumerate}
+\end{newresult}
+\assumes{Finite $X$ and $U$.}
+\begin{proof}
+(a) $\operatorname{Pre}_1=\operatorname{Pre}$, so $W_1$ is the greatest fixed point of Chapter~\ref{ch:viability}. Since $\operatorname{Pre}_{m+1}(Z)\subseteq\operatorname{Pre}_m(Z)$, a set $Z\subseteq K\cap\operatorname{Pre}_{m+1}(Z)$ also satisfies $Z\subseteq K\cap\operatorname{Pre}_m(Z)$, hence lies in $W_m$ as the union of all such sets; so $W_{m+1}\subseteq W_m$. The operator is monotone, so the iteration is decreasing and stabilizes at the greatest fixed point on a finite set, after at most $|K|$ strict decreases. (b) Induct on $k$: each $x\in W_m$ has $m$ distinct actions leading into $W_m$, and from each successor there are at least $m^{k-1}$ sequences; sequences with different first actions are different, giving $m\cdot m^{k-1}$. The growth rate is at least $\lim m^{k/k}=m$. (c) is the definition.
+\end{proof}
+
+\begin{newresult}[The price of options is nondecreasing]\label{prop:m-price}
+Let $J_m(x)$ be the minimum discounted cost over feasible sequences from $x$ whose trajectory stays in $W_m$ at every time, with $J_m=\infty$ if none exists. Then $J(x)\le J_1(x)\le J_2(x)\le\cdots$ for every $x$, and $J_m(x)=\infty$ for $m>m^{*}(x)$. The price $\pi_m=J_m-J$ is therefore nondecreasing in $m$. Moreover each $\pi_m$ can be computed as in Result~\ref{thm:viab-cost}, with $W_m$ in place of $\Viab(K)$, and the strict inequalities can occur.
+\end{newresult}
+\assumes{As above.}
+\begin{proof}
+$W_{m+1}\subseteq W_m\subseteq K$, so every feasible sequence whose trajectory stays in $W_{m+1}$ stays in $W_m$, and the minimum over a smaller set is no smaller. For $x\notin W_m$ there is no trajectory in $W_m$ from $x$, so $J_m(x)=\infty$. The computation is that of Result~\ref{thm:viab-cost}, applied to the system with constraint set $W_m$, whose kernel is $W_m$ itself because $W_m\subseteq\operatorname{Pre}_m(W_m)\subseteq\operatorname{Pre}(W_m)$. For strictness see the example below.
+\end{proof}
+
+\begin{example}[One narrow route and two wide ones]\label{ex:narrow}
+States $s,n,w$ with $K=\{s,n,w\}$. At $s$ the actions are \texttt{narrow}, leading to $n$ at cost $0$, and \texttt{wide}$_1$, \texttt{wide}$_2$, both leading to $w$ at cost $2$. At $n$ the only action is a self-loop of cost $0$. At $w$ there are two self-loop actions of cost $0$. Then $W_1=\{s,n,w\}$. In $W_2$ the state $n$ is absent, since it has one action; $w$ has two self-loop actions into $w$, so stays; $s$ has the two wide actions into $w$, so stays: $W_2=\{s,w\}$. $W_3=\varnothing$, since $w$ has only two actions. Hence $J(s)=J_1(s)=0$, $J_2(s)=2$, and $J_3(s)=\infty$: preserving one acceptable path is free, preserving two costs $2$, and preserving three is impossible, and $m^{*}(s)=2$.
+\end{example}
+
+The example shows what the narrow route is: it is viable, indeed cheapest, and it commits the system to a single continuation. The price of keeping a second continuation open is the cost of the wide route. The option capacity $m^{*}$ is a structural number, computed by iteration, that says how much redundancy the system can ever have from a state.
+
+
+\section{Option capacity of the speed-limited line}\label{sec:line-options}
+
+The speed-limited line of Chapter~\ref{ch:viability} has states $(x,v)$ with $0\le x\le N$ and $|v|\le V$, controls $u\in\{-1,0,1\}$, the update $x^{+}=x+v$, $v^{+}=v+u$, and actions with $|v+u|>V$ infeasible. For $N=10$ and $V=6$ the viability kernel $W_1$ has $59$ of the $143$ states. The next question is how many of those states can keep two options open forever.
+
+\begin{newresult}[No second option on the unit-control line]\label{prop:line-w2}
+For the speed-limited line with controls $\{-1,0,1\}$ the two-option kernel is empty, $W_2=\varnothing$, for every $N$ and $V$. Hence $m^{*}(x)=1$ at every viable state: the system can preserve one acceptable continuation but never two.
+\end{newresult}
+\assumes{The dynamics above; $V\ge1$.}
+\begin{proof}
+Suppose $Z=W_2\ne\varnothing$ and let $M=\max\{v:(x,v)\in Z\}$. If $M\ge1$, take $(x,M)\in Z$. Its feasible successors have velocities $M-1,M,M+1$, and those in $Z$ have velocity at most $M$, so the two successors required by $Z\subseteq\operatorname{Pre}_2(Z)$ are exactly those with velocities $M-1$ and $M$. In particular $(x+M,M)\in Z$, and repeating the argument gives $(x+jM,M)\in Z$ for every $j$, which leaves $[0,N]$ for $j>N/M$, a contradiction. Hence $M\le0$, and by symmetry $\min\{v\}\ge0$, so every state of $Z$ has $v=0$. But a state $(x,0)$ has only one successor with velocity $0$, so it does not have two successors in $Z$, a contradiction.
+\end{proof}
+
+The cause is inertia combined with unit authority: any state with nonzero speed is committed to drifting in one direction, and the only states with no drift offer a single way of staying put. More authority changes the answer. With controls $\{-2,\dots,2\}$ (same $N$, $V$, with the same feasibility rule) the iteration gives kernels of sizes $77$, $59$ and $0$ for $m=1,2,3$, so that $m^{*}\le2$ and exactly the $59$ states of $W_2$ can preserve two options. The numbers say that doubling the control authority both enlarges the viability kernel (from $59$ to $77$ states) and creates a redundancy that did not exist: a controller that is required to keep a fallback open, in the sense of Result~\ref{thm:m-kernel}, needs more actuation than one that is required only to remain viable. Redundancy of options is a design requirement that has to be paid for in actuation, and the price $\pi_2$ of Result~\ref{prop:m-price} is infinite on the unit-control line and finite on the double-control line.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute $W_1,W_2,W_3$ for the graph on $\{a,b,c\}$ in which every state has actions to the other two states and a self-loop, and compute $m^{*}$.
+\end{exercise}
+
+\begin{exercise}
+In Example~\ref{ex:narrow} let the two wide actions have cost $c>0$ in place of $2$. Show that $W_1$, $W_2$ and $m^{*}(s)$ do not depend on $c$ while $J_2(s)=c$, so that the price of a second option is unbounded although the structure is unchanged. Then let the wide actions cost $c_1\ne c_2$ and decide whether $J_2(s)$ is $\min$, $\max$ or the sum of the two costs, justifying the answer from the definition of $J_2$.
+\end{exercise}
+
+\begin{exercise}
+Show that $m^{*}(x)$ can be strictly smaller than the maximum number of feasible actions at $x$, and give a system in which $m^{*}(x)=1$ although every state has at least two feasible actions.
+\end{exercise}
+
+\begin{exercise}\label{ex:more-menu}
+Show that adding to $F$ an action that leaves $K$ and cannot return leaves the kernel and $J_K$ unchanged, and can increase the price of viability, and explain why a larger menu can make a constraint more expensive.
+\end{exercise}
+
+\begin{exercise}
+Suppose actions leading into $\Viab(K)$ have a one-time cost $q$ per newly incurred obligation (Chapter~\ref{ch:vobl}). Write the restricted Bellman operator on the compliant product and say how the price of viability depends on the deadline.
+\end{exercise}
+
+\begin{exercise}
+Compute $W_1$ and $W_2$ by hand for the unit-control line with $N=2$ and $V=1$, and check Result~\ref{prop:line-w2}.
+\end{exercise}
+
+\begin{exercise}
+Modify Result~\ref{prop:line-w2} so that the controller also has a brake \texttt{hold} that sets $v^{+}=0$ from any state. Show that $W_2$ is then nonempty, and find the states of $W_2$ when $N=3$, $V=1$.
+\end{exercise}
+
+\begin{exercise}
+Prove that $W_m(\Sigma')\supseteq W_m(\Sigma)$ when the system $\Sigma'$ has every feasible action of $\Sigma$ together with additional ones, and explain why this contrasts with Exercise~\ref{ex:more-menu} on a larger menu making a constraint costly.
+\end{exercise}
+
+\begin{exercise}
+Give a system with $m^{*}(x)=2$ in which every viable trajectory from $x$ eventually enters a state of $m^{*}=1$, so that the capacity of $x$ is not preserved by any policy.
+\end{exercise}
+

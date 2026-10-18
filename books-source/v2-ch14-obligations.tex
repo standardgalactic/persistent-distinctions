@@ -1,0 +1,182 @@
+% v2-ch14-obligations.tex
+\chapter{Viability Under Evolving Obligations}\label{ch:vobl}
+\spec{How do present actions generate duties that restrict later transitions, and which regions allow continued compliance?}
+{Viability kernels (Chapter~\ref{ch:viability}); bounded-response obligations and their monitors (Chapter 14 of the first volume).}
+{Compliant viability is the viability kernel of the product of the physical system with the obligation monitor (Result~\ref{thm:obl-kernel}); the kernel is monotone in the slack of pending obligations (Result~\ref{prop:slack}); a trigger action is admissible exactly when its successor lies in the kernel (Result~\ref{cor:trigger}), which in a corridor example gives an explicit limit on where an obligation may be incurred (Result~\ref{prop:corridor}); admissibility of a trigger depends on obligations already pending (Result~\ref{prop:joint-obl}); no gate that consults the monitor alone is both sound and complete when the limit depends on position (Result~\ref{prop:monitor-gate}).}
+{None.}
+{Chapters~\ref{ch:viability} and~\ref{ch:history-state}.}
+
+An action that is physically available and violates no constraint now may still be one that the system should not take, because it creates a duty that the system will be unable to discharge. A rover that samples far from its dock is bound to return within a deadline; a service that accepts an order is bound to ship; a clinician who begins a procedure is bound to complete it. The constraint set that governs the next action is therefore not fixed in advance but is updated by what has been done, and the regions from which compliance can be continued are the viability kernel of a system whose state includes the record of what is owed. This chapter builds that system for the bounded-response obligations of the first volume and proves what its kernel looks like.
+
+\section{The product with an obligation monitor}
+
+\begin{definition}[Controlled system with bounded-response obligations]\label{def:vobl}
+Let a finite controlled system consist of a finite state set $X$, a finite action set $U$, a feasibility correspondence $F:X\to2^{U}$, a deterministic transition $\delta:X\times U\to X$ defined for $u\in F(x)$, and a constraint set $K\subseteq X$. There are $r$ obligations indexed by $i=1,\dots,r$, each with a set $A_i\subseteq U$ of \emph{trigger} actions, a set $B_i\subseteq U$ of \emph{response} actions with $A_i\cap B_i=\varnothing$, and a deadline $k_i\ge1$: after a trigger the system owes a response within the next $k_i$ steps.
+
+A \emph{monitor state} is a vector $c=(c_1,\dots,c_r)$ with $c_i\in\{0,1,\dots,k_i\}$, where $c_i=0$ means that obligation $i$ is idle and $c_i>0$ means that a response is owed and $c_i$ steps remain, counting the next one. Taking action $u$ at monitor state $c$ gives the new coordinate $c_i'$ as follows.
+\begin{itemize}[nosep]
+  \item If $u\in B_i$ then $c_i'=0$.
+  \item If $u\notin B_i$ and $c_i\ge2$ then $c_i'=c_i-1$.
+  \item If $u\notin B_i$ and $c_i=1$ then the action is \emph{non-compliant}: the deadline has passed without a response.
+  \item If $c_i=0$ then $c_i'=k_i$ if $u\in A_i$ and $c_i'=0$ otherwise.
+\end{itemize}
+A trigger issued while the obligation is pending is absorbed. The \emph{compliant product} has state set $X\times C$ with $C=\prod_i\{0,\dots,k_i\}$, and a transition $(x,c)\xrightarrow{u}(\delta(x,u),c')$ for each $u\in F(x)$ that is compliant at every coordinate.
+\end{definition}
+
+The monitor is that of the first volume for the disjoint fragment: its size is $\prod_i(k_i+1)$ together with a sink for violation, and the sink is represented here by the exclusion of the non-compliant action. A state $(x,c)$ is \emph{compliantly viable} if there is an infinite run of the compliant product from $(x,c)$ that stays in $K\times C$.
+
+\begin{newresult}[The compliant kernel]\label{thm:obl-kernel}
+The set $\mathcal V$ of compliantly viable states is the greatest set $Z\subseteq K\times C$ such that every $(x,c)\in Z$ has a compliant action $u\in F(x)$ with $(\delta(x,u),c')\in Z$. It is computed by the decreasing iteration of Result~\ref{thm:kernel} on the compliant product, which has $|X|\prod_i(k_i+1)$ states and stabilizes after at most that many rounds.
+\end{newresult}
+\assumes{Finite $X$ and $U$; deterministic transitions.}
+\begin{proof}
+The compliant product is a finite controlled system with the constraint set $K\times C$, and compliant viability is viability in it. The statement is Result~\ref{thm:kernel}.
+\end{proof}
+
+A state $x$ is thus acceptable to occupy when it has no debt if $(x,\mathbf 0)\in\mathcal V$, and when its debts are those of $c$ if $(x,c)\in\mathcal V$. The section $\mathcal V_c=\{x:(x,c)\in\mathcal V\}$ is the effective constraint set in force when the monitor reads $c$.
+
+\section{Slack and the effective constraint set}
+
+Order the coordinates of the monitor by \emph{slack}: write $s_i(c)=c_i$ if $c_i>0$ and $s_i(c)=\infty$ if $c_i=0$. More slack is better: an idle obligation is the least demanding, and a pending one is more demanding the smaller its counter.
+
+\begin{newresult}[Viability is monotone in slack]\label{prop:slack}
+If $(x,c)\in\mathcal V$ and $s_i(c')\ge s_i(c)$ for all $i$, then $(x,c')\in\mathcal V$. Consequently each section $\mathcal V_c$ is monotone: $\mathcal V_c\subseteq\mathcal V_{c'}$ when $c'$ has at least as much slack as $c$.
+\end{newresult}
+\assumes{As in Definition~\ref{def:vobl}.}
+\begin{proof}
+Let $Z_0=K\times C$ and $Z_{n+1}=Z_0\cap\operatorname{Pre}(Z_n)$, where $\operatorname{Pre}$ is the predecessor operator of the compliant product, so that $\mathcal V=\bigcap_nZ_n$. We show by induction that every $Z_n$ is upward closed in slack. $Z_0$ is. Suppose $Z_n$ is, and let $(x,c)\in Z_{n+1}$ with a compliant action $u$ leading into $Z_n$, and let $c'$ have at least the slack of $c$. We compare the effect of $u$ on the two monitor states coordinate by coordinate. If $u\in B_i$ both coordinates become $0$. Otherwise, if $c_i=0$ then $c_i'=0$ too and both coordinates evolve identically, since the update depends only on whether the coordinate is idle and whether $u\in A_i$. If $c_i>0$ and $c_i'=0$ (so $s_i(c')=\infty$), after $u$ the new coordinate of $c$ is $c_i-1$ (compliantly, so $c_i\ge2$), and that of $c'$ is $k_i$ or $0$, both with slack at least $c_i-1$ because $c_i\le k_i$. If both are pending with $c'_i\ge c_i$, then $c_i\ge2$ gives $c'_i\ge2$ and the new coordinates satisfy $c_i'-1\ge c_i-1$. In every case $u$ is compliant at $c'$ and leads to a state with at least the slack of the successor of $(x,c)$, hence into $Z_n$. So $(x,c')\in Z_{n+1}$.
+\end{proof}
+
+The kernel contains the idle sections in the largest form, and as obligations become urgent the effective constraint set shrinks. The first volume described this as a constraint that changes with the history; the result says it changes monotonically with the urgency of what is owed.
+
+\begin{newresult}[A trigger is admissible when its successor is viable]\label{cor:trigger}
+Let $u$ be a trigger of obligation $i$, with $u\in F(x)$, taken at a compliant monitor state $c$ with $c_i=0$. The action is part of some compliant infinite run from $(x,c)$ if and only if its successor $(\delta(x,u),c')\in\mathcal V$ (and $\delta(x,u)\in K$). In particular the set of states at which the system can \emph{incur} obligation $i$ at idle is $\{x:(\delta(x,u),c')\in\mathcal V\}$, and it is in general a proper subset of $\mathcal V_c$.
+\end{newresult}
+\assumes{As in Definition~\ref{def:vobl}.}
+\begin{proof}
+A compliant infinite run that begins with $u$ is a compliant infinite run from the successor, which exists exactly when the successor is in $\mathcal V$. The strictness is shown in Result~\ref{prop:corridor}.
+\end{proof}
+
+\section{A corridor}
+
+\begin{example}[Where an obligation may be incurred]\label{ex:corridor}
+A rover moves along positions $X=\{0,1,\dots,L\}$ with actions \texttt{left}, \texttt{right}, \texttt{stay}, \texttt{sample}, and \texttt{upload}. Moves change the position by one (not past the ends), \texttt{stay} and \texttt{sample} leave the position unchanged, and \texttt{upload} is feasible only at position $0$ and leaves it unchanged. There is one obligation with trigger $A=\{\texttt{sample}\}$, response $B=\{\texttt{upload}\}$, and deadline $k$. The constraint set is $K=X$.
+\end{example}
+
+\begin{newresult}[The corridor kernel]\label{prop:corridor}
+In Example~\ref{ex:corridor} the kernel is $\mathcal V=\{(p,0)\}\cup\{(p,c):1\le c\le k,\ c\ge p+1\}$. Consequently the action \texttt{sample} is admissible at position $p$ with the obligation idle if and only if $p\le k-1$. For $k\ge L+1$ it is admissible everywhere, and for $k\le L$ it is refused at the positions $k,\dots,L$ although those positions are viable when idle.
+\end{newresult}
+\assumes{Example~\ref{ex:corridor}.}
+\begin{proof}
+Let $S$ denote the set on the right. Idle states are in $S$ because \texttt{stay} keeps the system idle. For $(p,c)\in S$ pending: if $p=0$, \texttt{upload} leads to $(0,0)\in S$; if $p\ge1$, \texttt{left} leads to $(p-1,c-1)$ with $c-1\ge p\ge(p-1)+1$ and $c-1\ge1$ because $c\ge p+1\ge2$, so the successor is in $S$. Thus $S\subseteq\operatorname{Pre}(S)$ and $S\subseteq\mathcal V$. Conversely let $1\le c\le p$. Any compliant run must contain an \texttt{upload} at one of the next $c$ steps, say at step $j\le c$, which requires the position to be $0$ before that step. Reaching $0$ from $p$ takes at least $p$ moves, all of which precede the upload, so $j\ge p+1>c$, a contradiction. So such states are not viable. By Result~\ref{cor:trigger}, \texttt{sample} at $(p,0)$ leads to $(p,k)$, which lies in $\mathcal V$ if and only if $k\ge p+1$.
+\end{proof}
+
+The result is concrete evidence for the claim that the constraint set is updated by the monitor. From the idle state, every position is viable: the rover can always decline to sample. Yet the one action that incurs the debt is permitted only within $k-1$ steps of the dock, and a rover at a distant position that samples has committed itself to a violation.
+
+\section{Interaction between obligations}
+
+\begin{newresult}[Admissibility of a trigger depends on what is pending]\label{prop:joint-obl}
+Extend Example~\ref{ex:corridor} by a second obligation with trigger \texttt{alarm}, which leaves the position unchanged, response \texttt{inspect}, feasible only at position $L$, and deadline $k_2$. Take $L=3$, $k_1=k_2=3$. Then:
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item At position $1$ with both obligations idle, each of \texttt{sample} and \texttt{alarm} is admissible: its successor is in the kernel of the system with the other obligation removed.
+  \item After \texttt{sample} at position $1$ the state $(1;3,0)$ is in $\mathcal V$, but \texttt{alarm} is then not admissible: its successor $(1;2,3)\notin\mathcal V$.
+  \item Hence the kernel of the product is strictly smaller than the intersection of the kernels of the two single-obligation systems.
+\end{enumerate}
+\end{newresult}
+\assumes{As stated.}
+\begin{proof}
+(a) \texttt{sample} at $1$ gives $(1,3)$ with $3\ge p+1=2$, viable by Result~\ref{prop:corridor}. For \texttt{alarm} alone the rover must reach $L=3$ and inspect within $3$ steps: from position $1$ it takes two moves and the \texttt{inspect}, three steps, which is allowed with deadline $3$. (b) From $(1;3,0)$ the sequence \texttt{left}, \texttt{upload} discharges the first obligation, so the state is viable. \texttt{alarm} at that state yields $(1;2,3)$ (the first counter decreases to $2$ and the second is set to $3$). In this state the first obligation can only be discharged by \texttt{left} followed by \texttt{upload} at step $2$, since an upload needs position $0$. After these two steps the position is $0$ and the second counter has fallen to $1$, so the \texttt{inspect}, which needs position $3$, cannot be performed on the next step and the second deadline is missed. Any other plan misses the first deadline, so the state is not viable. (c) The state $(1;2,3)$ is viable in each single-obligation system (by the arguments for (a)) and not in the product.
+\end{proof}
+
+This is the joint obstruction of the first volume in dynamic form: each duty is dischargeable alone, and the two are not dischargeable together because they pull the system to opposite ends of the corridor. Incurring both is a decision about the product, and the monitor that tracks each duty separately does not know it.
+
+\begin{newresult}[No monitor-only gate]\label{prop:monitor-gate}
+In Example~\ref{ex:corridor} with $1\le k\le L$, no gate that decides whether to permit \texttt{sample} as a function of the monitor state alone is both sound (it never permits a trigger whose successor is not in $\mathcal V$) and complete (it permits every trigger whose successor is in $\mathcal V$), when positions are not observable to the gate.
+\end{newresult}
+\assumes{The gate sees only the monitor state, so it acts identically at all positions.}
+\begin{proof}
+At monitor state $\mathbf 0$ the gate permits or refuses. If it permits, it permits at position $L\ge k$, which is not admissible by Result~\ref{prop:corridor}, so it is unsound. If it refuses, it refuses at position $0$, which is admissible since $0\le k-1$, so it is incomplete.
+\end{proof}
+
+The result is the representational obstruction of Chapter~\ref{ch:common} for this system: the monitor state fails to separate histories whose continuations differ in admissibility, because the continuation depends on the physical state as well. Adding the position to the monitor, that is, working in the product, removes the obstruction at the cost of $|X|$ times as many states.
+
+
+\section[Size of the corridor kernel]{The size of the kernel and the share of positions that can incur}\label{sec:corridor-count}
+
+Result~\ref{prop:corridor} determines the kernel in closed form, so its size and the share of idle positions from which the obligation may be incurred can be written down.
+
+\begin{newresult}[Counting the corridor kernel]\label{prop:corridor-count}
+In Example~\ref{ex:corridor} the kernel has
+\[
+|\mathcal V|=(L+1)+\sum_{c=1}^{k}\min(c,\,L+1)
+\]
+states, of which $L+1$ are idle, and the share of idle positions from which \texttt{sample} is admissible is $\min(k,L+1)/(L+1)$.
+\end{newresult}
+\assumes{Example~\ref{ex:corridor}.}
+\begin{proof}
+By Result~\ref{prop:corridor} the pending states in $\mathcal V$ with counter $c$ are those with $p\le c-1$ and $p\le L$, which number $\min(c,L+1)$; summing over $c=1,\dots,k$ and adding the $L+1$ idle states gives the count. Sample is admissible at $p\le k-1$ and $p\le L$, which is $\min(k,L+1)$ positions.
+\end{proof}
+
+A direct computation of the decreasing iteration on the compliant product confirms the formula: for $(L,k)=(3,3)$ the kernel has $10$ states and \texttt{sample} is admissible at positions $0,1,2$; for $(4,3)$ it has $11$ states with admissible positions $0,1,2$; for $(5,2)$ it has $9$ states with admissible positions $0,1$. The formulas give $4+(1+2+3)=10$, $5+(1+2+3)=11$ and $6+(1+2)=9$. In the third case a rover in a corridor of six positions may incur the duty from only one third of them, and the fraction falls in proportion to the deadline.
+
+\section{When two duties can be held together}\label{sec:two-duties}
+
+Result~\ref{prop:joint-obl} exhibits one pair of obligations whose joint incurrence fails. The condition can be stated in general for the corridor with responses at the two ends.
+
+\begin{newresult}[Admissibility of the second trigger]\label{prop:two-triggers}
+In the corridor with positions $0,\dots,L$, an obligation with response \texttt{upload} at position $0$, and an obligation with trigger \texttt{alarm} and response \texttt{inspect} at position $L$ with deadline $k_2$, suppose the first obligation is pending with counter $c_1\ge2$ at position $p$ and the second is idle. The action \texttt{alarm} has its successor in the kernel if and only if one of the following holds:
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item (\emph{discharge the first duty, then the second}) $c_1-1\ge p+1$ and $k_2\ge p+L+2$;
+  \item (\emph{discharge the second duty, then the first}) $k_2\ge L-p+1$ and $c_1-1\ge 2L-p+2$.
+\end{enumerate}
+\end{newresult}
+\assumes{Moves cost one step each, responses cost one step, and later triggers may be refused.}
+\begin{proof}
+After \texttt{alarm} the counters are $c_1-1$ and $k_2$ at the same position $p$. The successor is in the kernel exactly when both duties can be discharged within their remaining times, since after both are discharged the rover can stay idle forever. The only decisions are the order of the two responses. In the order (a), the upload is performed at step $p+1$ (after $p$ moves), which must not exceed $c_1-1$; the inspection then needs $L$ moves and one more step, so it is performed at step $p+1+L+1$, which must not exceed $k_2$. In the order (b) the inspection is performed at step $L-p+1$, which must not exceed $k_2$, and the upload at step $(L-p+1)+L+1=2L-p+2$, which must not exceed $c_1-1$. Waiting never helps, and interleaving the two journeys reaches no response earlier than going straight to the first target.
+\end{proof}
+
+The criterion was checked against the decreasing iteration for every combination of $L\in\{1,\dots,4\}$, $k_1\in\{2,\dots,7\}$, $k_2\in\{1,\dots,9\}$, every position and every counter $c_1\ge2$ (2646 cases), with no disagreement. For the case of Result~\ref{prop:joint-obl}, with $L=3$, $p=1$ and $c_1=3$, condition (a) reads $2\ge2$ and $k_2\ge6$, and condition (b) reads $k_2\ge3$ and $2\ge7$; so \texttt{alarm} is admissible exactly when $k_2\ge6$, which the iteration confirms (the successor is outside the kernel for $k_2=1,\dots,5$ and inside it for $k_2=6,\dots,9$). The general pattern is that a second duty is compatible with a pending first duty when its deadline covers the whole detour: the journey to the first response, the journey from there to the second, and the two responses themselves. A deadline shorter than that detour cannot be repaired by any policy, because the geometry of the corridor fixes the time the detour takes.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For Example~\ref{ex:corridor} with $L=4$ and $k=3$, list the positions at which \texttt{sample} is admissible and the pending states $(p,c)$ in $\mathcal V$.
+\end{exercise}
+
+\begin{exercise}
+Modify the corridor so that \texttt{upload} takes effect only if the battery is not empty, with battery decreasing by one per move, and compute the kernel for battery capacity $b$ and deadline $k$ as a function of position and battery.
+\end{exercise}
+
+\begin{exercise}
+Prove that in Definition~\ref{def:vobl} absorbing a trigger while pending can be replaced by restarting the counter at $k_i$ without changing which states are in the kernel, or give a system in which the choice matters.
+\end{exercise}
+
+\begin{exercise}
+In Result~\ref{prop:joint-obl}, find the least deadline $k_2$ for which \texttt{alarm} remains admissible after \texttt{sample} at position $1$, and describe the general pattern.
+\end{exercise}
+
+\begin{exercise}
+Show that the number of monitor states in the compliant product is $\prod_i(k_i+1)$, compute it for $r$ obligations of deadline $2$, and explain why the exponential dependence on $r$ cannot be avoided by a smaller monitor in the disjoint fragment, by the exact count of Chapter 14 of the first volume.
+\end{exercise}
+
+\begin{exercise}
+Verify the count $|\mathcal V|$ of Result~\ref{prop:corridor-count} for $(L,k)=(2,5)$ by listing the pending states, and show that for $k\ge L+1$ the formula gives $(L+1)(L+2)/2+(L+1)+(k-L-1)(L+1)$.
+\end{exercise}
+
+\begin{exercise}
+Using Result~\ref{prop:two-triggers}, find for $L=4$, $p=2$, $c_1=5$ the least deadline $k_2$ for which \texttt{alarm} is admissible, and say which of the two orders is used.
+\end{exercise}
+
+\begin{exercise}
+Show that order (b) of Result~\ref{prop:two-triggers} is feasible only when the first counter is at least $2L-p+3$ before the alarm, and deduce that when $c_1\le k_1\le L+1$ only the order (a) is ever used.
+\end{exercise}
+
+\begin{exercise}
+Generalize Result~\ref{prop:two-triggers} to three obligations with responses at positions $0$, $L/2$ and $L$ in a corridor with $L$ even, and describe the set of orderings that must be tested.
+\end{exercise}
+
+\begin{exercise}
+Explain why the product-graph computation of Result~\ref{thm:obl-kernel} would find the admissibility rule of Result~\ref{prop:two-triggers} without being told it, and what the closed form adds that the computation does not.
+\end{exercise}
+

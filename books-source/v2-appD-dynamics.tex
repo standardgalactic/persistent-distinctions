@@ -1,0 +1,70 @@
+% v2-appD-dynamics.tex
+\chapter{Dynamical Systems}\label{app:dynamics}
+
+Discrete-time systems $x_{t+1}=f(x_t,u_t)$ on a metric space, with invariance, Lyapunov functions, and the contraction principle.
+
+\section{Invariance and viability}
+
+A set $S$ is \emph{invariant} for $x_{t+1}=f(x_t)$ if $f(S)\subseteq S$. For a controlled system, $S$ is a \emph{viability domain} if every $x\in S$ has $u$ with $f(x,u)\in S$ (Chapter~\ref{ch:viability}).
+
+\begin{newresult}[Invariant intervals of a scalar affine system]\label{d:affine}
+For $x_{t+1}=ax_t+u_t$ with $|u_t|\le1$, the interval $[-c,c]$ is a viability domain iff $|a|c\le c+1$. Hence it is one for every $c>0$ if $|a|\le1$, and for $c\le1/(|a|-1)$ if $|a|>1$. The viability kernel of $K=[-k,k]$ is $[-c^*,c^*]$ with $c^*=k$ if $|a|\le1$ and $c^*=\min(k,1/(|a|-1))$ otherwise.
+\end{newresult}
+\assumes{Real scalar state.}
+\begin{proof}
+From $x\in[-c,c]$ the reachable next states form $[ax-1,ax+1]$, which meets $[-c,c]$ iff $|ax|\le c+1$. The worst case is $|x|=c$, giving the condition. For $|a|>1$ the condition reads $c(|a|-1)\le1$. The kernel of $K$ is the largest viability domain inside it, which is $[-\min(k,c_{\max}),\ \min(k,c_{\max})]$ as every viability domain of the form $[-c,c]$ satisfies the condition, and any viability domain is contained in one of this form.
+\end{proof}
+
+The last claim is Result~\ref{prop:scalar-robust} in the deterministic case, and gives the example $|u|\le1$, $K=[-3,3]$ of Chapter~\ref{ch:viability}.
+
+\section{Lyapunov functions}
+
+\begin{newresult}[Lyapunov functions give invariant sets]\label{d:lyap}
+Let $V:X\to\mathbb R$ and suppose that for every $x$ with $V(x)\le\beta$ there is a control with $V(f(x,u))\le V(x)$. Then the sublevel set $\{V\le\beta\}$ is a viability domain. If in addition $V(f(x,u))\le V(x)-\epsilon$ whenever $V(x)>\beta_0$, with $\epsilon>0$, and $V\ge0$, then from any $x_0$ the sublevel set $\{V\le\beta_0\}$ is reached within $\lceil V(x_0)/\epsilon\rceil$ steps, and a trajectory started in $\{V\le\beta\}$ with $\beta\ge\beta_0$ stays there.
+\end{newresult}
+\assumes{Controls chosen as stated.}
+\begin{proof}
+The first statement is the definition of viability for the set. For the second, while the trajectory is above $\beta_0$ the function decreases by at least $\epsilon$ per step and is nonnegative, so after at most $V(x_0)/\epsilon$ steps it is at most $\beta_0$; below $\beta_0$ the nonincrease condition keeps it below $\beta$. 
+\end{proof}
+
+This is the form of progress function used in Chapter~\ref{ch:fallback}: the bound on recovery time is $\lceil V(x_0)/\epsilon\rceil$.
+
+\begin{established}[Stability of linear systems]\label{d:linear}
+The system $x_{t+1}=Ax_t$ has $x_t\to0$ for all $x_0$ if and only if $\rho(A)<1$; if $\rho(A)>1$ there are initial states with $\|x_t\|\to\infty$. If $\rho(A)<1$ there is a norm $\|\cdot\|_*$ with $\|A\|_*<1$, whose unit ball is invariant.
+\end{established}
+\source{Standard; see Horn and Johnson, Lemma~5.6.10.}
+
+\section{Contraction}
+
+\begin{established}[Banach fixed-point theorem]\label{d:banach}
+Let $(Y,d)$ be a complete metric space and $T:Y\to Y$ with $d(Ty,Ty')\le\gamma d(y,y')$ for some $\gamma<1$. Then $T$ has a unique fixed point $y^*$, and $d(T^ky_0,y^*)\le\gamma^kd(y_0,y^*)$.
+\end{established}
+\source{Banach (1922).}
+
+The Bellman operator of a discounted MDP is a $\gamma$-contraction in the sup-norm (Appendix~\ref{app:opt}), which gives existence and uniqueness of the value function.
+
+\section{Worked examples}
+
+\begin{example}[A Lyapunov recovery bound]\label{d:ex-lyap}
+For $x^+=\tfrac12x+u$ with $|u|\le\tfrac14$, take $V(x)=|x|$. If $|x|>\tfrac12$, choose $u=-\tfrac14\operatorname{sign}(x)$: then $|x^+|=\tfrac12|x|-\tfrac14$ and $|x|-|x^+|=\tfrac12|x|+\tfrac14\ge\tfrac12$ for $|x|\ge\tfrac12$. So $V$ decreases by at least $\epsilon=\tfrac12$ per step above $\beta_0=\tfrac12$, and from $x_0=3$ the set $\{|x|\le\tfrac12\}$ is reached within $\lceil3/(1/2)\rceil=6$ steps; in fact two steps suffice ($3\to1.25\to0.375$), so the bound is conservative.
+\end{example}
+
+\begin{example}[Contraction and the Bellman operator]\label{d:ex-bellman}
+For a single state with two actions of reward $1$ and $0$ and $\gamma=\tfrac12$, $T V=\max(1+\tfrac12V,\tfrac12V)=1+\tfrac12V$. From $V_0=0$ the iterates are $0,1,1.5,1.75,\dots\to2=V^*$, and the error halves each step, as the contraction rate $\gamma=\tfrac12$ predicts.
+\end{example}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute the viability kernel of $K=[-5,5]$ for $x^+=\tfrac32x+u$, $|u|\le1$, by Result~\ref{d:affine} and verify by iterating the predecessor operator twice.
+\end{exercise}
+\begin{exercise}
+Show that for $A=\begin{pmatrix}0.9&1\\0&0.9\end{pmatrix}$ the Euclidean norm of $A^n x_0$ is not monotone in $n$ although $\rho(A)<1$, and find a norm with $\|A\|_*<1$.
+\end{exercise}
+\begin{exercise}
+Prove the uniqueness part of Result~\ref{d:banach}.
+\end{exercise}
+\begin{exercise}
+Give a system and a function $V$ satisfying the nonincrease condition of Result~\ref{d:lyap} for which the sublevel set is invariant but recovery from outside never happens (no strict decrease).
+\end{exercise}

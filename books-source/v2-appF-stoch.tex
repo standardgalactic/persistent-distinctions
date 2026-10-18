@@ -1,0 +1,72 @@
+% v2-appF-stoch.tex
+\chapter{Stochastic Processes}\label{app:stoch}
+
+\section{Finite Markov chains}
+
+\begin{newresult}[Absorption and hitting probabilities]\label{f:hit}
+Let a finite Markov chain with transition matrix $P$ have a set $B$ of target states. The vector $h(s)=\Pr_s(\text{the chain ever enters }B)$ is the minimal nonnegative solution of $h=1$ on $B$, $h(s)=\sum_{s'}P(s,s')h(s')$ off $B$. If the states off $B$ from which $B$ is unreachable are removed, the solution is unique, and $h=(I-Q)^{-1}R\mathbf 1$ where $Q$ is $P$ restricted to non-target states and $R$ the one-step transitions into $B$.
+\end{newresult}
+\assumes{Finite chain.}
+\begin{proof}
+Let $h_n(s)$ be the probability of entering $B$ within $n$ steps; $h_0=1_B$ and $h_{n+1}=1_B+1_{B^c}Ph_n$ and $h_n\uparrow h$. Any nonnegative solution $g$ of the system satisfies $g\ge h_0$ and, inductively, $g\ge h_n$, so $g\ge h$; and $h$ solves the system by monotone convergence, hence it is the minimal solution. If $B$ is reachable from every non-target state, then $Q^n\to0$ (the probability of remaining outside $B$ for $N$ steps is at most $1-\epsilon$ for some $N$ and $\epsilon>0$), so $I-Q$ is invertible and the solution unique.
+\end{proof}
+
+\section{Elementary inequalities and laws}
+
+\begin{established}[Boole's inequality]\label{f:boole}
+For events $E_1,\dots,E_T$: $\Pr(\bigcup E_t)\le\sum_t\Pr(E_t)$.
+\end{established}
+\source{Boole (1854).}
+
+\begin{established}[Hoeffding's inequality]\label{f:hoeffding}
+For independent $Y_1,\dots,Y_N\in[0,1]$ with mean $\mu$, $\Pr\bigl(|\tfrac1N\sum Y_i-\mu|\ge\epsilon\bigr)\le2e^{-2N\epsilon^2}$.
+\end{established}
+\source{Hoeffding (1963).}
+
+\begin{newresult}[Memoryless laws]\label{f:memoryless}
+A positive random variable $T$ with $\Pr(T>s+t\mid T>s)=\Pr(T>t)$ for all $s,t\ge0$ and $\Pr(T>t)$ right-continuous is exponential. A discrete positive-integer variable with the same property is geometric.
+\end{newresult}
+\assumes{As stated.}
+\begin{proof}
+Let $G(t)=\Pr(T>t)$. Then $G(s+t)=G(s)G(t)$. By right-continuity and monotonicity, the only nonincreasing right-continuous solutions of this Cauchy equation with $G(0)=1$ are $G(t)=e^{-ht}$ for some $h\in[0,\infty]$ (if $G(t_0)=0$ for some $t_0>0$ then $G(t_0)=G(t_0/2)^2$ forces $G(t_0/2)=0$ and by iteration $G(t)=0$ for all $t>0$, the degenerate $h=\infty$). In the discrete case $G(n)=G(1)^n$.
+\end{proof}
+
+\begin{established}[Second Borel--Cantelli lemma]\label{f:bc}
+If $E_1,E_2,\dots$ are independent events with $\sum_t\Pr(E_t)=\infty$ then almost surely infinitely many of them occur.
+\end{established}
+\source{Borel (1909); Cantelli (1917).}
+
+This is the mechanism for the absence of forever-safety under unbounded independent noise in Chapter~\ref{ch:robust}: if each step has a probability bounded below of leaving the constraint set, the leaving event recurs.
+
+\section{Gaussian tails}
+
+\begin{established}[Gaussian quantile]\label{f:gauss}
+If $X\sim\mathcal N(\mu,\sigma^2)$ then $\Pr(X\le\mu+z\sigma)=\Phi(z)$; in particular $\Phi^{-1}(0.95)\approx1.645$ and $\Phi^{-1}(0.99)\approx2.326$. Moreover, $1-\Phi(z)\le\tfrac12e^{-z^2/2}$ for $z\ge0$.
+\end{established}
+\source{Standard.}
+
+\section{Worked examples}
+
+\begin{example}[Hitting probability in a gambler's chain]\label{f:ex-gambler}
+States $0,\dots,4$ with $0$ and $4$ absorbing, and from $s\in\{1,2,3\}$ a move up or down with probability $\tfrac12$. The target is $B=\{4\}$. The system $h(0)=0$, $h(4)=1$, $h(s)=\tfrac12h(s-1)+\tfrac12h(s+1)$ has the unique solution $h(s)=s/4$ by Result~\ref{f:hit}: the harmonic equation on $1,2,3$ with the boundary values $h(0)=0$, $h(4)=1$ is linear in $s$. For a bias $p>\tfrac12$ upward the solution is $h(s)=\frac{1-r^s}{1-r^4}$ with $r=(1-p)/p$.
+\end{example}
+
+\begin{example}[Boole allocation over a horizon]\label{f:ex-boole}
+To keep the total failure probability over $T=20$ steps below $0.05$ it suffices, by Result~\ref{f:boole}, that each step fails with probability at most $0.0025$; for a Gaussian margin this is $z=\Phi^{-1}(0.9975)\approx2.81$, against $1.645$ for a single step at level $0.05$. The price of the horizon is the increase of the margin from $1.645$ to $2.81$ standard deviations.
+\end{example}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute the hitting probability of the target $\{4\}$ from state $2$ in the biased gambler's chain with $p=0.6$.
+\end{exercise}
+\begin{exercise}
+Show that the sum of two independent exponential random variables with the same rate is not memoryless.
+\end{exercise}
+\begin{exercise}
+Using Hoeffding's inequality, find how many samples ensure that the empirical frequency is within $0.02$ of the true probability with confidence $0.99$.
+\end{exercise}
+\begin{exercise}
+Prove the first Borel--Cantelli lemma and explain why independence is not needed there.
+\end{exercise}

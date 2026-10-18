@@ -1,0 +1,163 @@
+% ch09-approx.tex
+\chapter{Exact, Approximate, and Probabilistic Preservation}\label{ch:approx}
+\spec{How does exact logical sufficiency differ from high average predictive accuracy?}
+{Fano's inequality and the data-processing inequality (Cover and Thomas); Shannon's rate--distortion function; Bayes decision rules.}
+{Exact sufficiency is the only notion of preservation that holds under every distribution of cases (Result~\ref{thm:exact-vs-average}); approximate sufficiency is monotone under coarsening and its errors add across policies (Result~\ref{prop:approx}).}
+{None.}
+{Chapters~\ref{ch:fixed} and~\ref{ch:families}.}
+
+Chapters~\ref{ch:fixed} and~\ref{ch:families} asked for representations from which a policy can be recovered exactly in every case. Practical compression rarely meets that standard. A summary is judged by how often the decision made from it agrees with the decision that the full case would have produced, and the judgement is made on the cases that happen to arrive. This chapter compares the two standards. The comparison shows that average accuracy and exact sufficiency are different kinds of property: the first is relative to a distribution of cases and the second is not, and a representation that is nearly perfect on one distribution can be useless on another that is supported on the cases it discarded.
+
+\section{Error of the best decision rule}
+
+Throughout this chapter $X$ is finite, $\mu$ is a probability mass function on $X$, and $\pi:X\to A$ is a policy. For a representation $r:X\to R$ and a decision rule $d:r(X)\to A$, the \emph{error} of $d$ is $\mu\{x:d(r(x))\ne\pi(x)\}$.
+
+\begin{definition}[Bayes error of a representation]\label{def:bayes-error}
+The \emph{Bayes error} of $r$ for $\pi$ under $\mu$ is
+\[
+\operatorname{err}_\mu(r,\pi)\;=\;\min_{d}\,\mu\{x:d(r(x))\ne\pi(x)\}\;=\;1-\sum_{y\in r(X)}\max_{a\in A}\mu\bigl(r^{-1}(y)\cap\pi^{-1}(a)\bigr).
+\]
+The representation is \emph{$\varepsilon$-sufficient} for $\pi$ under $\mu$ if $\operatorname{err}_\mu(r,\pi)\le\varepsilon$.
+\end{definition}
+
+The second expression is the Bayes decision rule: within each class of $r$ the best rule chooses the action carrying the most probability mass. The minimum is attained because each class is handled independently. When $\operatorname{err}_\mu(r,\pi)=0$ and $\mu$ charges every case, the best rule is correct everywhere, so $r$ is sufficient in the sense of Definition~\ref{def:policy}. The next result records exactly how the exact and probabilistic standards relate.
+
+\begin{newresult}[Exact preservation versus average accuracy]\label{thm:exact-vs-average}
+Let $r$ be a representation of a finite set $X$ and let $\pi$ be a policy.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item If $r$ is sufficient for $\pi$ then $\operatorname{err}_\mu(r,\pi)=0$ for every $\mu$.
+  \item If $\operatorname{err}_\mu(r,\pi)=0$ for some $\mu$ with $\mu(x)>0$ for all $x$, then $r$ is sufficient for $\pi$.
+  \item If $r$ is not sufficient for $\pi$, then for every $\varepsilon>0$ there is a $\mu$ charging every case with $0<\operatorname{err}_\mu(r,\pi)<\varepsilon$.
+  \item If $r$ is not sufficient for $\pi$, then every decision rule $d$ satisfies $\sup_\mu\mu\{d\circ r\ne\pi\}=1$.
+\end{enumerate}
+\end{newresult}
+\assumes{$X$ is finite. Distributions are arbitrary in (a), (c), and (d).}
+\begin{proof}
+(a) A decision rule $d$ with $\pi=d\circ r$ has zero error under every $\mu$. (b) If the best rule has error zero and every case has positive mass, then no case can be misclassified, so $\pi=d\circ r$. (c) Because $r$ is not sufficient there are $x_0\ne x_1$ with $r(x_0)=r(x_1)$ and $\pi(x_0)\ne\pi(x_1)$. Let $\mu(x_0)=1-\varepsilon/2$ and spread the remaining mass $\varepsilon/2$ over $X\setminus\{x_0\}$ with every case receiving a positive amount. The rule that answers $\pi(x_0)$ on the class of $x_0$, and the best rule on the other classes, errs only outside $x_0$, so the Bayes error is at most $\varepsilon/2<\varepsilon$. It is positive by (b). (d) If $d\circ r$ agreed with $\pi$ at every case then $r$ would be sufficient. Hence there is a case $x$ with $d(r(x))\ne\pi(x)$, and the point mass at $x$ gives error $1$.
+\end{proof}
+
+Parts (c) and (d) express the gap between the two standards. A representation can be arbitrarily accurate on a distribution and still fail on a different distribution carried by the cases it discarded. The error that a deployed system sees depends on the distribution of arriving cases, which in the settings of this volume is itself shaped by the obligations and physical constraints that select which histories occur.
+
+\begin{example}[A rare case]\label{ex:rare}
+Let $X=\{0,1,\dots,N\}$, let $\pi$ be the indicator of the single case $N$, and let $r$ be constant. If $\mu(N)=p$ is small, the best rule always answers $0$ and has error $p$. The same rule has error $1$ under the point mass at $N$. A system that is audited only on typical cases cannot distinguish this representation from a sufficient one, and the audit has no bearing on the case in which the retained summary matters most.
+\end{example}
+
+\section{Information-theoretic bounds}
+
+Information theory supplies the standard quantitative tools. Logarithms are to base $2$. For random variables $Z$ and $Y$ with finite ranges, $H(Z\mid Y)$ is the conditional entropy and $I(Z;Y)$ is the mutual information.
+
+\begin{established}[Fano's inequality]\label{thm:fano}
+Let $Z$ take values in a finite set $A$ and let $\hat Z=g(Y)$ be any estimator of $Z$ from $Y$. If $P_e=\Pr[\hat Z\ne Z]$ then
+\[
+H(Z\mid Y)\;\le\;h(P_e)+P_e\log(|A|-1),\qquad\text{hence}\qquad P_e\;\ge\;\frac{H(Z\mid Y)-1}{\log|A|},
+\]
+where $h$ is the binary entropy function.
+\end{established}
+\source{Fano (1961); Cover and Thomas, \emph{Elements of Information Theory}, Theorem 2.10.1.}
+
+\begin{established}[Data-processing inequality]\label{thm:dpi}
+If $Z$, $Y$, $W$ form a Markov chain $Z\to Y\to W$, in particular if $W=f(Y)$ is a function of $Y$, then $I(Z;W)\le I(Z;Y)$, equivalently $H(Z\mid W)\ge H(Z\mid Y)$.
+\end{established}
+\source{Cover and Thomas, Theorem 2.8.1.}
+
+Applied to the present setting, take $X$ distributed according to $\mu$, $Z=\pi(X)$, and $Y=r(X)$. Then $\operatorname{err}_\mu(r,\pi)\ge(H(\pi(X)\mid r(X))-1)/\log|A|$. A representation whose conditional entropy of the policy is large cannot be accurate, and by the data-processing inequality coarsening can only increase that entropy. For the exact notion the relevant fact is the following.
+
+\begin{newresult}[Zero conditional entropy characterizes sufficiency]\label{prop:entropy}
+If $\mu$ charges every case, then $r$ is sufficient for $\pi$ if and only if $H(\pi(X)\mid r(X))=0$.
+\end{newresult}
+\assumes{$X$ is finite and $\mu$ has full support.}
+\begin{proof}
+$H(Z\mid Y)=\sum_{y}\Pr[Y=y]\,H(Z\mid Y=y)$, and each term vanishes if and only if $Z$ is almost surely constant given $Y=y$. With full support, almost surely means for every case in the class, so $\pi$ is constant on each class of $r$, which is the inclusion $\ker r\subseteq\ker\pi$.
+\end{proof}
+
+The result is a reminder that entropy-based measures are coarse versions of the kernel condition. They agree with exact sufficiency at zero and say nothing about which cases are affected when the value is positive but small.
+
+\begin{remark}
+Shannon's rate--distortion function $R(D)=\min I(X;\hat X)$ over channels with expected distortion at most $D$ is also an average-case quantity. It shows that representations below the size required for exact recovery exist whenever $D>0$, and it does not provide a guarantee for any particular case. Result~\ref{thm:exact-vs-average}(d) shows why: the guarantee for a fixed decision rule disappears as soon as the distribution is allowed to move.
+\end{remark}
+
+\section{Approximate sufficiency is monotone and its errors add}
+
+\begin{newresult}[Behaviour of approximate sufficiency]\label{prop:approx}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item If $r'=f\circ r$ then $\operatorname{err}_\mu(r',\pi)\ge\operatorname{err}_\mu(r,\pi)$ for every $\mu$ and $\pi$.
+  \item For policies $\pi_1,\pi_2$ and the pair policy $\pi=(\pi_1,\pi_2)$, $\operatorname{err}_\mu(r,\pi)\le\operatorname{err}_\mu(r,\pi_1)+\operatorname{err}_\mu(r,\pi_2)$, and $\operatorname{err}_\mu(r,\pi)\ge\max_i\operatorname{err}_\mu(r,\pi_i)$.
+  \item The upper bound in (b) is attained: for every $0<p<\tfrac14$ there are $X$, $\mu$, $r$, $\pi_1$, $\pi_2$ with $\operatorname{err}_\mu(r,\pi_i)=p$ and $\operatorname{err}_\mu(r,(\pi_1,\pi_2))=2p$.
+\end{enumerate}
+\end{newresult}
+\assumes{$X$ is finite and $\mu$ is a probability mass function on $X$.}
+\begin{proof}
+(a) A rule $d'$ on $r'$ gives the rule $d'\circ f$ on $r$ with the same error, so the minimum over rules on $r$ is no larger. (b) Let $d_i$ be optimal for $\pi_i$. The rule $(d_1,d_2)$ errs for the pair only if at least one component errs, which has probability at most the sum. The lower bound holds because any rule for the pair yields a rule for each component, by projection, with no larger error. (c) Let $X=\{x_1,x_2,x_3\}$, $\mu(x_1)=\mu(x_2)=p$, $\mu(x_3)=1-2p$, let $r$ be constant, $\pi_1=\mathbf 1_{\{x_1\}}$, and $\pi_2=\mathbf 1_{\{x_2\}}$. Since $p<1-p$ the best rule for each component answers $0$ and errs with probability $p$. For the pair the best rule must pick one of the four pairs of answers; answering $(0,0)$ is correct only at $x_3$, answering $(1,0)$ only at $x_1$, answering $(0,1)$ only at $x_2$, and $(1,1)$ at none. The largest correct mass is $1-2p>p$, so the error is $2p$.
+\end{proof}
+
+Part (a) is the quantitative form of the principle that discarded distinctions cannot be recovered by later computation (Result~\ref{cor:norecover}). Part (b) shows the practical consequence for families of policies: a representation that is acceptable for each policy separately may be unacceptable for the family, and the loss accumulates at the rate given by the union bound, which part (c) shows cannot be improved in general.
+
+
+\section{A computed Bayes error: binned balances}\label{sec:binned}
+
+The exact criterion of Chapter~\ref{ch:fixed} says that a binned balance serves a threshold policy only if the threshold falls on a bin boundary. The Bayes error says how badly it serves a threshold that does not. Take balances $X=\mathbb N$ with the geometric law $\mu(x)=(1-q)q^{x}$, the approval policy $\pi_t=[x\ge t]$, and the representation that sends $x$ to the index $\lfloor x/B\rfloor$ of its bin of width $B$. Within every bin that does not contain the threshold the policy is constant, so those bins contribute no error, and the bin containing $t$ contributes the smaller of the two masses it carries.
+
+\begin{newresult}[Bayes error of a binned threshold]\label{prop:binned-error}
+Let $jB<t<(j+1)B$. Then
+\[
+\operatorname{err}_\mu(r,\pi_t)=q^{jB}\min\bigl(1-q^{\,t-jB},\ q^{\,t-jB}-q^{B}\bigr),
+\]
+and the error is zero if $t$ is a multiple of $B$. In particular the error is not monotone in the distance from the boundary: with $B$ fixed it rises and then falls as $t$ moves across the bin, with its maximum where $q^{\,t-jB}=(1+q^{B})/2$.
+\end{newresult}
+\assumes{Geometric law on $\mathbb N$; policy $[x\ge t]$; bins of equal width $B$.}
+\begin{proof}
+By Definition~\ref{def:bayes-error} the error is the sum over bins of the smaller of the masses of the two actions in the bin. A bin other than the $j$th lies entirely below or entirely above $t$, so one of its masses is zero. In the $j$th bin the masses are $\mu[jB,t)=q^{jB}(1-q^{\,t-jB})$ and $\mu[t,(j+1)B)=q^{jB}(q^{\,t-jB}-q^{B})$. The two expressions inside the minimum are respectively increasing and decreasing in $s=t-jB$, so the minimum is maximal where they are equal, which is the stated value of $q^{s}$.
+\end{proof}
+
+The numbers are instructive. For $q=0.9$, $B=8$ and $j=0$, the thresholds $t=1,\dots,7$ have errors $0.100$, $0.190$, $0.271$, $0.226$, $0.160$, $0.101$ and $0.048$. The worst threshold is $t=3$, not the middle of the bin, because the geometric law concentrates its mass at low balances and the lower side of the bin carries the larger share. Under the flatter law $q=0.5$ the same representation serves $t=5$ with error $0.027$, since almost all of the mass lies below the bin's upper part and the policy is nearly constant on what is likely. A designer who audits the representation on typical balances finds small errors for most thresholds, and the audit reveals nothing about the thresholds that are costly under a different law. The next result states how far that dependence can go.
+
+\begin{newresult}[Worst-case distribution for the best rule]\label{prop:worst-bayes}
+Let $m=\max_{y\in r(X)}|\pi(r^{-1}(y))|$ be the largest number of distinct actions that $\pi$ takes inside one class of $r$. Then
+\[
+\sup_\mu\operatorname{err}_\mu(r,\pi)=1-\frac1m,
+\]
+and the supremum is attained by the uniform distribution on one representative of each action within a class that realizes $m$.
+\end{newresult}
+\assumes{$X$ finite; the supremum is over all probability mass functions on $X$.}
+\begin{proof}
+Within a class $y$ with $m_y\le m$ actions, the largest action mass is at least $\mu(r^{-1}(y))/m_y$, so the error contribution of the class is at most $(1-1/m_y)\mu(r^{-1}(y))\le(1-1/m)\mu(r^{-1}(y))$; summing over classes bounds the error by $1-1/m$. If a class realizes $m$ actions, put mass $1/m$ on one case of each action in it; the best rule answers one action and errs on the other $m-1$ of the $m$ cases, so the error equals $1-1/m$.
+\end{proof}
+
+Result~\ref{thm:exact-vs-average}(d) states that every fixed rule can be forced to err with probability one; the present result shows that the best rule chosen after the distribution is known cannot be forced above $1-1/m$. The first is the statement about a deployed system whose rule was fixed before the distribution moved, the second about a system that is able to re-derive its rule. For a binary policy the ceiling is $\tfrac12$, which no distribution on the cases can exceed however it is chosen, and which is reached as soon as one class contains both actions.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For the monitor of Example~\ref{ex:monitor}, take the representation that records only whether at least one alarm is outstanding, and the escalation policy of Chapter~\ref{ch:fixed}. Describe the Bayes decision rule on each class and write the Bayes error as a function of the probabilities of the classes of histories with exactly one, two, and three or more outstanding alarms.
+\end{exercise}
+
+\begin{exercise}
+Construct a distribution under which the representation of the previous exercise has error zero, and explain why this does not make it sufficient on the full set of histories. Relate your answer to Result~\ref{prop:domain}.
+\end{exercise}
+
+\begin{exercise}
+Prove that if $\operatorname{err}_\mu(r,\pi)\le\varepsilon$ and $\mu'$ satisfies $\mu'(x)\le c\,\mu(x)$ for all $x$, then the rule that is optimal for $\mu$ has error at most $c\varepsilon$ under $\mu'$. Conclude that approximate sufficiency transfers between distributions only with a multiplicative loss controlled by the density ratio, and show that no such bound holds when $\mu'$ is not dominated by a multiple of $\mu$.
+\end{exercise}
+
+\begin{exercise}
+Using Fano's inequality, show that a representation of a uniformly distributed $n$-bit string with $k<n$ bits cannot recover all $n$ bits with error below $(n-k-1)/n$ in the sense of the bound $P_e\ge(H(Z\mid Y)-1)/\log|A|$, taking $Z$ to be the string itself. State carefully what the bound does and does not say about particular strings.
+\end{exercise}
+
+\begin{exercise}
+Show that the inequality of Result~\ref{prop:approx}(a) can be strict, and that it can be an equality even when $f$ is not injective on $r(X)$. Give an example of each.
+\end{exercise}
+
+
+\begin{exercise}
+Compute the table of errors in Result~\ref{prop:binned-error} for $q=0.8$ and $B=6$, and locate the worst threshold. Compare it with the value predicted by $q^{s}=(1+q^{B})/2$, and explain why the maximizing $s$ is not an integer in general.
+\end{exercise}
+
+\begin{exercise}
+Determine the width $B$ and bin boundaries that minimize the sum of the Bayes errors for the two thresholds $t_1=3$ and $t_2=12$ under the geometric law with $q=0.9$, among representations with three values whose blocks are intervals. Compare with the best three-valued representation whose blocks need not be intervals.
+\end{exercise}
+
+\begin{exercise}
+Show that the supremum in Result~\ref{prop:worst-bayes} is not attained by any distribution charging every case, and that it is approached by such distributions. Deduce the value of $\sup_\mu\operatorname{err}_\mu(r,\pi)$ over the distributions of full support.
+\end{exercise}
+

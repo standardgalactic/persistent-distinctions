@@ -1,0 +1,81 @@
+% v2-appE-opt.tex
+\chapter{Optimization}\label{app:opt}
+
+\section{Linear programming}
+
+\begin{established}[Strong duality]\label{e:duality}
+If the primal $\max\{c^\top x:Ax\le b,\ x\ge0\}$ is feasible and bounded, then so is the dual $\min\{b^\top y:A^\top y\ge c,\ y\ge0\}$, and the optimal values are equal.
+\end{established}
+\source{von Neumann; Gale, Kuhn and Tucker (1951); Schrijver, Section~7.4.}
+
+\begin{newresult}[Concavity of the optimal value in the right-hand side]\label{e:concave}
+Let $f(b)=\max\{c^\top x:Ax\le b,\ x\ge0\}$ on the set $\mathcal B$ of $b$ for which the problem is feasible and bounded. Then $\mathcal B$ is convex and $f$ is concave on it. If $f$ is nondecreasing in a scalar component $d=b_k$ and $d_{\min}$ is the least feasible $d$ (others fixed), then for $d_{\min}<a\le d_1<d_2$,
+\[
+\frac{f(d_2)-f(d_1)}{d_2-d_1}\ \le\ \frac{f(a)-f(d_{\min})}{a-d_{\min}} .
+\]
+\end{newresult}
+\assumes{Feasible and bounded for the $b$ considered.}
+\begin{proof}
+If $x_1,x_2$ are optimal for $b_1,b_2$ then $\lambda x_1+(1-\lambda)x_2$ is feasible for $\lambda b_1+(1-\lambda)b_2$ with value $\lambda f(b_1)+(1-\lambda)f(b_2)$, so $f$ of the combination is at least that, which is concavity and shows feasibility is preserved. For a concave function of one variable the chord slopes are nonincreasing as the interval moves right: for $u<v<w<z$ the slope on $[u,v]$ is at least that on $[w,z]$. Apply this with $[d_{\min},a]$ and $[d_1,d_2]$ (using $a\le d_1$).
+\end{proof}
+
+This is the inequality used in Result~\ref{thm:cmdp-proxy}.
+
+\section{Dynamic programming}
+
+For a finite MDP with discount $\gamma\in[0,1)$, rewards bounded by $\bar r$, the Bellman operator is $(TV)(s)=\max_a\bigl[r(s,a)+\gamma\sum_{s'}P(s'|s,a)V(s')\bigr]$.
+
+\begin{newresult}[Contraction and error bound]\label{e:bellman}
+$T$ is a $\gamma$-contraction in the sup-norm. Hence there is a unique fixed point $V^*$ and, for the iterates $V_k=T^kV_0$,
+\[
+\|V_k-V^*\|_\infty\le\frac{\gamma}{1-\gamma}\|V_k-V_{k-1}\|_\infty,\qquad \|V_k-V^*\|_\infty\le\gamma^k\|V_0-V^*\|_\infty .
+\]
+\end{newresult}
+\assumes{Finite state and action sets.}
+\begin{proof}
+For $V,W$ and each $s$, $|TV(s)-TW(s)|\le\max_a\gamma\sum_{s'}P(s'|s,a)|V(s')-W(s')|\le\gamma\|V-W\|_\infty$, since $|\max_a\alpha_a-\max_a\beta_a|\le\max_a|\alpha_a-\beta_a|$. Existence, uniqueness and the second bound are Result~\ref{d:banach}. For the first, $\|V_k-V^*\|\le\|V_k-V_{k+1}\|+\|V_{k+1}-V^*\|\le\|V_k-V_{k+1}\|+\gamma\|V_k-V^*\|$, whence $\|V_k-V^*\|\le\|V_{k+1}-V_k\|/(1-\gamma)\le\gamma\|V_k-V_{k-1}\|/(1-\gamma)$ using the contraction again.
+\end{proof}
+
+\section{Convex optimization}
+
+\begin{established}[KKT conditions under Slater's condition]\label{e:kkt}
+For a convex problem $\min f_0(x)$ subject to convex $f_i(x)\le0$ and affine equalities, if some point is strictly feasible then $x^*$ is optimal if and only if there exist multipliers $\lambda_i\ge0$ with $\nabla f_0(x^*)+\sum\lambda_i\nabla f_i(x^*)=0$ and $\lambda_if_i(x^*)=0$.
+\end{established}
+\source{Boyd and Vandenberghe, \emph{Convex Optimization}, Section~5.5.}
+
+\section{Submodular maximization}
+
+A set function $F$ is \emph{submodular} if $F(A\cup\{e\})-F(A)\ge F(B\cup\{e\})-F(B)$ for $A\subseteq B$, $e\notin B$.
+
+\begin{established}[Greedy approximation]\label{e:greedy}
+For a monotone nonnegative submodular $F$ with $F(\varnothing)=0$, the greedy algorithm that adds the element of largest marginal gain until $k$ elements are chosen achieves at least $(1-1/e)$ of the maximum of $F$ over sets of size at most $k$.
+\end{established}
+\source{Nemhauser, Wolsey and Fisher (1978).}
+
+This is the guarantee behind the acquisition results of Chapter~\ref{ch:domain}.
+
+\section{Worked examples}
+
+\begin{example}[Concave value of a budget]\label{e:ex-budget}
+$\max\,x_1+2x_2$ subject to $x_1+x_2\le d$, $x_1\le1$, $x\ge0$. For $d\le1$ the optimum is $x_2=d$ with value $2d$; for $1\le d$ the optimum puts $x_2=d$ still (since $x_2$ is worth more), so $f(d)=2d$ for all $d\ge0$. Add the constraint $x_2\le1$: then $f(d)=2d$ for $d\le1$, $f(d)=2+(d-1)=d+1$ for $1\le d\le2$, and $f(d)=3$ for $d\ge2$. The slopes $2,1,0$ decrease, as concavity requires, and the chord inequality of Result~\ref{e:concave} holds, for instance $\frac{f(2)-f(1.5)}{0.5}=1\le\frac{f(1)-f(0)}{1}=2$.
+\end{example}
+
+\begin{example}[Greedy on a coverage function]\label{e:ex-greedy}
+Universe $\{1,\dots,6\}$ and sets $S_1=\{1,2,3,4\}$, $S_2=\{1,2,5\}$, $S_3=\{3,4,6\}$. The coverage function is monotone submodular. For $k=2$ greedy picks $S_1$ (4 elements) then $S_2$ or $S_3$ (adding 1 each), covering 5, while $S_2\cup S_3$ covers 6. The ratio is $5/6>1-1/e$, consistent with Result~\ref{e:greedy}, and shows that greedy is not exact.
+\end{example}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Write the dual of the linear program in Example~\ref{e:ex-budget} (first version) and verify strong duality at $d=2$.
+\end{exercise}
+\begin{exercise}
+Run value iteration by hand for the two-state MDP with $\gamma=0.9$ in which state $1$ has actions (stay, reward $1$) and (move to $2$, reward $0$), and state $2$ has the single action (stay, reward $2$). Report $V_1,V_2,V_3$ from $V_0=0$ and the stopping iteration for $\epsilon=0.1$.
+\end{exercise}
+\begin{exercise}
+Prove that the coverage function is submodular.
+\end{exercise}
+\begin{exercise}
+Verify the KKT conditions for $\min x^2$ subject to $x\ge1$.
+\end{exercise}

@@ -1,0 +1,114 @@
+% ch17-degradation.tex
+\chapter{Admissible Degradation}\label{ch:degradation}
+\spec{Which shedding of capability preserves the obligations a system must still meet?}
+{Dependency graphs and closure operators; Horn clauses and least fixed points.}
+{The admissible shedding sets are exactly those disjoint from some self-supporting set of capabilities (Result~\ref{thm:shedding}); with a single dependency per capability the admissible sets are those disjoint from one fixed set, and with alternative dependencies no additive capacity measure determines admissibility (Result~\ref{prop:scalar}).}
+{None.}
+{Chapters~\ref{ch:admissible} and~\ref{ch:obligations}.}
+
+A system under stress gives something up. What it can afford to give up depends on what it still owes. A hospital may close elective surgery and keep the emergency department; a web service may drop recommendations and keep payments. The decision is easy to make badly when capacity is summarized by a single number, such as the fraction of servers remaining or the fraction of features enabled. This chapter gives the dependency structure that governs which losses are survivable, characterizes the survivable ones exactly, and shows why no single number can do the work.
+
+\section{Dependencies and shedding}
+
+\begin{definition}[Dependency system]\label{def:dependency}
+A \emph{dependency system} consists of a finite set $C$ of capabilities and a finite set $\mathcal R$ of rules $(c,P)$ with $c\in C$ and $P\subseteq C$, read as: $c$ can be provided if every member of $P$ is provided. A rule with $P=\varnothing$ makes $c$ a primitive. Several rules with the same head are alternatives. For a \emph{shed set} $D\subseteq C$, the capabilities that can still be provided are $\operatorname{Prov}(D)$, the least set $X$ such that, for every rule $(c,P)\in\mathcal R$, $c\notin D$ and $P\subseteq X$ imply $c\in X$. An \emph{obligation} $j$ requires a set $N_j\subseteq C$ of capabilities. For a set $J$ of obligations that must still be met, put $\mathrm{Req}=\bigcup_{j\in J}N_j$. A shed set $D$ is \emph{admissible} if $\mathrm{Req}\subseteq\operatorname{Prov}(D)$.
+\end{definition}
+
+The least set exists because the operator $X\mapsto\{c\notin D:\exists (c,P)\in\mathcal R,\ P\subseteq X\}$ is monotone on a finite lattice. The definition is a restriction of the usual semantics of Horn clauses, with shedding as the removal of heads.
+
+\begin{definition}[Supports]\label{def:support}
+A set $S\subseteq C$ is a \emph{support} if $\mathrm{Req}\subseteq S$ and $S$ is self-supporting: the least set $X$ with $(c,P)\in\mathcal R$, $c\in S$, $P\subseteq S$, $P\subseteq X$ implying $c\in X$ equals $S$. A support is \emph{minimal} if no proper subset is a support.
+\end{definition}
+
+A support is a set of capabilities that together provide the required ones with nothing outside the set: every member has a rule whose premises lie in the set, and the rules can be applied in a well-founded order.
+
+\begin{newresult}[Characterization of admissible shedding]\label{thm:shedding}
+Let $(C,\mathcal R)$ be a dependency system and $\mathrm{Req}\subseteq C$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $D\subseteq D'$ implies $\operatorname{Prov}(D')\subseteq\operatorname{Prov}(D)$. Consequently the family of admissible shed sets is closed under taking subsets.
+  \item A shed set $D$ is admissible if and only if $D\cap S=\varnothing$ for some support $S$. Equivalently the admissible shed sets are $\bigcup_{S}2^{C\setminus S}$ over the minimal supports $S$, and the maximal admissible shed sets are the complements of the minimal supports.
+  \item If every capability is the head of exactly one rule and $\mathrm{Req}\subseteq\operatorname{Prov}(\varnothing)$, then there is a unique minimal support $S^{*}$, and $D$ is admissible if and only if $D\cap S^{*}=\varnothing$.
+\end{enumerate}
+\end{newresult}
+\assumes{$C$ and $\mathcal R$ finite. Part (c) assumes the unshed system provides the required capabilities.}
+\begin{proof}
+(a) The operator defining $\operatorname{Prov}(D')$ is pointwise below that of $\operatorname{Prov}(D)$ since fewer heads are allowed, so its least fixed point is smaller. Admissibility of $D'$ then gives $\mathrm{Req}\subseteq\operatorname{Prov}(D')\subseteq\operatorname{Prov}(D)$.
+
+(b) Suppose $D$ is admissible and put $S=\operatorname{Prov}(D)$. Then $\mathrm{Req}\subseteq S$ and $S\cap D=\varnothing$ because the defining operator never adds a member of $D$. Every member of $S$ was added at some stage by a rule whose premises were already in $S$, so the least set built from rules inside $S$ contains $S$, and it is contained in $S$ by definition; thus $S$ is a support. Conversely let $S$ be a support with $S\cap D=\varnothing$. The rules used to build $S$ have heads and premises in $S$, hence heads outside $D$, so each is available when computing $\operatorname{Prov}(D)$, and $S\subseteq\operatorname{Prov}(D)$ by induction on the stage at which a member is built. Hence $\mathrm{Req}\subseteq S\subseteq\operatorname{Prov}(D)$. Since supports contain minimal supports, the union description follows, and so does the description of maximal admissible shed sets.
+
+(c) With one rule per head, a capability $c\in\operatorname{Prov}(\varnothing)$ has a unique derivation tree. Let $S^{*}$ be the set of capabilities occurring in the derivation trees of members of $\mathrm{Req}$. Then $c\in\operatorname{Prov}(D)$ if and only if $c\notin D$ and its premises lie in $\operatorname{Prov}(D)$, so by induction on the derivation, $c\in\operatorname{Prov}(D)$ if and only if no node of its tree lies in $D$. Hence $\mathrm{Req}\subseteq\operatorname{Prov}(D)$ if and only if $D\cap S^{*}=\varnothing$. Every support contains $S^{*}$, because it must derive $\mathrm{Req}$ with the only available rules.
+\end{proof}
+
+\section{No scalar measure of surviving capacity}
+
+A common practice reports the health of a degraded system as a number: the fraction of capabilities retained, or a weighted sum of retained capabilities. The following result states when such a number can decide admissibility.
+
+\begin{newresult}[Scalar capacity measures]\label{prop:scalar}
+Call a \emph{scalar capacity test} a pair $(w,\theta)$ with $w:C\to\mathbb R$ and $\theta\in\mathbb R$ that declares $D$ admissible when $\sum_{c\notin D}w(c)\ge\theta$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item In the setting of Result~\ref{thm:shedding}(c) there is a scalar capacity test that is correct for every shed set, with $w\equiv1$ on $S^{*}$, $w\equiv0$ elsewhere, and $\theta=|S^{*}|$.
+  \item There is a dependency system with alternatives, and a set of requirements, for which no scalar capacity test is correct for every shed set. In the same system, two shed sets of equal size can differ in admissibility, so the count of surviving capabilities does not decide.
+\end{enumerate}
+\end{newresult}
+\assumes{(a) as in Result~\ref{thm:shedding}(c). (b) is an existence statement.}
+\begin{proof}
+(a) The kept weight equals $|S^{*}|$ if and only if $D\cap S^{*}=\varnothing$, and is smaller otherwise. (b) Let $C=\{c_1,c_2,c_3,c_4,e\}$ with primitive rules $(c_i,\varnothing)$ and rules $(e,\{c_1,c_2\})$ and $(e,\{c_3,c_4\})$, and $\mathrm{Req}=\{e\}$. The minimal supports are $\{e,c_1,c_2\}$ and $\{e,c_3,c_4\}$. Shedding $\{c_3,c_4\}$ is admissible, and shedding $\{c_2,c_4\}$ is not; both have size $2$. Suppose a scalar test existed. Restrict attention to shed sets that avoid $e$ and put $\theta'=\theta-w(e)$. Keeping $\{c_1,c_2\}$ and keeping $\{c_3,c_4\}$ pass: $w_1+w_2\ge\theta'$ and $w_3+w_4\ge\theta'$. Keeping $\{c_1,c_3\}$ and keeping $\{c_2,c_4\}$ fail: $w_1+w_3<\theta'$ and $w_2+w_4<\theta'$. Adding the first pair gives $\sum w\ge2\theta'$ and adding the second gives $\sum w<2\theta'$, a contradiction.
+\end{proof}
+
+The number of surviving capabilities and any weighted sum of them are thus adequate for conjunctive requirements and inadequate once alternatives appear. In the terminology of Part~II, the admissibility question is a function of the retained set whose kernel is not the kernel of any additive measure, and a monitor for degradation must retain the set, or at least which supports remain intact.
+
+\begin{remark}
+Finding a smallest support is intractable in general. Given a set cover instance with sets $s_1,\dots,s_n$ over a universe $U$, take $s_i$ as primitives, $u\in U$ as heads with a rule $(u,\{s_i\})$ for every $s_i\ni u$, and $\mathrm{Req}=U$. A support is a cover together with $U$, so its size is $|U|$ plus the size of the cover. Choosing what to shed to preserve the most capability is therefore at least as hard as set cover, while checking whether a given shed set is admissible takes linear time in the size of the system by computing $\operatorname{Prov}(D)$.
+\end{remark}
+
+
+\section{Counting admissible shed sets and the error of scalar tests}\label{sec:scalar-error}
+
+Result~\ref{prop:scalar} shows that no scalar test is correct for every shed set once alternatives are present. The question that matters in practice is how wrong the best scalar test is, and for the parallel-alternatives structure the answer can be computed exactly for small systems. Let the requirement $e$ be provided by any one of $m$ alternatives, the $i$th alternative consisting of two primitives $c_{i1},c_{i2}$ that are both needed, so that $e$ has the rules $(e,\{c_{i1},c_{i2}\})$ for $i=1,\dots,m$ and $\mathrm{Req}=\{e\}$. Shed sets are subsets $D$ of the $2m$ primitives.
+
+\begin{newresult}[Admissible shed sets of parallel pairs]\label{prop:parallel-pairs}
+Exactly $4^{m}-3^{m}$ of the $4^{m}$ shed sets are admissible: a shed set is inadmissible if and only if it contains at least one primitive from each pair, and each pair offers $3$ such choices among its $4$ subsets. The minimal supports are the $m$ sets $\{e,c_{i1},c_{i2}\}$, and the maximal admissible shed sets are the $m$ complements of these, each of size $2m-2$. The fraction of admissible shed sets is $1-(3/4)^{m}$.
+\end{newresult}
+\assumes{As in the construction above; $e$ itself is never shed.}
+\begin{proof}
+By Result~\ref{thm:shedding}(b) a shed set is admissible if and only if it is disjoint from some support, and the supports are the unions of minimal supports; $D$ is disjoint from $\{e,c_{i1},c_{i2}\}$ exactly when neither primitive of pair $i$ is shed. So $D$ is inadmissible when each pair has at least one member in $D$, which gives $3^{m}$ choices (three nonempty subsets of a two-element pair) over the $m$ pairs, and $4^{m}-3^{m}$ admissible sets. Complements of minimal supports are the maximal ones by the same theorem.
+\end{proof}
+
+The scalar tests of Result~\ref{prop:scalar} can now be compared with this structure by exhaustive search. For $m=2$ there are $16$ shed sets of which $7$ are admissible. The best equal-weight test, which declares a shed set admissible when at least three primitives survive, misclassifies $2$ shed sets, and the best test with weights in $\{0,1,2,3\}$ misclassifies $1$, which is also the minimum possible by Result~\ref{prop:scalar}(b), since no test is perfect. For $m=3$ there are $64$ shed sets of which $37$ are admissible. The best equal-weight test, which requires at least three surviving primitives, misclassifies $11$ of the $64$; the best test with integer weights in $\{0,\dots,5\}$ misclassifies $8$. The latter figure bounds the optimum from above and the exhaustive search has not been extended to larger weights. In every case the errors are of both kinds: a count test declares admissible a shed set that leaves one primitive from each of several pairs, and declares inadmissible a set that leaves exactly one pair intact when the count is small. The first error is the dangerous one, since it certifies a degraded system as able to deliver the required capability when it cannot, and no choice of threshold removes it without increasing the second.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+A service has primitives for a database, a cache, a recommender, and a payment gateway. Checkout requires the payment gateway and either the database or the cache, and the recommender requires the database. Write the rules, list the minimal supports for $\mathrm{Req}=\{\text{checkout}\}$, and list the maximal admissible shed sets.
+\end{exercise}
+
+\begin{exercise}
+Prove that $\operatorname{Prov}(D\cup D')\subseteq\operatorname{Prov}(D)\cap\operatorname{Prov}(D')$, and show by an example that the inclusion can be strict. Interpret in terms of combining two failures.
+\end{exercise}
+
+\begin{exercise}
+Show that the family of admissible shed sets is determined by its maximal members and by Result~\ref{thm:shedding}(a). Give a dependency system with $m$ alternatives of size $2$ each for a single requirement and count the minimal supports.
+\end{exercise}
+
+\begin{exercise}
+Extend Definition~\ref{def:dependency} with a cost $\kappa(c)\ge0$ for keeping each capability and show that choosing a minimum-cost support is a weighted version of the problem in the remark. Describe a case where the minimum-cost support differs from the minimum-cardinality support.
+\end{exercise}
+
+\begin{exercise}
+Obligations change over time: after an event some obligations are discharged and others created. Using Result~\ref{prop:single-monitor}, describe the sequence of required sets $\mathrm{Req}_t$ for a single bounded-response obligation and state when a shed set that was admissible at time $t$ ceases to be admissible at $t+1$.
+\end{exercise}
+
+
+\begin{exercise}
+For $m=2$ list the $7$ admissible shed sets and the $9$ inadmissible ones, evaluate the equal-weight test with threshold $3$ on each, and identify the two misclassified sets.
+\end{exercise}
+
+\begin{exercise}
+Change the structure so that each alternative has $r$ primitives. Show that the number of admissible shed sets is $2^{rm}-(2^{r}-1)^{m}$, and compute the fraction for $r=3$, $m=3$.
+\end{exercise}
+
+\begin{exercise}
+Show that an additive test that declares admissible exactly when it is certain, that is, never admits an inadmissible shed set, can be chosen for any dependency system, and find the best such test for $m=2$ and the number of admissible shed sets it rejects.
+\end{exercise}
+

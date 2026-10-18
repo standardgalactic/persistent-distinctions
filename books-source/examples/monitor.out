@@ -1,0 +1,5 @@
+monitor states (including the violation sink): 5
+minimal automaton states: 5
+req idle idle ack -> ok
+req idle idle idle ack -> violation
+req req ack -> ok

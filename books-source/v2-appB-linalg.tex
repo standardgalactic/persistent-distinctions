@@ -1,0 +1,92 @@
+% v2-appB-linalg.tex
+\chapter{Linear Algebra and Convexity}\label{app:linalg}
+
+This appendix collects the facts from linear algebra and convex geometry used in Chapters~\ref{ch:counting} and~\ref{ch:costs}. Statuses follow the main text.
+
+\section{Spectral radius and growth}
+
+For a square real matrix $A$ the \emph{spectral radius} is $\rho(A)=\max\{|\lambda|:\lambda\text{ an eigenvalue of }A\}$.
+
+\begin{established}[Gelfand's formula]\label{b:gelfand}
+For any submultiplicative matrix norm, $\rho(A)=\lim_{n\to\infty}\|A^n\|^{1/n}$.
+\end{established}
+\source{Gelfand (1941); see Horn and Johnson, \emph{Matrix Analysis}, Corollary~5.6.14.}
+
+\begin{newresult}[Counting walks grows at the spectral radius]\label{b:walks}
+Let $A\in\mathbb R_{\ge0}^{N\times N}$ be the adjacency matrix of a directed multigraph and $\mathbf 1$ the all-ones vector. Then $\mathbf 1^{\top}A^n\mathbf 1$ is the number of walks of length $n$, and
+\[
+\lim_{n\to\infty}\bigl(\mathbf 1^\top A^n\mathbf 1\bigr)^{1/n}=\rho(A),
+\]
+with the convention that the limit is $0$ when $A$ is nilpotent (no walks of some length). Consequently the number of walks grows exponentially with rate $\log\rho(A)$ if $\rho(A)>1$, polynomially if $\rho(A)=1$, and is eventually zero if $\rho(A)=0$.
+\end{newresult}
+\assumes{Nonnegative integer entries.}
+\begin{proof}
+Take the norm $\|B\|_\infty=\max_i\sum_j|B_{ij}|$, which is submultiplicative. For nonnegative $B$, $\|B\|_\infty=\max_i(B\mathbf 1)_i$, so $\|A^n\|_\infty\le\mathbf 1^\top A^n\mathbf 1\le N\|A^n\|_\infty$. Taking $n$th roots and using $N^{1/n}\to1$ together with Result~\ref{b:gelfand} gives the limit. The classification follows: if $\rho>1$ the count is at least $(\rho-\epsilon)^n$ eventually, and so on; if $\rho(A)=0$ then $A$ is nilpotent and $A^n=0$ for $n\ge N$.
+\end{proof}
+
+\begin{established}[Perron--Frobenius]\label{b:pf}
+A nonnegative irreducible matrix $A$ has a simple eigenvalue equal to $\rho(A)>0$ with a strictly positive eigenvector, and no nonnegative eigenvector belongs to any other eigenvalue. For a general nonnegative $A$, $\rho(A)$ is an eigenvalue with a nonnegative eigenvector, and $\rho(A)$ equals the maximum of $\rho$ over the irreducible diagonal blocks of its Frobenius normal form.
+\end{established}
+\source{Perron (1907); Frobenius (1912); see Horn and Johnson, Chapter~8.}
+
+The last clause is the form used in the growth theorem of Chapter~\ref{ch:counting}: the growth rate of the count of walks is the maximum, over strongly connected components reachable from the initial state, of the component's spectral radius.
+
+\section{Convex sets, support functions, and scalarization}
+
+\begin{established}[Separating hyperplane]\label{b:sep}
+If $C\subseteq\mathbb R^n$ is closed and convex and $p\notin C$, there exist $w\in\mathbb R^n$ and $\beta$ with $w\cdot p<\beta\le w\cdot c$ for all $c\in C$.
+\end{established}
+\source{Rockafellar, \emph{Convex Analysis}, Theorem~11.3.}
+
+The \emph{support function} of a bounded set $A$ is $h_A(w)=\sup_{a\in A}w\cdot a$.
+
+\begin{newresult}[Support functions add under Minkowski sums and ignore convexification]\label{b:support}
+For bounded $A,B\subseteq\mathbb R^n$: $h_{A+B}=h_A+h_B$ with $A+B=\{a+b\}$, and $h_{\mathrm{conv}A}=h_A$. A linear objective over a finite set attains its optimum at an extreme point of the convex hull.
+\end{newresult}
+\assumes{Boundedness.}
+\begin{proof}
+$\sup_{a,b}w\cdot(a+b)=\sup_aw\cdot a+\sup_bw\cdot b$. For the convex hull, a convex combination has $w\cdot\sum\lambda_ia_i=\sum\lambda_iw\cdot a_i\le\max_iw\cdot a_i$. A finite set's hull is a polytope, a linear function on which is maximized at a vertex, and every vertex is a point of the set.
+\end{proof}
+
+\begin{newresult}[Scalarization misses interior points]\label{b:scal}
+Let $P\subset\mathbb R^n$ be finite and $p\in P$ a convex combination of other points of $P$ with positive weights ($p\in\mathrm{relint}\,\mathrm{conv}(P\setminus\{p\})$). Then there is no $w\in\mathbb R^n$ such that $p$ is the unique maximizer of $w\cdot x$ over $P$.
+\end{newresult}
+\assumes{Finite set.}
+\begin{proof}
+If $p=\sum_i\lambda_iq_i$ with $\lambda_i>0$, $\sum\lambda_i=1$, $q_i\in P\setminus\{p\}$, then $w\cdot p=\sum\lambda_iw\cdot q_i\le\max_iw\cdot q_i$, so $p$ is not the unique maximizer.
+\end{proof}
+
+\section{Linear inequalities}
+
+\begin{established}[Farkas' lemma]\label{b:farkas}
+For a matrix $A$ and a vector $b$, exactly one of the following holds: there exists $x\ge0$ with $Ax=b$, or there exists $y$ with $A^\top y\ge0$ and $b^\top y<0$.
+\end{established}
+\source{Farkas (1902); Schrijver, \emph{Theory of Linear and Integer Programming}, Section~7.3.}
+
+The lemma is the basis of the marking-equation certificates of Chapter~\ref{ch:petri}: a vector $y$ with $y^\top C\ge0$, $y^\top(m-m_0)<0$ is a linear invariant excluding the marking $m$.
+
+\section{Worked examples}
+
+\begin{example}[Growth of a two-component walk count]\label{b:ex-growth}
+Let $A=\begin{pmatrix}2&1&0\\0&1&1\\0&0&1\end{pmatrix}$, the adjacency matrix of a graph with a loop of multiplicity two at vertex $1$, an edge $1\to2$, a loop at $2$, an edge $2\to3$ and a loop at $3$. The strongly connected components are $\{1\},\{2\},\{3\}$ with spectral radii $2,1,1$, so $\rho(A)=2$ and the number of walks of length $n$ from vertex $1$ grows like $2^n$ (Result~\ref{b:walks}). From vertex $2$ the reachable components have radius $1$ and the number of walks grows polynomially: the walks stay at $2$ for $i$ steps and then at $3$ for the remaining $n-i$ steps, so there are $n+1$ of them, linear in $n$.
+\end{example}
+
+\begin{example}[Scalarization on a three-point front]\label{b:ex-scal}
+The points $(1,4),(2,2),(4,1)$ in the plane are all Pareto-minimal for the componentwise order. For weights $w=(w_1,w_2)\ge0$ the minimizers of $w\cdot x$ are $(1,4)$ for $w_1/w_2<1/2$, $(4,1)$ for $w_1/w_2>2$, and $(2,2)$ for $\tfrac12<w_1/w_2<2$; the point $(2,2)$ is a weighted minimizer because it lies below the segment from $(1,4)$ to $(4,1)$, whose midpoint $(2.5,2.5)$ it dominates. Replace it by $(3,3)$: now $(3,3)$ lies above the segment, is Pareto-minimal, and is the minimizer of no weight vector, as Result~\ref{b:scal} predicts.
+\end{example}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute the spectral radius and the exact number of walks of length $n$ from vertex $1$ for the matrix of Example~\ref{b:ex-growth}, and verify that the ratio of consecutive counts tends to $2$.
+\end{exercise}
+\begin{exercise}
+Prove the last clause of Result~\ref{b:pf} for a block upper-triangular matrix: the spectrum of the matrix is the union of the spectra of the diagonal blocks.
+\end{exercise}
+\begin{exercise}
+Show that $h_{A}(w)=\max_{a\in A}w\cdot a$ for a polytope $A$ and compute the support function of the square $[0,1]^2$ in the direction $(1,-1)$.
+\end{exercise}
+\begin{exercise}
+Using Farkas' lemma, show that the marking $(0,2)$ is unreachable in the net with one transition consuming one token from place $1$ and producing two tokens in place $2$, from the initial marking $(1,0)$ and with a linear invariant.
+\end{exercise}

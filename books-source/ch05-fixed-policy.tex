@@ -1,0 +1,133 @@
+% ch05-fixed-policy.tex
+\chapter{Sufficiency for a Fixed Policy}\label{ch:fixed}
+\spec{What is the coarsest representation that still decides a specified policy, and how far does that answer depend on the policy and on the cases that can occur?}
+{The kernel of a policy is the coarsest equivalence through which it factors.}
+{Compression is policy-independent only for injective representations (Result~\ref{prop:no-free-compression}); minimal representations are sensitive to a change at a single case (Result~\ref{prop:sensitivity}); sufficiency depends on the domain of cases (Result~\ref{prop:domain}).}
+{None.}
+{Chapters~\ref{ch:common}, \ref{ch:quotients}, and~\ref{ch:adequacy}.}
+
+The preceding chapters treated questions and representations as two kinds of function and studied the relation between them. This chapter assigns that relation a purpose. A system acts, and what it does at a given case is determined by a policy. The retained representation is what the system consults when it acts, and a representation is sufficient for a policy when the consultation yields the action that the policy prescribes. The mathematics is the factorization theorem of Chapter~\ref{ch:quotients} read in this setting. The substance of the chapter lies in three consequences: the minimal representation for a policy is determined by the policy and by nothing else, no non-injective representation is safe for every policy, and the answer depends both on the policy and on the set of cases that can in fact occur.
+
+\section{Policies and sufficient representations}
+
+\begin{definition}[Policy, decision rule, sufficiency]\label{def:policy}
+A \emph{policy} on a nonempty set $X$ of cases with values in a set $A$ of actions is a function $\pi:X\to A$. A representation $r:X\to R$ is \emph{sufficient for $\pi$} if there is a function $d:r(X)\to A$, a \emph{decision rule}, with $\pi=d\circ r$.
+\end{definition}
+
+A policy says what ought to be done at each case. A decision rule says what is done on the basis of the representation alone. Sufficiency is the requirement that these agree everywhere, so that consulting the representation instead of the case costs nothing. It is a property of the pair $(r,\pi)$ and is exactly the answering relation of Definition~\ref{def:question}.
+
+\begin{established}[Sufficiency for a fixed policy]\label{thm:sufficiency}
+A representation $r$ is sufficient for $\pi$ if and only if $\ker r\subseteq\ker\pi$. The decision rule is then unique. The representation $r$ is sufficient and has the fewest possible values among sufficient representations if and only if $\ker r=\ker\pi$, so the minimal sufficient representations are, up to relabelling, the quotient map $\pi_{\ker\pi}$, and each has exactly $|\pi(X)|$ values.
+\end{established}
+\source{Results~\ref{thm:factorization}, \ref{prop:canonical}, and~\ref{prop:least-adequate}.}
+\begin{proof}
+The first two statements are Result~\ref{thm:factorization}. By Result~\ref{prop:least-adequate} applied to the one-element family $\{\pi\}$, every sufficient representation takes at least $|X/{\ker\pi}|$ values, with equality exactly when $\ker r=\ker\pi$. Result~\ref{prop:canonical} identifies $X/{\ker\pi}$ with $\pi(X)$.
+\end{proof}
+
+The theorem has a conclusion that should be stated plainly because it governs how the rest of the volume is organized. For a single policy on a fixed set of cases, the policy itself is a minimal sufficient representation: it suffices to store the action to be taken. The number of bits required is $\lceil\log_2|\pi(X)|\rceil$. Nothing in the theory of this chapter is deeper than that statement, and the difficulty of the subject lies elsewhere. A system that stores only the action it must take now cannot adopt a different policy later, which is the topic of Chapter~\ref{ch:families}; it cannot in general update the stored action when a further event occurs without consulting information it has discarded, which is the topic of Chapter~\ref{ch:incremental}; and it cannot be assumed to face every case in $X$, which is taken up in the last section of this chapter.
+
+\section{No compression is free}
+
+A common informal claim holds that a description which is much smaller than the thing described has lost nothing of importance. The following results show how that claim fails once policies are made explicit.
+
+\begin{newresult}[Compression is policy-independent only when it is injective]\label{prop:no-free-compression}
+A representation $r$ of $X$ is sufficient for every policy $X\to\{0,1\}$ if and only if $r$ is injective. Consequently, if $r$ is not injective then there is a two-action policy for which $r$ is not sufficient, and the failure is exhibited by every pair of cases that $r$ identifies.
+\end{newresult}
+\assumes{No assumption on $X$ beyond nonemptiness.}
+\begin{proof}
+If $r$ is injective then $r^{-1}:r(X)\to X$ exists, and every policy satisfies $\pi=(\pi\circ r^{-1})\circ r$. If $r$ is not injective, pick $x\ne x'$ with $r(x)=r(x')$ and let $\pi$ be the indicator of $\{x\}$. Then $(x,x')\in\ker r$ and $(x,x')\notin\ker\pi$, so $\ker r\not\subseteq\ker\pi$ and $r$ is not sufficient by Result~\ref{thm:sufficiency}.
+\end{proof}
+
+The result is trivial to prove and widely ignored in practice. Any scheme that discards cases, whether by hashing, summarizing, truncating, or averaging, is safe only relative to the policies that are known not to depend on what was discarded.
+
+The next result shows how little it takes for the identity of the best representation to change.
+
+\begin{newresult}[Sensitivity to a change at one case]\label{prop:sensitivity}
+Let $A\subseteq X$ with $|A|\ge2$ and $A\ne X$, let $x_0\in A$, and let $\pi=\mathbf 1_A$ and $\pi'=\mathbf 1_{A\setminus\{x_0\}}$ be the two-action policies that disagree only at $x_0$. Then $\ker\pi$ and $\ker\pi'$ are incomparable, so the minimal sufficient representations of $\pi$ and $\pi'$ are incomparable for $\sqsubseteq$, and every representation sufficient for both takes at least three values.
+\end{newresult}
+\assumes{$X$ has at least three elements, as the hypotheses on $A$ imply.}
+\begin{proof}
+Choose $a\in A\setminus\{x_0\}$ and $c\in X\setminus A$. The pair $(a,x_0)$ lies in $\ker\pi$ and not in $\ker\pi'$, since $\pi'(a)=1$ and $\pi'(x_0)=0$. The pair $(x_0,c)$ lies in $\ker\pi'$ and not in $\ker\pi$, since $\pi'(x_0)=\pi'(c)=0$ while $\pi(x_0)=1$ and $\pi(c)=0$. Hence neither kernel contains the other, and Result~\ref{prop:adequacy-kernel} gives incomparability of the minimal sufficient representations. A representation sufficient for both has kernel inside $\ker\pi\cap\ker\pi'$, which separates the three nonempty sets $A\setminus\{x_0\}$, $\{x_0\}$, and $X\setminus A$ from one another, so it has at least three classes.
+\end{proof}
+
+\begin{example}[Withdrawal approval at one threshold and at two]\label{ex:thresholds-one-two}
+In the account of Example~\ref{ex:bank}, the policy $\pi_k(h)=[\beta(h)\ge k]$ approves a withdrawal of $k$ without overdraft. By Result~\ref{thm:sufficiency} the minimal sufficient representation of $\pi_k$ is a single bit, namely whether the balance is at least $k$. A system that must approve withdrawals of $k$ and of $k'>k$ needs the joint kernel of $\pi_k$ and $\pi_{k'}$, which has three classes: $\beta<k$, $k\le\beta<k'$, and $\beta\ge k'$. Neither bit alone is sufficient for the pair of policies. The two bits taken together allow four combinations but only three occur, since $\beta\ge k'$ implies $\beta\ge k$, and the joint representation has exactly three values.
+\end{example}
+
+\section{Dependence on the domain of cases}
+
+A set $X$ of cases is rarely the set of all conceivable ones. Physical constraints rule out some histories and obligations rule out others, and the representation need only serve the histories that can occur. The following notion records this.
+
+\begin{definition}[Sufficiency on a domain]\label{def:domain-sufficient}
+Let $Y\subseteq X$ be nonempty. A representation $r$ of $X$ is \emph{sufficient for $\pi$ on $Y$} if the restriction $\pi|_Y$ factors through $r|_Y$, equivalently if $\ker r\cap(Y\times Y)\subseteq\ker\pi$.
+\end{definition}
+
+\begin{newresult}[Domain dependence]\label{prop:domain}
+Sufficiency on a domain is monotone and not transferable: if $r$ is sufficient for $\pi$ on $Y$ and $Y'\subseteq Y$ then $r$ is sufficient for $\pi$ on $Y'$; but sufficiency on $Y$ does not in general extend to a larger domain. In particular the least informative representation sufficient for $\pi$ on $Y$ is $Y/{(\ker\pi\cap(Y\times Y))}$ and may be strictly smaller than the least informative representation sufficient on $X$.
+\end{newresult}
+\assumes{The set $Y$ is fixed in advance and the representation is evaluated only on $Y$.}
+\begin{proof}
+Monotonicity follows from the inclusion $\ker r\cap(Y'\times Y')\subseteq\ker r\cap(Y\times Y)$. For non-transferability, take $X=\{1,2,3\}$, $Y=\{1,2\}$, $\pi=\mathbf 1_{\{3\}}$, and $r$ the representation identifying $2$ with $3$ and leaving $1$ alone. Then $\pi|_Y$ is constant and $r$ is sufficient on $Y$, but $(2,3)\in\ker r\setminus\ker\pi$, so $r$ is not sufficient on $X$. The least informative representation sufficient on $Y$ is obtained by applying Result~\ref{thm:sufficiency} to the restricted policy on $Y$, and in the example it is constant on $Y$ while any sufficient representation on $X$ takes two values.
+\end{proof}
+
+\begin{example}[Executable histories need less memory]\label{ex:domain-account}
+Let $Y=V=\{h:q_{\mathrm{neg}}(h)=0\}$ be the histories of the account that never go negative. On $V$ the policy $q_{\mathrm{neg}}$ is constant, so the constant representation is sufficient on $V$, while on all of $\Events^{*}$ the constant representation is not sufficient. The saving is the whole of the flag. It is obtained at a price: the system must be certain that no history outside $V$ can reach it. If that certainty rests on a physical guarantee the saving is secure; if it rests on a policy that a person may override, the representation has silently become dependent on the override never occurring.
+\end{example}
+
+The example connects this chapter with the obstructions of Definition~\ref{def:obstructions}. Physical and normative constraints shrink the set of cases and so shrink the memory required, and a representation chosen for the shrunken set is insufficient for any revision that readmits the excluded cases. The sufficiency question is therefore always a question about a triple: a representation, a policy, and the set of cases to which both apply.
+
+
+\section{How many thresholds a bounded representation can serve}\label{sec:thresholds-served}
+
+Result~\ref{prop:sensitivity} shows that neighbouring policies need incomparable representations. The family of threshold policies on an ordered set of cases makes the cost of flexibility exact. Let $X=\{0,1,\dots,n-1\}$ be ordered, as when the cases are balances, counts or ages, and for $1\le t\le n-1$ let $\pi_t(x)=[x\ge t]$. A representation is said to \emph{serve} the threshold $t$ when it is sufficient for $\pi_t$.
+
+\begin{newresult}[Thresholds served by a bounded representation]\label{prop:thresholds-served}
+A representation $r$ of $X=\{0,\dots,n-1\}$ with $k$ values serves at most $k-1$ thresholds, and for every $k\le n$ the bound is attained by the representation that sends $x$ to the index of the block of $k$ contiguous intervals containing it, serving exactly the $k-1$ thresholds at the block boundaries.
+\end{newresult}
+\assumes{The cases are the integers $0,\dots,n-1$ with the usual order; thresholds are $\pi_t=[x\ge t]$ for $1\le t\le n-1$.}
+\begin{proof}
+By Result~\ref{thm:sufficiency}, $r$ serves $t$ if and only if every block of $\ker r$ lies entirely in $\{0,\dots,t-1\}$ or entirely in $\{t,\dots,n-1\}$. Suppose $r$ serves the thresholds $t_1<\dots<t_s$ and set $t_0=0$, $t_{s+1}=n$. Each interval $I_j=\{t_j,\dots,t_{j+1}-1\}$ for $0\le j\le s$ is nonempty, and every block of $\ker r$ is contained in a single $I_j$, because a block meeting two of the intervals would straddle some $t_i$. So the $s+1$ intervals are unions of blocks and $r$ takes at least $s+1$ values, that is $k\ge s+1$. For attainment, cut $X$ into $k$ intervals; every cut point is served because no block crosses it.
+\end{proof}
+
+For a balance that runs from $0$ to $5$ and a memory of three values, at most two of the five possible approval thresholds can be served, and the enumeration of all $203$ partitions of the six cases confirms that no partition with three blocks serves more than two. The consequence for design is that flexibility of policy is paid for linearly in memory: each additional threshold that the system must be able to honour costs one further value, and the cost cannot be shared between thresholds by any cleverness in the choice of blocks. This is the finite form of the remark of Chapter~\ref{ch:adequacy} that bounded memory is a choice among incomparable alternatives. It also locates the weakness of the common practice of quantizing a quantity into a few coarse bins: the bins serve exactly the policies whose thresholds coincide with bin boundaries, and a revised threshold that falls inside a bin cannot be honoured without recovering information the quantization discarded.
+
+\begin{example}[A policy-count view]\label{ex:policy-count}
+A representation with $k$ values is sufficient for exactly $|A|^{k}$ of the $|A|^{n}$ policies from a set of $n$ cases to a set $A$ of actions, because a sufficient policy is determined by its decision rule, which is an arbitrary function on the $k$ values. For $n=6$, $k=3$ and two actions there are $8$ of $64$ policies served by any one three-valued representation. The thresholds are two of those $8$ for the best choice of blocks, and the remaining six served policies, such as the parity of the block index, are not thresholds at all.
+\end{example}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Construct a minimal sufficient representation for the escalation policy ``escalate if at least three alarms are outstanding'' of Example~\ref{ex:monitor}, as a function on histories, and state its number of values. Compute the number of bits.
+\end{exercise}
+
+\begin{exercise}
+Prove exactly what your representation preserves: show that it is sufficient for the escalation policy and for every policy that is a function of the escalation policy, and that it is not sufficient for any policy that separates two histories with the same escalation verdict.
+\end{exercise}
+
+\begin{exercise}
+Show that the claim ``a representation sufficient for $\pi$ is sufficient for every policy that agrees with $\pi$ on all but one case'' is false, using Result~\ref{prop:sensitivity}. Determine for which pairs of policies agreeing on all but one case the claim happens to hold.
+\end{exercise}
+
+\begin{exercise}
+The escalation policy is revised so that it escalates at two alarms instead of three. Compute the minimal sufficient representation for the revised policy, compare it with the representation of the first exercise, and determine whether the original representation is sufficient for the revised policy. Then determine the least representation sufficient for both policies.
+\end{exercise}
+
+\begin{exercise}
+Let $Y\subseteq X$ be the set of cases that a particular system can reach. Show that if $Y$ is a proper subset then a representation may be sufficient on $Y$ and not on $X$, and give a concrete instance from the document of Example~\ref{ex:document} in which only edits to section $1$ are ever permitted.
+\end{exercise}
+
+
+\begin{exercise}
+Prove the count of Example~\ref{ex:policy-count}: a representation with $k$ values is sufficient for exactly $|A|^{k}$ policies into $A$. Use it to show that, for a fixed pair of three-valued representations of six cases, the number of policies served by both is $2^{c}$, where $c$ is the number of blocks of the common coarsening, and compute it for two representations of your choice.
+\end{exercise}
+
+\begin{exercise}
+Replace thresholds by window policies $w_{s,t}(x)=[s\le x<t]$ on $\{0,\dots,n-1\}$. Determine the largest number of window policies with $1\le s<t\le n-1$ that a representation with $k$ values can serve, and justify the answer by exhibiting a representation and an upper bound.
+\end{exercise}
+
+\begin{exercise}
+Show that Result~\ref{prop:thresholds-served} depends on the linear order of the cases: for the cases $\{0,1\}^{3}$ and the policies $\pi_i(x)=x_i$ for $i=1,2,3$, determine how many of the three can be served by a representation with $k$ values for each $k$, and explain why the answer is not $k-1$.
+\end{exercise}
+

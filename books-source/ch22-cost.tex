@@ -1,0 +1,115 @@
+% ch22-cost.tex
+\chapter{The Cost of Preserving Alternatives}\label{ch:cost}
+\spec{How are storage, update, retrieval, and verification costs traded off when choosing a representation?}
+{The minimum test-set problem (Garey and Johnson); weighted set cover and its greedy approximation (Chv\'atal).}
+{Selecting observations to retain is a weighted set cover over the pairs the policy separates (Result~\ref{thm:selection}); it is intractable in general while checking a given choice is cheap; an exact storage cost for updatability (Result~\ref{prop:frontier}).}
+{Hardness of approximation for representation selection beyond the set cover bounds.}
+{Chapters~\ref{ch:families}, \ref{ch:incremental}, \ref{ch:retrieval}, and~\ref{ch:revision}.}
+
+A representation has costs beyond the number of values it takes. It occupies storage, it must be updated when events occur, it must be read when a decision is made, and its adequacy must be checked. Earlier chapters fixed one cost at a time. This chapter states the selection problem for the cheapest adequate set of observations, shows that it is a covering problem, and places the other costs next to it with an exact result for updating.
+
+\section{Selecting observations}
+
+\begin{definition}[Representation selection]\label{def:selection}
+An instance consists of a finite set $X$, a policy $\pi:X\to A$, a finite family $\mathbb F$ of candidate observations $f:X\to B_f$ with costs $c(f)>0$. A subfamily $F\subseteq\mathbb F$ is \emph{sufficient} if the joint observation $(f)_{f\in F}$ is a sufficient representation for $\pi$, that is, $\bigcap_{f\in F}\ker f\subseteq\ker\pi$. The problem is to find a sufficient subfamily of minimum total cost.
+\end{definition}
+
+Let $D(\pi)=\{\{x,x'\}:\pi(x)\ne\pi(x')\}$ be the set of \emph{disagreement pairs} of $\pi$. An observation $f$ \emph{covers} the pair $\{x,x'\}$ if $f(x)\ne f(x')$.
+
+\begin{established}[Minimum test set and greedy covering]\label{thm:testset}
+The minimum test set problem, finding a smallest set of binary tests that separates every pair of elements of a finite set, is NP-complete. The greedy algorithm for weighted set cover, which repeatedly picks the set of least cost per newly covered element, returns a cover of cost at most $H(d)$ times the optimum, where $d$ is the largest size of a set and $H(d)=1+\tfrac12+\dots+\tfrac1d$.
+\end{established}
+\source{Garey and Johnson, \emph{Computers and Intractability}, problem SP6 (minimum test set); Chv\'atal, ``A greedy heuristic for the set-covering problem,'' \emph{Mathematics of Operations Research} 4 (1979).}
+
+\begin{newresult}[Sufficient observation sets are covers of the disagreement pairs]\label{thm:selection}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $F$ is sufficient for $\pi$ if and only if every pair in $D(\pi)$ is covered by some $f\in F$. Hence representation selection is exactly weighted set cover with universe $D(\pi)$.
+  \item The greedy algorithm returns a sufficient subfamily of cost at most $H(|D(\pi)|)$ times the optimum, and $H(|D(\pi)|)\le1+2\ln|X|$.
+  \item The problem is NP-hard, even with unit costs, binary observations, and $\pi$ injective.
+  \item If every function $X\to\{0,1\}$ is available at unit cost, the optimum is $\lceil\log_2|\pi(X)|\rceil$.
+\end{enumerate}
+\end{newresult}
+\assumes{$X$ finite. Parts (b) and (c) use the cited results.}
+\begin{proof}
+(a) $F$ is insufficient exactly when some pair $\{x,x'\}$ lies in $\bigcap\ker f$ and not in $\ker\pi$, that is, when some disagreement pair is covered by no member of $F$. (b) Apply the cited bound with $d\le|D(\pi)|\le n(n-1)/2$ and $H(m)\le1+\ln m$. (c) With $\pi$ injective, $D(\pi)$ is the set of all pairs and a sufficient family is exactly a set of tests separating all pairs, the minimum test set problem. (d) A set of $m$ binary observations takes at most $2^{m}$ joint values, so $2^{m}\ge|\pi(X)|$ is necessary, and $m=\lceil\log_2|\pi(X)|\rceil$ bits encoding the value of $\pi$ suffice.
+\end{proof}
+
+\begin{newresult}[Checking is cheap, choosing is hard]\label{prop:check}
+Given $X$, $\pi$, and a subfamily $F$, whether $F$ is sufficient can be decided in time $O(|X|\,|F|)$ by hashing the joint observation of each case and testing that $\pi$ is constant on each hash class.
+\end{newresult}
+\assumes{Each observation can be evaluated in constant time.}
+\begin{proof}
+Compute the tuple $(f(x))_{f\in F}$ for each $x$ and group cases by it; $F$ is sufficient if and only if $\pi$ is constant on each group, by Result~\ref{thm:sufficiency}.
+\end{proof}
+
+The asymmetry between Results~\ref{thm:selection} and~\ref{prop:check} is the one that makes verification (Chapter~\ref{ch:verification}) attractive: a proposed set of observations can be certified quickly even when finding the cheapest one is intractable.
+
+\section{The cost of being updatable}
+
+The cost of updating enters through the maintainable representations of Chapter~\ref{ch:incremental}. Recall the property $P_n(h)=\mathbf 1[c(h)\ge n]$ of Result~\ref{thm:gap}, where $c(h)$ counts the alarms since the last reset in the monitor of Example~\ref{ex:monitor}.
+
+\begin{newresult}[The updatable storage frontier for a threshold property]\label{prop:frontier}
+Every maintainable representation that is sufficient for $P_n$ takes at least $n+1$ values, and the capped count $\min(c,n)$ is one with exactly $n+1$. Any representation sufficient for $P_n$ with fewer than $n+1$ values, in particular the two-valued representation by $P_n$ itself, is not maintainable: the value after the next event is not a function of the value before it and the event.
+\end{newresult}
+\assumes{Events $\{\mathrm{tick},\mathrm{alarm},\mathrm{reset}\}$ as in Example~\ref{ex:monitor}.}
+\begin{proof}
+This is Result~\ref{thm:gap}(b): $s_{\mathrm{one}}(P_n)=2$ and $s_{\mathrm{inc}}(P_n)=n+1$. The capped count is maintainable and $n+1$-valued. A maintainable sufficient representation with fewer than $n+1$ values would contradict $s_{\mathrm{inc}}(P_n)=n+1$.
+\end{proof}
+
+The result prices updatability exactly: for this property, from two values to $n+1$. Combined with Result~\ref{prop:index} the counter also supports retrieval at depth one, since the value is a single stored cell. The three costs (values, update, retrieval) for $P_n$ thus occupy a single point if the counter is chosen, and no design is better on all of them.
+
+\begin{remark}
+Result~\ref{thm:selection} treats storage in the number of observations; Result~\ref{prop:frontier} treats it in the number of values. The two are related by $\log_2$ of the number of values being a lower bound on the number of binary observations. A complete cost model for Volume~2 will have to fix one convention; the results of this chapter hold in the convention stated in each.
+\end{remark}
+
+
+\section{The price of a restricted vocabulary}\label{sec:vocab}
+
+Result~\ref{thm:selection}(d) shows that when every binary observation is available the optimum is logarithmic in the number of decisions. The available observations in practice are a fixed vocabulary, and the distance between the two optima measures what the vocabulary costs.
+
+\begin{newresult}[Parity over a threshold vocabulary]\label{prop:vocab}
+Let $X=\{1,\dots,n\}$ with $n\ge2$, let $\pi(x)=x \bmod 2$, and let $\mathbb F$ be the threshold observations $\mathbf 1[x\ge t]$, $t=2,\dots,n$, at unit cost. Then $|D(\pi)|=\lceil n/2\rceil\lfloor n/2\rfloor$, every sufficient subfamily is all of $\mathbb F$, and the optimum is $n-1$, whereas with all binary observations available it is $1$.
+\end{newresult}
+\assumes{$X$ finite and linearly ordered.}
+\begin{proof}
+The disagreement pairs are the pairs consisting of one odd and one even element, of which there are $\lceil n/2\rceil\lfloor n/2\rfloor$. For each $t$ the adjacent pair $\{t-1,t\}$ has opposite parities, and the only threshold observation that separates it is $\mathbf 1[x\ge t]$. By Result~\ref{thm:selection}(a) every threshold must be selected. The unrestricted optimum is $\lceil\log_2 2\rceil=1$, by the observation $\pi$ itself.
+\end{proof}
+
+For $n=8$ the pair set has $16$ elements, the vocabulary has seven members, and all seven are needed, so the vocabulary multiplies the cost by seven. The same vocabulary is perfectly adequate for a threshold policy, where a single observation suffices. A vocabulary is therefore not good or bad in itself but adequate or inadequate relative to the policies it must serve, which is the viewpoint of the revision horizon in Chapter~\ref{ch:revision}.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Let $X=\{1,\dots,8\}$, $\pi$ the parity of $x$, and $\mathbb F$ the threshold observations $\mathbf 1[x\ge t]$ for $t=2,\dots,8$ at unit cost. Compute $D(\pi)$, find a minimum sufficient subfamily, and compare its size with $\lceil\log_2|\pi(X)|\rceil$.
+\end{exercise}
+
+\begin{exercise}
+Show that the greedy algorithm can return a cover that is a factor $\Omega(\log n)$ above the optimum for an explicit family of instances of representation selection, using the standard set cover example.
+\end{exercise}
+
+\begin{exercise}
+Prove that if $F_1$ and $F_2$ are sufficient for $\pi_1$ and $\pi_2$ respectively then $F_1\cup F_2$ is sufficient for $(\pi_1,\pi_2)$, and that the minimum cost for the pair can be strictly below the sum of the minimum costs.
+\end{exercise}
+
+\begin{exercise}
+For a monitor with $m$ independent obligations (Result~\ref{thm:monitor}), compute the minimum number of binary observations needed to represent the monitor state, and compare it with $m$.
+\end{exercise}
+
+\begin{exercise}
+Using Result~\ref{prop:check}, describe a procedure that, given a proposed representation and a revision, produces the set of affected cases of Result~\ref{prop:affected} in time linear in $|X|$.
+\end{exercise}
+
+
+\begin{exercise}
+For the vocabulary of Result~\ref{prop:vocab} and $n=8$ find the minimum sufficient subfamily for the policy $\pi(x)=\mathbf 1[x\bmod 4\in\{0,1\}]$, and show that the answer is the number of $x$ with $\pi(x)\ne\pi(x+1)$.
+\end{exercise}
+
+\begin{exercise}
+Generalize Result~\ref{prop:vocab} to a policy on $\{1,\dots,n\}$ and the threshold vocabulary: prove that the minimum sufficient subfamily has size equal to the number of adjacent disagreements $|\{x:\pi(x)\ne\pi(x+1)\}|$.
+\end{exercise}
+
+\begin{exercise}
+Give a vocabulary of $n-1$ binary observations on $n$ cases and a policy for which some strict subfamily is sufficient although no single observation covers more than one disagreement pair, or prove that no such instance exists.
+\end{exercise}
+

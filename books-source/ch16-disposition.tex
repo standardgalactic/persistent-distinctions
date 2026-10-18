@@ -1,0 +1,125 @@
+% ch16-disposition.tex
+\chapter{Disposition and Accountable Termination}\label{ch:disposition}
+\spec{Under what assumptions can each unit of work be disposed of exactly once?}
+{Impossibility of coordinated action over unreliable channels (the two generals problem); idempotence and deduplication.}
+{Exactly-once application of effects under stated assumptions of identity, atomic recording, and fair channels (Result~\ref{thm:exactly-once}); a tight lower bound on deduplication memory (Result~\ref{thm:dedup-memory}); failure of the guarantee when recording and applying are not atomic (Result~\ref{prop:non-atomic}).}
+{None.}
+{Chapters~\ref{ch:incremental}, \ref{ch:provenance}, and~\ref{ch:identity}.}
+
+A unit of work, a payment, a message to be acted on, a record to be deleted, ends in exactly one way when the system is accountable for it: it is done, and it is done once. Failures make this hard to guarantee. A message can be lost, a reply can be lost, a process can crash between acting and recording that it has acted. This chapter states the impossibility that governs the problem, the assumptions under which the guarantee can nonetheless be given, and how much memory the guarantee costs.
+
+\section{What cannot be done}
+
+\begin{established}[Coordinated action over an unreliable channel]\label{thm:two-generals}
+There is no protocol by which two parties communicating over a channel that may lose any message can be certain to reach agreement on a joint action, in the sense that each acts if and only if the other acts, in every execution that may lose messages, unless one of them can act without the other's knowledge.
+\end{established}
+\source{Akkoyunlu, Ekanadham, and Huber (1975); Gray, ``Notes on data base operating systems'' (1978); Halpern and Moses, ``Knowledge and common knowledge in a distributed environment,'' \emph{Journal of the ACM} 37 (1990).}
+
+The consequence for disposition is that no protocol over a channel that may drop messages can guarantee that the sender knows the effect occurred exactly when it occurred. The guarantees that follow therefore hold relative to assumptions that exclude arbitrary loss, and a claim of exactly-once disposition that does not state those assumptions is incomplete.
+
+\section{Assumptions that make exactly-once effects possible}
+
+The model has a sender, a receiver, and a channel. The sender holds units of work, each with an identifier from a set $I$. The channel may drop, duplicate, or reorder messages. The receiver is a deterministic machine with durable state; on each delivered message $\mathrm{msg}(u)$ it changes state and may produce an output $\mathrm{apply}(u)$, which is the effect to be disposed of, and an acknowledgement.
+
+\begin{definition}[Assumptions and the exactly-once property]\label{def:exactly-once}
+Four assumptions are made.
+\begin{enumerate}[nosep,label=(A\arabic*)]
+  \item \emph{Identity.} Each unit has a unique identifier $u\in I$ that is carried by every message about it.
+  \item \emph{Record.} The receiver retains a set $D\subseteq I$ of identifiers whose effect it has applied.
+  \item \emph{Atomicity.} On delivery of $\mathrm{msg}(u)$ the receiver, in a single step, tests $u\in D$, applies the effect and adds $u$ to $D$ if $u\notin D$, and acknowledges in either case.
+  \item \emph{Fairness.} If the sender sends a message infinitely often, the channel delivers it infinitely often, in each direction; and the sender retransmits $\mathrm{msg}(u)$ until it receives an acknowledgement for $u$.
+\end{enumerate}
+A system has the \emph{exactly-once property} if in every execution consistent with the assumptions, each submitted unit $u$ has $\mathrm{apply}(u)$ output exactly once, and the sender eventually stops retransmitting $u$.
+\end{definition}
+
+The accounting boundary is part of the assumption: the exactly-once property concerns the effects the receiver itself applies in the single step of (A3). Effects outside that step, such as an email sent in the course of processing, are subject to the same limits as any other message over an unreliable channel.
+
+\begin{newresult}[Exactly-once effects under (A1) to (A4)]\label{thm:exactly-once}
+Under (A1) to (A4) the protocol in which the sender retransmits until acknowledged and the receiver deduplicates against $D$ has the exactly-once property.
+\end{newresult}
+\assumes{(A1) to (A4) of Definition~\ref{def:exactly-once}. The receiver does not lose $D$.}
+\begin{proof}
+\emph{At most once.} By (A3) the effect for $u$ is applied only when $u\notin D$, and $u$ is then added to $D$ in the same step. By (A2) $D$ is retained. Hence after the first application every later delivery finds $u\in D$ and applies nothing.
+
+\emph{At least once and termination.} While the sender has no acknowledgement it sends $\mathrm{msg}(u)$ infinitely often, so by fairness the receiver receives it. If $u\notin D$ at that moment, the effect is applied; in either case the receiver acknowledges. Thus $u\in D$ after the first delivery, and the receiver sends an acknowledgement on every delivery. The sender keeps retransmitting until an acknowledgement arrives; each retransmission is a delivery producing an acknowledgement, and infinitely many acknowledgements are sent, so by fairness one arrives and the sender stops.
+\end{proof}
+
+\begin{newresult}[Without atomicity the guarantee fails in one of two ways]\label{prop:non-atomic}
+Suppose (A3) is replaced by two steps, apply and record, in either order, between which the receiver may crash and restart with its durable state. If the receiver records first and then applies, there is an execution in which the effect for $u$ is never applied. If it applies first and then records, there is an execution in which the effect for $u$ is applied twice.
+\end{newresult}
+\assumes{Crashes may occur between the two steps and the retransmitting sender behaves as in (A4). The crash loses only what has not been written to durable state.}
+\begin{proof}
+Record then apply: deliver $\mathrm{msg}(u)$, record $u$ in $D$, crash before applying. After restart $u\in D$, so every retransmission is treated as a duplicate and the effect is never applied. Apply then record: deliver $\mathrm{msg}(u)$, apply the effect, crash before recording. After restart $u\notin D$, the retransmission applies the effect a second time.
+\end{proof}
+
+The two orders correspond to the familiar at-most-once and at-least-once disciplines. Exactly-once is obtained by making the application and the recording one step, which in practice means placing both inside one atomic transaction on the same store.
+
+\section{The memory cost of deduplication}
+
+The receiver in Theorem~\ref{thm:exactly-once} keeps the set $D$. The next result shows that this is not a design choice but a necessity when the sender's retransmission is unbounded.
+
+\begin{newresult}[Deduplication memory]\label{thm:dedup-memory}
+Let $I$ be finite and let $R$ be any deterministic receiver (a Mealy machine over input alphabet $\{\mathrm{msg}(u):u\in I\}$ with output $\mathrm{apply}(u)$ or none) such that on every finite sequence of deliveries, with arbitrary duplication and reordering, each identifier that occurs is applied exactly once in total. Then $R$ has at least $2^{|I|}$ reachable states, and the machine that tracks $D$ has exactly $2^{|I|}$.
+\end{newresult}
+\assumes{Arbitrary duplication of any identifier at any later time is possible. The receiver sees only the sequence of deliveries.}
+\begin{proof}
+For $S\subseteq I$ let $q_S$ be the state reached by delivering the identifiers in $S$ once each in a fixed order. Let $S\ne S'$ and choose $u\in S\setminus S'$ (the other case is symmetric). Deliver $u$ once more after the sequence for $S$: the total number of applications of $u$ must still be $1$, and it was already $1$, so $R$ outputs nothing. Deliver $u$ after the sequence for $S'$: $u$ has not yet occurred, so it must be applied and $R$ outputs $\mathrm{apply}(u)$. The two states respond differently to the same input, hence $q_S\ne q_{S'}$. There are $2^{|I|}$ subsets, so $R$ has at least that many states. The machine whose state is $D$ and whose transition adds the delivered identifier has exactly $2^{|I|}$ states and meets the specification.
+\end{proof}
+
+The bound is exactly the lower bound for a record that distinguishes sets of identifiers by what a retransmission would do. It holds for unbounded duplication. If duplicates of an identifier can arrive only within a bounded window after its first delivery, the receiver can discard old entries, and the bound weakens accordingly (Exercise~\ref{ex:window}). The practical content is that garbage collection of the record is a statement about the sender: it is safe only if the sender can no longer retransmit, and the receiver can know this only if the protocol delivers that fact to it, which by Result~\ref{thm:two-generals} cannot be done with certainty over a channel that may lose messages. Every deployed system therefore either bounds retransmission by an assumption about time or keeps the record.
+
+
+\section{How often the non-atomic orders fail}\label{sec:fail-rates}
+
+Result~\ref{prop:non-atomic} shows that each non-atomic order fails in some execution. A design decision is better informed by the rate of failure under an assumed crash model, and the rates are exact under a simple one. Suppose that on each delivery that reaches the two-step handler the receiver crashes between the steps independently with probability $c\in(0,1)$, that a crash loses nothing already written to durable state, and that the sender keeps retransmitting until an acknowledgement is received, so that the unit is delivered again after every crash.
+
+\begin{newresult}[Failure rates of the two orders]\label{prop:fail-rates}
+Under the crash model above, with the order apply-then-record the number $N$ of applications of the effect for a unit satisfies $\Pr[N=n]=c^{\,n-1}(1-c)$ for $n\ge1$, so that $\Pr[N\ge2]=c$ and $\mathbb E[N]=1/(1-c)$, and the expected number of surplus applications is $c/(1-c)$. With the order record-then-apply, the unit is never applied with probability exactly $c$ and applied exactly once with probability $1-c$. With the atomic step of (A3), $N=1$ with probability one.
+\end{newresult}
+\assumes{Independent crash probability $c$ at each delivery of the two-step handler; the sender retransmits after every crash; the channel delivers each retransmission.}
+\begin{proof}
+With apply-then-record, a delivery with $u\notin D$ applies the effect and then crashes with probability $c$ before recording, in which case the state is unchanged and the next retransmission faces the same situation; the delivery that does not crash records $u$, after which all deliveries are treated as duplicates. So the number of applications is the number of deliveries up to and including the first non-crashing one, which is geometric with success probability $1-c$. With record-then-apply, the first delivery records $u$; if the crash occurs before the application, which has probability $c$, every later delivery is a duplicate and nothing is applied, and otherwise the effect is applied once and all later deliveries are duplicates.
+\end{proof}
+
+For a crash probability of $0.01$ per handled message, the apply-first order applies the effect twice or more for one unit in a hundred, and the expected number of surplus applications is $0.0101$ per unit, about ten thousand per million units; the record-first order drops one unit in a hundred. For $c=0.001$ the two figures become one in a thousand, and for $c=0.1$ one in ten, with expected surplus $0.111$ per unit in the apply-first order. The apply-first order is the usual choice because a duplicate can be made harmless by making the effect idempotent, which is the subject of the next remark, whereas a lost effect cannot be recovered at all; the rates show that the choice is not a matter of principle but of which error the effect can absorb.
+
+\begin{remark}
+An effect is \emph{idempotent} if applying it twice is the same as applying it once. For an idempotent effect the apply-first order has exactly-once \emph{outcome} even though it has at-least-once \emph{application}, since the state of the world after $N\ge1$ applications equals the state after one. The distinction between exactly-once application and exactly-once outcome is the distinction between a guarantee about the receiver's steps and a guarantee about the state they leave. It is the second that most users of the system rely on, and it is available without atomicity precisely when the effect has this algebraic property.
+\end{remark}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{ex:window}
+Suppose duplicates of an identifier can be delivered only within the next $W$ deliveries after its first delivery. Show that a receiver that remembers the last $W$ delivered identifiers satisfies the specification of Result~\ref{thm:dedup-memory}, and compare its number of states with $2^{|I|}$. Show that for $|I|=10$ and $W=3$ the window store has $1111$ states and is larger than $2^{10}$, while for $|I|=100$ it has $1010101$ states against $2^{100}$, and say what this shows about when a bounded window saves memory.
+\end{exercise}
+
+\begin{exercise}
+Prove that if identifiers are not unique, so that two distinct units can carry the same identifier, no receiver can have the exactly-once property for both units. Relate this to the identity criteria of Chapter~\ref{ch:identity}.
+\end{exercise}
+
+\begin{exercise}
+The sender retransmits until acknowledged, and the acknowledgement is itself acknowledged, so that the receiver may delete $u$ from $D$ on the second acknowledgement. Show that the second acknowledgement can be lost, leaving the receiver unable to decide whether to delete, and identify the point at which Result~\ref{thm:two-generals} applies.
+\end{exercise}
+
+\begin{exercise}
+An effect consists of two operations, a database write inside the receiver's store and an external notification. Show that exactly-once holds for the write under (A1) to (A4), and give an execution in which the notification is delivered twice or not at all. State the accounting boundary for which the guarantee holds.
+\end{exercise}
+
+\begin{exercise}
+Without fairness, give an execution in which the sender retransmits forever, the receiver has applied the effect, and no acknowledgement ever arrives. Explain which part of the exactly-once property fails and which survives.
+\end{exercise}
+
+
+\begin{exercise}
+Verify the formulas of Result~\ref{prop:fail-rates} for $c=\tfrac12$ by summing the distribution of $N$, and compute the probability that a batch of $1000$ units has at least one surplus application in the apply-first order, and at least one lost unit in the record-first order, for $c=0.001$.
+\end{exercise}
+
+\begin{exercise}
+Classify the following effects as idempotent or not: setting a field to a value, incrementing a counter, appending a line to a log, inserting a row with a given key into a table with a uniqueness constraint, and charging a payment with an idempotency token supplied by the sender. For each non-idempotent effect, describe a modification that makes it idempotent and say what record the modification adds.
+\end{exercise}
+
+\begin{exercise}
+Modify the crash model so that the crash probability depends on the step, $c_1$ before applying and $c_2$ between applying and recording, in the apply-first order, where $c_1$ is the probability of a crash before the effect is applied. Compute the distribution of $N$ and show that it depends only on $c_2$. Explain what this says about where in the handler reliability engineering effort is best spent.
+\end{exercise}
+

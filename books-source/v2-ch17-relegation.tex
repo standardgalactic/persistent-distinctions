@@ -1,0 +1,169 @@
+% v2-ch17-relegation.tex
+\chapter{Aspect Relegation as Hybrid Switching}\label{ch:relegation}
+\spec{When does handing a task to an automatic controller preserve the safety constraint, and when does it conceal errors?}
+{Switched systems and dwell-time analysis (Liberzon; Hespanha and Morse); hybrid automata; the robust kernel of Chapter~\ref{ch:robust}.}
+{When both controllers keep one common set invariant, no condition on switching is needed (Result~\ref{prop:common}); when they keep different sets invariant, switching alone can leave the safe set (Result~\ref{prop:differ}); under a common core, a handover property, a latency bound, and a dwell time, the safe set is preserved against faults of the automatic controller (Result~\ref{thm:relegation}); the hypotheses are sharp in a worked family (Result~\ref{prop:sharp}); the tolerable latency is a graph distance and fixes the least monitoring rate (Result~\ref{prop:latency}).}
+{None. The conditional statement proposed in the outline is proved here in a corrected form.}
+{Chapters~\ref{ch:viability}, \ref{ch:robust}, and~\ref{ch:history-state}.}
+
+To relegate an aspect of a task is to stop attending to it and let a procedure run: an autopilot holds altitude, a clerk's template files the form, a script rotates the keys. Relegation is a benefit when the procedure keeps the constraint without supervision and a hazard when it fails without notice. The question of the outline is when the system as a whole keeps its safe set under switching between supervised and relegated operation. The answer has three parts, which this chapter proves in turn: a case in which no condition on the switching is needed, a case in which switching alone is enough to break safety, and the conditions, on latency and dwell time, that restore it when the automatic controller can fail.
+
+\section{Switched systems with a fault model}
+
+Fix a finite controlled system $(X,U,F,\delta)$ and a safe set $K\subseteq X$ as in Chapter~\ref{ch:viability}. An \emph{explicit} controller $\kappa_E$ and an \emph{automatic} controller $\kappa_A$ are state feedbacks, $\kappa(x)\in F(x)$. For a set $S$ write $S$ \emph{invariant under} $\kappa$ if $\delta(x,\kappa(x))\in S$ for every $x\in S$. For $Z\subseteq X$ let $R_j(Z)$ be the set of states reachable from $Z$ in exactly $j$ steps by arbitrary feasible actions, with $R_0(Z)=Z$.
+
+\begin{definition}[Hybrid execution]\label{def:hybrid}
+A configuration is a state $x$ together with a mode: $E$ (explicit controller active, with a counter $m\ge0$ of consecutive steps spent in $E$), $A_{\mathrm{ok}}$ (automatic controller active and nonfaulty), or $A_{\mathrm{fault}}$ (automatic controller active and faulty, with a counter $j\ge1$ of faulty steps taken). In $E$ the action is $\kappa_E(x)$; in $A_{\mathrm{ok}}$ it is $\kappa_A(x)$; in $A_{\mathrm{fault}}$ it is an arbitrary $u\in F(x)$. The mode changes as follows.
+\begin{itemize}[nosep]
+  \item \emph{Fault}: from $A_{\mathrm{ok}}$ the fault may begin at any time.
+  \item \emph{Detection with latency $d\ge1$}: from $A_{\mathrm{fault}}$ the system switches to $E$ at some time, and at the latest after $d$ faulty steps. From $A_{\mathrm{ok}}$ it may also switch to $E$ at any time (a false alarm).
+  \item \emph{Handover with dwell time $\tau\ge0$}: from $E$ the system may switch to $A_{\mathrm{ok}}$ only after $m\ge\tau$.
+\end{itemize}
+An execution is any sequence consistent with these rules. The \emph{latency} and the \emph{dwell time} are thus constraints on the switching signal, and the fault is chosen by an adversary.
+\end{definition}
+
+The adversary of the definition chooses when the fault begins, what the faulty controller does, and when a permitted switch happens; the guarantees below hold for every such choice.
+
+\section{When no condition is needed, and when it is not enough}
+
+\begin{newresult}[A common invariant set survives any switching]\label{prop:common}
+If $S\subseteq K$ is invariant under both $\kappa_E$ and $\kappa_A$, then every execution from $S$ in which the automatic controller never faults stays in $S$, for every switching signal, with no condition on dwell time or latency.
+\end{newresult}
+\assumes{No faults.}
+\begin{proof}
+Induct on the length: if $x_t\in S$ then $x_{t+1}=\delta(x_t,\kappa(x_t))\in S$ for whichever $\kappa\in\{\kappa_E,\kappa_A\}$ is active.
+\end{proof}
+
+The statement of the outline is thus true and vacuous in its strong form: if both controllers keep the safe set invariant, the switching signal need not be restricted. Dwell time and latency enter only when the hypothesis is weakened to what is true in practice.
+
+\begin{newresult}[Distinct invariant sets do not compose]\label{prop:differ}
+There is a system and controllers $\kappa_1,\kappa_2$ with sets $S_1,S_2\subseteq K$ such that $S_i$ is invariant under $\kappa_i$, but execution that switches from $\kappa_1$ to $\kappa_2$ at a state of $S_1$ leaves $K$ at the first step after the switch, whatever the dwell time.
+\end{newresult}
+\assumes{Constructed.}
+\begin{proof}
+Take $X=\{a,b,c\}$, $K=\{a,b\}$, $U=\{\mathrm{stay},\mathrm{go}\}$ with $\delta(\cdot,\mathrm{stay})$ the identity and $\delta(a,\mathrm{go})=\delta(b,\mathrm{go})=c$. Let $\kappa_1(a)=\mathrm{stay}$, $\kappa_1(b)=\mathrm{go}$, $\kappa_2(a)=\mathrm{go}$, $\kappa_2(b)=\mathrm{stay}$. Then $S_1=\{a\}$ is invariant under $\kappa_1$ and $S_2=\{b\}$ under $\kappa_2$. From $a$ under $\kappa_1$, a switch to $\kappa_2$ yields the action $\mathrm{go}$ and the state $c\notin K$. A dwell time restricts how soon one may switch away from a controller, not what the controller does after the switch.
+\end{proof}
+
+\section{The conditional theorem}
+
+The following hypotheses describe a relegated system whose controllers keep different sets invariant, but share a core to which the explicit controller can return the system, and whose automatic controller can be allowed to fail for up to $d$ steps without leaving the region the explicit controller can recover.
+
+\begin{newresult}[Invariant preservation under relegation]\label{thm:relegation}
+Let $S_c\subseteq S_E\subseteq K$ satisfy:
+\begin{enumerate}[nosep,label=(H\arabic*)]
+  \item $S_E$ is invariant under $\kappa_E$, and $S_c$ is invariant under both $\kappa_E$ and $\kappa_A$.
+  \item (\emph{Handover}) For every $x\in S_E$ the trajectory of $\kappa_E$ from $x$ is in $S_c$ at time $\tau$.
+  \item (\emph{Latency}) $R_j(S_c)\subseteq S_E$ for every $0\le j\le d$.
+\end{enumerate}
+Then every execution of Definition~\ref{def:hybrid} with latency $d$ and dwell time $\tau$ that starts in mode $A_{\mathrm{ok}}$ at a state of $S_c$, or in mode $E$ with $m=0$ at a state of $S_E$, stays in $K$ forever, whatever the fault does.
+\end{newresult}
+\assumes{Finite system; $\kappa_A$ is arbitrary outside $S_c$; the fault is arbitrary within the feasible actions.}
+\begin{proof}
+We show that every reachable configuration is of one of three kinds: (a) mode $A_{\mathrm{ok}}$ with $x\in S_c$; (b) mode $A_{\mathrm{fault}}$ with counter $j\le d$ and $x\in R_j(S_c)$; (c) mode $E$ with counter $m$, $x\in S_E$, and either $m\ge\tau$ and $x\in S_c$, or $m<\tau$ and the $\kappa_E$-trajectory from $x$ is in $S_c$ after $\tau-m$ further steps. All three imply $x\in K$. In kind (c) with $m=0$ the second alternative is exactly (H2) applied to $x\in S_E$ (for $\tau=0$ it reads $x\in S_c$). The initial configurations are of these kinds.
+
+(a) $\to$ (a) by $\kappa_A$, since $S_c$ is $\kappa_A$-invariant. (a) $\to$ (b) with $j=1$: the state is in $R_1(S_c)$. (a) $\to$ (c) by a false alarm: $x\in S_c\subseteq S_E$, and (H2) gives the alternative required at $m=0$. (b), $j\to j+1\le d$: the state is in $R_{j+1}(S_c)$. (b) $\to$ (c): by (H3) $x\in R_j(S_c)\subseteq S_E$, and (H2) gives the alternative at $m=0$; detection occurs by $j=d$, so no faulty step number exceeds $d$. (c) $\to$ (c): the state stays in $S_E$ by (H1), and the alternative is propagated: a trajectory in $S_c$ after $\tau-m$ steps is in $S_c$ after $\tau-m-1$ steps from its successor, and once in $S_c$ the state stays there because $S_c$ is $\kappa_E$-invariant. (c) $\to$ (a) is permitted only when $m\ge\tau$, so $x\in S_c$.
+\end{proof}
+
+The theorem shows what the dwell time is for: it is the time that the explicit controller needs to bring the state from the larger set it can recover (H1) to the core where the automatic controller is safe (H2). The latency is the time the automatic controller can spend misbehaving before the explicit controller takes over, and (H3) says that the state, after that much arbitrary behaviour, is still in the set from which the explicit controller can act. The case $S_E=S_c=S$, $d=\tau=0$ is Result~\ref{prop:common}.
+
+\section{The hypotheses are sharp}
+
+\begin{newresult}[Sharpness of dwell time and latency]\label{prop:sharp}
+Let $X=\{-N-d-1,\dots,N+d+1\}$ with $N\ge2d\ge2$, $U=\{-1,0,1\}$, $\delta(x,u)=x+u$ (truncated at the ends), $K=[-N,N]$. Let $\kappa_E(x)=-\operatorname{sign}(x)$, $\kappa_A(x)=+1$ if $x<N-d$ and $0$ otherwise, $S_E=K$, and $S_c=[-(N-d),N-d]$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item (H1)--(H3) hold with latency $d$ and $\tau=d$, so the theorem guarantees safety.
+  \item With dwell time $d-1$ there is an execution that leaves $K$.
+  \item With latency $d+1$ there is an execution that leaves $K$.
+\end{enumerate}
+\end{newresult}
+\assumes{As stated.}
+\begin{proof}
+(a) $\kappa_E$ does not increase $|x|$, so $S_E=K$ is invariant and so is $S_c$. $\kappa_A$ keeps $S_c$: for $x<N-d$ the next state is at most $N-d$, and at $x=N-d$ it stays. From $x\in K$ the controller $\kappa_E$ reaches $|x|\le N-d$ within $d$ steps (H2 with $\tau=d$). Arbitrary actions move the state by at most one per step, so $R_j(S_c)\subseteq[-(N-d)-j,N-d+j]\subseteq K$ for $j\le d$ (H3).
+
+(b) Start in mode $E$ at $x=N$. After $d-1$ steps $x=N-d+1\notin S_c$. A switch to $A_{\mathrm{ok}}$ is permitted. Then $\kappa_A$ gives $0$ and the state stays; the fault begins and takes $d$ steps of $+1$ (within latency $d$), reaching $N-d+1+d=N+1\notin K$.
+
+(c) Start in $A_{\mathrm{ok}}$ at $x=N-d\in S_c$ and let the fault take $d+1$ steps of $+1$, reaching $N+1\notin K$.
+\end{proof}
+
+\section{Monitoring and the cost of detection}
+
+The latency is a property of the monitor: a monitor that samples the performance signal every $s$ steps leaves up to $s$ faulty steps undetected. Let the \emph{exit distance} be $\delta^{*}=\min\{j:R_j(S_c)\not\subseteq S_E\}\in\mathbb N\cup\{\infty\}$, the least number of arbitrary steps that can carry the state from the core out of the recoverable set.
+
+\begin{newresult}[Tolerable latency is a graph distance]\label{prop:latency}
+(H3) holds with latency $d$ if and only if $d\le\delta^{*}-1$. A monitor with sampling period $s$ and cost $c_{\mathrm m}$ per sample therefore preserves safety if and only if $s\le\delta^{*}-1$, at cost rate $c_{\mathrm m}/s\ge c_{\mathrm m}/(\delta^{*}-1)$ per step. The exit distance is computed by a breadth-first search from $S_c$ in time linear in the size of the transition graph. If $\delta^{*}\le1$ no monitor can satisfy (H3), and if $\delta^{*}=\infty$ no monitoring is needed.
+\end{newresult}
+\assumes{Sampling detects a fault at the next sampling instant.}
+\begin{proof}
+(H3) says that no $R_j(S_c)$ with $j\le d$ leaves $S_E$, that is, $d<\delta^{*}$. A fault that begins just after a sample is detected at the next one, so up to $s$ faulty steps occur, and $d=s$. The rest is the definition of $\delta^{*}$ as a shortest-path distance to the complement of $S_E$.
+\end{proof}
+
+The requirement is that the monitor look at the system often enough that a fault cannot take it out of the recoverable set between looks. Where the performance signal does not reveal the fault at all (a fault that keeps every sampled performance value above its threshold), no finite latency exists, and the error is concealed: Exercise~\ref{ex:conceal} asks for the construction.
+
+
+\section{The exact region of safe switching parameters}\label{sec:safe-region}
+
+Result~\ref{prop:sharp} shows that the choices $\tau=d$ and latency $d$ are safe and that one step less of dwell, or one step more of latency, is not. The two parameters can be varied independently, and the set of pairs for which the system is safe has a simple description.
+
+\begin{newresult}[The safe region in the latency--dwell plane]\label{prop:region}
+In the family of Result~\ref{prop:sharp} with $N\ge2d\ge2$, let the hybrid execution have latency $\ell\ge0$ and dwell time $\tau\ge0$, and start either in mode $A_{\mathrm{ok}}$ at a state of $S_c$ or in mode $E$ with $m=0$ at a state of $K$. Every execution stays in $K$ if and only if $\ell\le d$ and $\tau\ge\ell$.
+\end{newresult}
+\assumes{As in Result~\ref{prop:sharp}; the adversary controls the fault, its duration up to $\ell$ steps, and the switches the rules permit.}
+\begin{proof}
+\emph{Sufficiency.} Let $\ell\le d$ and $\tau\ge\ell$. Put $S_c'=[-(N-\ell),N-\ell]$, which contains $S_c$, and $S_E=K$. The controller $\kappa_E$ leaves $K$ and $S_c'$ invariant, and $\kappa_A$ leaves $S_c'$ invariant: for $x<N-d$ it moves to at most $N-d\le N-\ell$, and for $x\ge N-d$ it holds the state. From $x\in K$ the controller $\kappa_E$ reaches $|x|\le N-\ell$ within $\ell\le\tau$ steps, which is (H2) with $S_c'$, and $R_j(S_c')\subseteq K$ for $j\le\ell$, which is (H3). Result~\ref{thm:relegation} applies, with the starting states of the statement lying in $S_c\subseteq S_c'$ or in $K$.
+
+\emph{Necessity.} If $\ell\ge d+1$, start in $A_{\mathrm{ok}}$ at $x=N-d\in S_c$ and let the fault take $d+1$ steps of $+1$, reaching $N+1$. If $1\le\ell\le d$ and $\tau\le\ell-1$, start in $E$ at $x=N$, run $\kappa_E$ for $\tau$ steps to $x=N-\tau\ge N-\ell+1\ge N-d+1$, switch to $A_{\mathrm{ok}}$ (permitted since $m=\tau$), where $\kappa_A$ holds the state because $x\ge N-d$, begin the fault, and take $\ell$ steps of $+1$, reaching $N-\tau+\ell\ge N+1$.
+\end{proof}
+
+The characterization was checked by solving the safety game over the configuration graph (state, mode, counter) exhaustively, for $(N,d)=(10,3)$, $(8,2)$, $(12,4)$ and $(6,3)$ and for all $\ell,\tau$ up to $d+2$, and the safe pairs agreed with the statement in every case. For $(N,d)=(10,3)$ the safe pairs, with latency down the side and dwell time across, are as follows (S marks safe, a dot unsafe).
+\begin{center}
+\begin{tabular}{c|ccccccc}
+$\ell\backslash\tau$ & 0 & 1 & 2 & 3 & 4 & 5 & 6\\
+\hline
+0 & S & S & S & S & S & S & S\\
+1 & $\cdot$ & S & S & S & S & S & S\\
+2 & $\cdot$ & $\cdot$ & S & S & S & S & S\\
+3 & $\cdot$ & $\cdot$ & $\cdot$ & S & S & S & S\\
+4--6 & $\cdot$ & $\cdot$ & $\cdot$ & $\cdot$ & $\cdot$ & $\cdot$ & $\cdot$\\
+\end{tabular}
+\end{center}
+The region is a triangle truncated at $\ell=d$. Its design reading is a pair of trade-offs. The monitor can be slower only up to the exit distance, no matter how long the dwell, because a latency beyond $d$ lets the fault carry the state out before the explicit controller acts. Within that bound a quicker monitor lowers the dwell time that is needed, in proportion: one step of latency costs one step of dwell, and each step of dwell is a step of supervised operation that the relegation was meant to avoid. The cheapest safe configuration in terms of supervised time is therefore the fastest monitor that can be afforded, and the cost of attention shows up as the sampling rate of the monitor and not as the dwell time.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+In the system of Result~\ref{prop:sharp} compute $\delta^{*}$ and the least cost rate of a monitor with sampling cost $c_{\mathrm m}$.
+\end{exercise}
+
+\begin{exercise}\label{ex:conceal}
+Let the monitor flag a fault only when a performance function $p:X\to\mathbb R$ falls below a threshold $\theta$. Give a system and a fault whose trajectory leaves $S_E$ while $p\ge\theta$ at every state until the exit, and show that no latency bound holds.
+\end{exercise}
+
+\begin{exercise}
+Show that Result~\ref{thm:relegation} remains true if the automatic controller is allowed to be nondeterministic within a set of feasible actions that keep $S_c$ invariant, and fails if the set may include an action leaving $S_c$ while nonfaulty.
+\end{exercise}
+
+\begin{exercise}
+Replace the false alarm rule by the requirement that a switch from $A_{\mathrm{ok}}$ to $E$ occurs only after a fault; state which of the hypotheses can be dropped.
+\end{exercise}
+
+\begin{exercise}
+For two relegated aspects sharing one explicit controller, with cores $S_c^{1},S_c^{2}$, formulate the joint latency hypothesis and show that the tolerable latency of each is reduced by the other's faults in general.
+\end{exercise}
+
+\begin{exercise}
+Using Result~\ref{prop:region}, compute for $(N,d)=(10,3)$ the least total of latency plus dwell for which the system is safe and the starting latency is at least $1$, and the number of safe pairs $(\ell,\tau)$ with $\ell,\tau\le6$.
+\end{exercise}
+
+\begin{exercise}
+Suppose that monitoring at latency $\ell$ costs $c_{\mathrm m}/\ell$ per step and that each step of latency costs $a h$ per step in expected loss, where $h$ is the fault rate and $a$ the loss per step of undetected fault. Show that the cost rate $c_{\mathrm m}/\ell+ah\ell$ is minimized over real $\ell>0$ at $\ell^{*}=\sqrt{c_{\mathrm m}/(ah)}$, and that over the integers $\ell\le\ell_{\max}$ allowed by Result~\ref{prop:region} the minimizer is the better of $\lfloor\ell^{*}\rfloor$ and $\lceil\ell^{*}\rceil$ if $\ell^{*}\le\ell_{\max}$ and is $\ell_{\max}$ otherwise.
+\end{exercise}
+
+\begin{exercise}
+Prove the claim in the necessity argument that $\kappa_A$ holds the state at $x\ge N-d$, and show by an example that for $x$ between $N-d$ and $N$ the controller $\kappa_A$ is not itself safe against a fault.
+\end{exercise}
+
+\begin{exercise}
+Replace $\kappa_A$ by $\kappa_A'(x)=+1$ for $x<N-d'$ with $d'\ne d$, and find the safe region.
+\end{exercise}
+

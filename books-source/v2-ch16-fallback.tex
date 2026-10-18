@@ -1,0 +1,159 @@
+% v2-ch16-fallback.tex
+\chapter[Corrective Reachability and Fallback Regions]{Corrective Reachability, Degradation, and Fallback Regions}\label{ch:fallback}
+\spec{Does a path exist from an undesirable state to an acceptable region, and at what cost?}
+{Backward reachability and attractors; potential functions; graceful degradation (Chapter 17 of the first volume).}
+{The recoverable region is the least fixed point of the backward step and is closed under predecessors (Result~\ref{thm:recoverable}); a local progress function guarantees recovery, the step distance is one, and greedy descent of other potentials, even with bounded lookahead, can leave the recoverable region irreversibly (Results~\ref{prop:progress} and~\ref{prop:greedy-fails}); forced recovery against an adversary is a smaller region than possible recovery (Result~\ref{thm:attractor}); fallback regions for the shedding sets are down-closed families that are polynomial to decide under a unique support and NP-complete in general (Result~\ref{thm:fallback}).}
+{None.}
+{Chapters~\ref{ch:reach}, \ref{ch:viability}, and~\ref{ch:vobl}.}
+
+Preserving viability is a statement about the future of a state that has not yet gone wrong. Real systems go wrong: a constraint is violated, a component is lost, a deadline is missed. The question then is whether the system can be brought back to an acceptable region, how long it takes, and what the system must not do while trying. This chapter treats the question for a finite system, compares recovery by local corrections with recovery by trajectory-level guarantees, and computes the regions of fault patterns from which the degradation of Chapter 17 of the first volume can still deliver the required service.
+
+\section{The recoverable region}
+
+Let the transition graph be as in Chapter~\ref{ch:reach} and let $T\subseteq X$ be a target set of acceptable states. For $Z\subseteq X$ put $\operatorname{Pre}(Z)=\{x:\exists u\in F(x),\ \delta(x,u)\in Z\}$ as in Chapter~\ref{ch:viability}.
+
+\begin{newresult}[The recoverable region]\label{thm:recoverable}
+Let $\mathrm{Rec}_0=T$ and $\mathrm{Rec}_{k+1}=\mathrm{Rec}_k\cup\operatorname{Pre}(\mathrm{Rec}_k)$, and let $\mathrm{Rec}(T)=\bigcup_k\mathrm{Rec}_k$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\mathrm{Rec}(T)$ is the least set containing $T$ and closed under $\operatorname{Pre}$, and equals $\{x:R(x)\cap T\ne\varnothing\}$.
+  \item $x\in\mathrm{Rec}_k$ if and only if $T$ is reachable from $x$ in at most $k$ steps, so $d_T(x)=\min\{k:x\in\mathrm{Rec}_k\}$ is the step distance to $T$. The iteration stabilizes after at most $|X|-1$ steps.
+  \item $\mathrm{Rec}(T)$ is closed under predecessors: if $x\to y$ and $y\in\mathrm{Rec}(T)$ then $x\in\mathrm{Rec}(T)$. Its complement is closed under successors.
+  \item With nonnegative edge costs, the cheapest cost of reaching $T$ from every state is computed by Dijkstra's algorithm on the reversed graph from a source joined to all of $T$, in time $O(m+n\log n)$.
+\end{enumerate}
+\end{newresult}
+\assumes{Finite $X$.}
+\begin{proof}
+(b) By induction on $k$: $x\in\mathrm{Rec}_{k+1}$ if and only if $x\in T$ or some successor lies in $\mathrm{Rec}_k$, that is, if and only if $T$ is reachable in at most $k+1$ steps. A shortest path to $T$ visits no state twice, hence has at most $|X|-1$ edges, so the iteration is stationary after $|X|-1$ steps. (a) follows from (b): $\mathrm{Rec}(T)$ contains $T$, is closed under $\operatorname{Pre}$, and every closed set containing $T$ contains each $\mathrm{Rec}_k$ by induction. (c) If $x\to y$ then anything reachable from $y$ is reachable from $x$. (d) is Result~\ref{thm:lehmann} (or the standard algorithm) applied to the reversed graph.
+\end{proof}
+
+The complement of $\mathrm{Rec}(T)$ is the set of states from which the acceptable region is out of reach: a trap in the language of Chapter~\ref{ch:irreversibility}. It is a union of components that can only reach each other, and the recoverable region is the union of the components that can reach $T$. Every action leaving the recoverable region for its complement is an irreversible edge of the ratchet.
+
+\section{Local corrections and trajectory guarantees}
+
+A common control practice is to reduce an error measure: choose, at each step, an action that decreases some function $\varphi$ measuring distance from acceptability. The guarantee that such a practice provides is as follows.
+
+\begin{newresult}[Progress functions]\label{prop:progress}
+Let $\varphi:X\to\mathbb N$ have $\varphi(x)=0$ exactly on $T$, and suppose that every $x\notin T$ has a feasible action $u$ with $\varphi(\delta(x,u))<\varphi(x)$ (local progress). Then $X\subseteq\mathrm{Rec}(T)$ and $d_T(x)\le\varphi(x)$ for all $x$, and any policy that chooses a progress action at every state reaches $T$ within $\varphi(x)$ steps. Conversely on $\mathrm{Rec}(T)$ the step distance $d_T$ itself is a progress function, with progress by exactly one step.
+\end{newresult}
+\assumes{Finite $X$.}
+\begin{proof}
+A progress action sequence strictly decreases $\varphi$ in $\mathbb N$ until $\varphi=0$, that is, until it reaches $T$, in at most $\varphi(x)$ steps. For $x\in\mathrm{Rec}(T)\setminus T$ a shortest path to $T$ starts with an action to a state of distance $d_T(x)-1$.
+\end{proof}
+
+The theorem gives a sufficient condition for local rules to work: the potential must have the progress property at every state. The next result shows that without it local rules can fail, and that more lookahead does not remove the possibility.
+
+\begin{newresult}[Greedy descent can leave the recoverable region]\label{prop:greedy-fails}
+For every $L\ge1$ there is a finite system, a target $T=\{t\}$, a function $\varphi$ with $\varphi^{-1}(0)=T$, and a state $a\in\mathrm{Rec}(T)$ such that the $L$-step greedy rule, which chooses the action from which some continuation of $L$ steps reaches the smallest value of $\varphi$, moves to a state outside $\mathrm{Rec}(T)$, from which $T$ can never be reached.
+\end{newresult}
+\assumes{Constructed.}
+\begin{proof}
+Take states $a,b_1,\dots,b_{L+1},c_1,\dots,c_{L+1},t$. Edges: $a\to b_1$, $b_j\to b_{j+1}$ for $j\le L$, $b_{L+1}\to b_{L+1}$ (a self-loop); $a\to c_1$, $c_j\to c_{j+1}$ for $j\le L$, $c_{L+1}\to t$, $t\to t$. Let $\varphi(t)=0$, $\varphi(a)=L+2$, $\varphi(b_j)=L+2-j$, and $\varphi(c_j)=L+2+j$. Then $a\in\mathrm{Rec}(T)$ via the $c$-chain, in $L+2$ steps. The $L$-step lookahead from $a$ through $b_1$ reaches $b_L$ with $\varphi=2$, while through $c_1$ it reaches $c_L$ with $\varphi=L+2+L>2$; since $t$ is $L+2$ steps away along the $c$-chain it is not seen. The greedy rule therefore chooses $b_1$. The states $b_j$ have only the $b$-chain and its self-loop as successors, so none of them can reach $t$: the edge $a\to b_1$ is an irreversible edge out of $\mathrm{Rec}(T)$.
+\end{proof}
+
+The construction is the failure that the ratchet predicts: a locally improving move can be an irreversible one, and no fixed horizon of local information is enough to detect it. The remedy is not a longer horizon but the structure of Chapter~\ref{ch:reach}: knowing which edges cross out of $\mathrm{Rec}(T)$.
+
+\section{Possible and forced recovery}
+
+When the transition is chosen partly by an adversary or by the environment, reachability splits. Let the transition be a set-valued $\delta(x,u)\subseteq X$ with the adversary choosing the successor, and define
+\[
+\operatorname{Pre}_{\exists\forall}(Z)=\{x:\exists u\in F(x),\ \delta(x,u)\subseteq Z\}.
+\]
+The \emph{attractor} of $T$ is $\mathrm{Attr}(T)=\bigcup_k\mathrm{Attr}_k$ with $\mathrm{Attr}_0=T$ and $\mathrm{Attr}_{k+1}=\mathrm{Attr}_k\cup\operatorname{Pre}_{\exists\forall}(\mathrm{Attr}_k)$. The possibly recoverable region $\mathrm{Rec}(T)$ is defined as before with $\operatorname{Pre}(Z)=\{x:\exists u,\ \delta(x,u)\cap Z\ne\varnothing\}$.
+
+\begin{newresult}[Forced recovery is smaller than possible recovery]\label{thm:attractor}
+$\mathrm{Attr}(T)\subseteq\mathrm{Rec}(T)$. The controller has a strategy that reaches $T$ against every adversary within $k$ steps if and only if $x\in\mathrm{Attr}_k$, and then a stationary strategy suffices. The inclusion can be strict.
+\end{newresult}
+\assumes{Finite $X$ and $U$; the adversary chooses a successor after seeing the controller's action.}
+\begin{proof}
+Since $\delta(x,u)\subseteq Z$ with $\delta(x,u)$ nonempty implies $\delta(x,u)\cap Z\ne\varnothing$, each $\mathrm{Attr}_k\subseteq\mathrm{Rec}_k$. For the characterization, induct on $k$. $\mathrm{Attr}_0=T$. If $x\in\mathrm{Attr}_{k+1}\setminus T$, the action $u$ with $\delta(x,u)\subseteq\mathrm{Attr}_k$ forces the next state into $\mathrm{Attr}_k$, from which a strategy reaches $T$ in $k$ more steps. Conversely a strategy that forces $T$ within $k+1$ steps from $x\notin T$ has a first action $u$ all of whose successors are forced within $k$ steps, hence lie in $\mathrm{Attr}_k$. The choice of $u$ depends on the state and the rank $k$ only, so it is stationary on ranks. For strictness take $x$ with one action leading to $\{t,z\}$ and $z$ with a self-loop only: $x\in\mathrm{Rec}(\{t\})$ but $x\notin\mathrm{Attr}(\{t\})$.
+\end{proof}
+
+The difference between the two regions is the difference between a statement that recovery is possible and one that it is guaranteed. The recoverable region is the right object for a system whose environment is neutral, and the attractor for one whose environment is adversarial or unmodelled.
+
+\section{Fallback regions for degradation}
+
+Return to the dependency systems of Chapter 17 of the first volume. Capabilities $C$ with rules $\mathcal R$ and a required set $\mathrm{Req}$ are given. Each capability $c$ carries a load $\ell(c)\ge0$ (the resource it uses when running), and the system has capacity $\Gamma$. After a set $F\subseteq C$ of capabilities is lost to faults, the system may shed further capabilities so that what it still provides is $\operatorname{Prov}(D)$ for a shed set $D\supseteq F$. A configuration is a \emph{fallback} for $F$ if $D$ is admissible ($\mathrm{Req}\subseteq\operatorname{Prov}(D)$) and the load $\ell(\operatorname{Prov}(D))=\sum_{c\in\operatorname{Prov}(D)}\ell(c)\le\Gamma$. The \emph{fallback region} is $\mathrm{FB}(\Gamma)=\{F\subseteq C:\text{a fallback exists for }F\}$.
+
+\begin{newresult}[Fallback regions]\label{thm:fallback}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $F\in\mathrm{FB}(\Gamma)$ if and only if there is a support $S$ with $S\cap F=\varnothing$ and $\ell(S)\le\Gamma$. Hence $\mathrm{FB}(\Gamma)=\bigcup_{S:\ \ell(S)\le\Gamma}2^{C\setminus S}$ over supports $S$, and $\mathrm{FB}(\Gamma)$ is closed under taking subsets and increasing in $\Gamma$.
+  \item If every capability heads exactly one rule and $\mathrm{Req}\subseteq\operatorname{Prov}(\varnothing)$, with unique minimal support $S^{*}$, then $\mathrm{FB}(\Gamma)=2^{C\setminus S^{*}}$ if $\ell(S^{*})\le\Gamma$ and $\mathrm{FB}(\Gamma)=\varnothing$ otherwise; membership is decided in linear time.
+  \item Deciding whether $F\in\mathrm{FB}(\Gamma)$ is NP-complete, even with $F=\varnothing$.
+  \item The number of maximal elements of $\mathrm{FB}(\Gamma)$ can be exponential in $|C|$.
+\end{enumerate}
+\end{newresult}
+\assumes{Finite $C$ and $\mathcal R$; loads nonnegative.}
+\begin{proof}
+(a) Let $D\supseteq F$ be admissible with $\ell(\operatorname{Prov}(D))\le\Gamma$. By the characterization of admissible shedding in Chapter 17 of the first volume (part (b)), $S=\operatorname{Prov}(D)$ is a support with $S\cap D=\varnothing$, so $S\cap F=\varnothing$. Conversely let $S$ be a support with $S\cap F=\varnothing$ and $\ell(S)\le\Gamma$, and put $D=C\setminus S\supseteq F$. By the same characterization $D\cap S=\varnothing$ gives $S\subseteq\operatorname{Prov}(D)$, and the defining operator never adds a member of $D$, so $\operatorname{Prov}(D)\subseteq C\setminus D=S$. Thus $\operatorname{Prov}(D)=S$, $D$ is admissible, and the load is $\ell(S)\le\Gamma$. The union form and the closure properties follow.
+
+(b) By part (c) of that characterization every support contains $S^{*}$, so the least load of a support is $\ell(S^{*})$, and a support disjoint from $F$ exists if and only if $S^{*}\cap F=\varnothing$. Membership is the test $S^{*}\cap F=\varnothing$ and $\ell(S^{*})\le\Gamma$, and $S^{*}$ is computed by one pass over the derivation of $\mathrm{Req}$.
+
+(c) Membership is in NP: a support $S$ is a certificate, and the conditions (self-supporting, contains $\mathrm{Req}$, disjoint from $F$, load at most $\Gamma$) are checked in polynomial time. For hardness reduce from SET COVER: given a universe $\{1,\dots,q\}$, sets $s_1,\dots,s_p\subseteq\{1,\dots,q\}$ and $k$, let $C=\{r\}\cup\{e_j\}\cup\{s_i\}$, with the single rule $(r,\{e_1,\dots,e_q\})$, rules $(e_j,\{s_i\})$ for each $i$ with $j\in s_i$, and $(s_i,\varnothing)$; let $\mathrm{Req}=\{r\}$, $\ell(s_i)=1$ and $\ell=0$ elsewhere, $F=\varnothing$, $\Gamma=k$. A support contains $r$, all $e_j$, and a set of the $s_i$ that covers every $j$; conversely any cover together with $r$ and the $e_j$ is a support. The least load of a support is the least size of a cover, so $\varnothing\in\mathrm{FB}(k)$ if and only if a cover of size at most $k$ exists.
+
+(d) Take $C=\{r\}\cup\{e_i,p_i,q_i:1\le i\le n\}$, the rule $(r,\{e_1,\dots,e_n\})$, rules $(e_i,\{p_i\})$ and $(e_i,\{q_i\})$, primitives $p_i,q_i$ with load $1$, and load $0$ elsewhere, $\mathrm{Req}=\{r\}$, $\Gamma=n$. The minimal supports choose $p_i$ or $q_i$ for each $i$, $2^n$ in all, each of load $n$, and by (a) their complements are $2^n$ distinct maximal elements of $\mathrm{FB}(n)$ (no complement contains another, since the supports are incomparable).
+\end{proof}
+
+The fallback region says which fault patterns the system can survive by degrading; it is the object that a scalar capacity number tried and failed to capture in Chapter 17 of the first volume. Part (b) shows when the number suffices, part (d) why the region cannot be tabulated, and part (c) why even its emptiness is a hard question.
+
+
+\section{A navigation stack as a worked fallback region}\label{sec:nav-stack}
+
+Take seven capabilities: \texttt{nav} (required), \texttt{pos} and \texttt{map}, and four primitives \texttt{gps}, \texttt{imu}, \texttt{odo}, \texttt{lidar}. The rules are $\texttt{nav}\leftarrow\texttt{pos}$, $\texttt{nav}\leftarrow\texttt{map}$, $\texttt{pos}\leftarrow\texttt{gps}$, $\texttt{pos}\leftarrow\{\texttt{imu},\texttt{odo}\}$, $\texttt{map}\leftarrow\texttt{lidar}$, and the primitives have empty bodies. The loads are $3$ for \texttt{gps}, $2$ for \texttt{imu}, $1$ for \texttt{odo}, $4$ for \texttt{lidar} and $0$ for the rest. The minimal supports of $\mathrm{Req}=\{\texttt{nav}\}$ are
+\begin{align*}
+S_1&=\{\texttt{nav},\texttt{pos},\texttt{gps}\} &&(\text{load }3),\\
+S_2&=\{\texttt{nav},\texttt{pos},\texttt{imu},\texttt{odo}\} &&(\text{load }3),\\
+S_3&=\{\texttt{nav},\texttt{map},\texttt{lidar}\} &&(\text{load }4).
+\end{align*}
+By Result~\ref{thm:fallback}(a), $\mathrm{FB}(\Gamma)$ is empty for $\Gamma<3$, equals $2^{C\setminus S_1}\cup2^{C\setminus S_2}$ for $3\le\Gamma<4$, and adds $2^{C\setminus S_3}$ from $\Gamma=4$ on. Counting by inclusion and exclusion, $|2^{C\setminus S_1}|=16$, $|2^{C\setminus S_2}|=8$ and their intersection has $4$ members, so $|\mathrm{FB}(3)|=20$; adding $S_3$ gives $|\mathrm{FB}(4)|=31$ of the $128$ fault patterns, and the region does not grow for any larger $\Gamma$ because no further minimal support exists. An exhaustive computation over all fault sets and all shed sets confirms these counts, and gives their distribution by size: for $\Gamma=3$ the numbers of tolerated fault sets of sizes $0,1,2,3,4$ are $1,5,8,5,1$, and for $\Gamma\ge4$ they are $1,6,13,9,2$. The least load needed after losing \texttt{gps} is $3$ (use \texttt{imu} and \texttt{odo}), after losing \texttt{gps} and \texttt{imu} it is $4$ (fall back to \texttt{lidar}), and after losing \texttt{gps} and \texttt{lidar} it is $3$.
+
+Two features deserve attention. First, the region is not a function of the number of faults: at $\Gamma=3$ the pair \{\texttt{gps},\texttt{lidar}\} is tolerated and the pair \{\texttt{gps},\texttt{imu}\} is not. Second, raising the capacity from $3$ to $4$ enlarges the region by eleven fault patterns, among them one of size one: the loss of \texttt{pos}, which no support of load $3$ survives, is tolerated at $\Gamma=4$ through the \texttt{lidar} route. Nothing is gained beyond $4$.
+
+\begin{newresult}[Fault tolerance is a transversal number]\label{prop:transversal}
+Let $P\subseteq C$ be the set of capabilities that can fail, and let $\mathcal S_\Gamma$ be the family of supports of load at most $\Gamma$. Every fault set $F\subseteq P$ with $|F|\le t$ lies in $\mathrm{FB}(\Gamma)$ if and only if no set of at most $t$ elements of $P$ meets every member of $\mathcal S_\Gamma$. Hence the largest such $t$ is $\tau_P(\Gamma)-1$, where $\tau_P(\Gamma)$ is the least size of a subset of $P$ meeting all supports in $\mathcal S_\Gamma$ (taken to be $\infty$ if some support avoids $P$).
+\end{newresult}
+\assumes{Finite system; faults are subsets of $P$.}
+\begin{proof}
+By Result~\ref{thm:fallback}(a), $F\in\mathrm{FB}(\Gamma)$ if and only if some support of load at most $\Gamma$ is disjoint from $F$, that is, if and only if $F$ does not meet every member of $\mathcal S_\Gamma$. Therefore a fault set of size at most $t$ outside $\mathrm{FB}(\Gamma)$ exists exactly when a set of at most $t$ elements of $P$ meets all supports. The largest $t$ with no such set is $\tau_P(\Gamma)-1$.
+\end{proof}
+
+In the navigation stack with $P=\{\texttt{gps},\texttt{imu},\texttt{odo},\texttt{lidar}\}$ the supports of load at most $3$ meet $P$ in $\{\texttt{gps}\}$ and $\{\texttt{imu},\texttt{odo}\}$, which needs two elements to meet both, so $t=1$; at $\Gamma=4$ the third member $\{\texttt{lidar}\}$ raises the transversal number to three and $t=2$. If the faults may also strike \texttt{nav} (which belongs to every support) the transversal number is one and no fault is tolerated, which is why the fault classes that a design claims to survive must be stated. The result converts a question about the region into a hitting-set problem, and by Result~\ref{thm:fallback}(c) the hitting-set problem is hard in general, so the number $t$ cannot be expected to be cheap to compute for large systems; for the small, hand-built dependency systems in which a designer reasons about redundancy it is a short enumeration.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute $\mathrm{Rec}_k$ and $d_T$ on the graph with edges $1\to2\to3\to4$, $3\to1$, $5\to4$, $6\to6$ and $T=\{4\}$, and identify the trap.
+\end{exercise}
+
+\begin{exercise}
+Show that every progress function $\varphi$ satisfies $d_T(x)\le\varphi(x)$ on $X$, so that $d_T$ is the pointwise smallest progress function, and give a system in which a progress function exceeds $d_T$ at a state.
+\end{exercise}
+
+\begin{exercise}
+In Result~\ref{prop:greedy-fails} modify the construction so that the escape route $c$ is cheaper in cost than the dead-end route, and explain why a cost-aware greedy rule still fails.
+\end{exercise}
+
+\begin{exercise}
+Give a system in which $\mathrm{Attr}(T)=\varnothing$ although $\mathrm{Rec}(T)=X$, and compute the attractor when the adversary may choose only among successors that are not in $T$.
+\end{exercise}
+
+\begin{exercise}
+For the dependency system of Result~\ref{thm:fallback}(d) with $n=2$, list the four maximal elements of $\mathrm{FB}(2)$, and compute the largest $t$ such that every fault set of size at most $t$ lies in $\mathrm{FB}(2)$.
+\end{exercise}
+
+\begin{exercise}
+For the navigation stack, compute the least load of a fallback for $F=\{\texttt{imu}\}$, $F=\{\texttt{odo},\texttt{lidar}\}$ and $F=\{\texttt{gps},\texttt{odo},\texttt{lidar}\}$, and state which lie in $\mathrm{FB}(3)$.
+\end{exercise}
+
+\begin{exercise}
+Add a rule $\texttt{pos}\leftarrow\{\texttt{wheel}\}$ with a new primitive \texttt{wheel} of load $2$. Recompute the minimal supports, the break points of $\mathrm{FB}(\Gamma)$ in $\Gamma$, and the fault tolerance $t$ at each.
+\end{exercise}
+
+\begin{exercise}
+Prove that $\Gamma\mapsto\tau_P(\Gamma)$ is nondecreasing, takes finitely many values, and changes only at loads of minimal supports.
+\end{exercise}
+
+\begin{exercise}
+Give a dependency system in which $\tau_P(\Gamma)$ increases by two at a single breakpoint, and explain what is added by the new minimal support.
+\end{exercise}
+

@@ -1,0 +1,65 @@
+% v2-appA-sufficiency.tex
+\chapter{Sufficiency Recap from the First Volume}\label{app:suff}
+
+This appendix collects, with proofs, the results of the first volume that this volume uses. It is self-contained, so the second volume can be read first. Statuses follow the first volume: results marked established are standard, and results marked new are elementary consequences proved here in full. Throughout, $X$ is a nonempty set of cases, a \emph{representation} is a function $r:X\to R$, and the \emph{kernel} of a function $f$ on $X$ is the equivalence relation $\ker f=\{(x,x'):f(x)=f(x')\}$.
+
+\section{Kernels and factorization}
+
+\begin{established}[Factorization]\label{a:factor}
+For functions $r:X\to R$ and $f:X\to B$ there is a function $g:r(X)\to B$ with $f=g\circ r$ if and only if $\ker r\subseteq\ker f$. The function $g$ is then unique.
+\end{established}
+\source{Standard quotient factorization.}
+\begin{proof}
+If $f=g\circ r$ and $r(x)=r(x')$ then $f(x)=g(r(x))=f(x')$. Conversely define $g(r(x))=f(x)$; this is well defined because $r(x)=r(x')$ forces $f(x)=f(x')$, and it is unique because $r$ maps onto $r(X)$.
+\end{proof}
+
+\begin{established}[Joint kernel and coarsening]\label{a:joint}
+For functions $f_1,\dots,f_m$ on $X$ the representation $(f_1,\dots,f_m)$ has kernel $\bigcap_i\ker f_i$. If $r'=g\circ r$ then $\ker r\subseteq\ker r'$: a coarsening can answer no question that $r$ cannot, and discarded distinctions are not recovered by any later computation.
+\end{established}
+\begin{proof}
+$(f_i)(x)=(f_i)(x')$ if and only if every $f_i$ agrees. If $r(x)=r(x')$ then $g(r(x))=g(r(x'))$.
+\end{proof}
+
+\section{Sufficiency}
+
+A \emph{policy} is a function $\pi:X\to A$. A representation $r$ is \emph{sufficient} for $\pi$ if $\pi=d\circ r$ for some decision rule $d$, equivalently if $\ker r\subseteq\ker\pi$.
+
+\begin{newresult}[Minimal sufficient representation]\label{a:minimal}
+The representation $r$ is sufficient for $\pi$ and takes the fewest possible values among sufficient representations if and only if $\ker r=\ker\pi$, and then it takes $|\pi(X)|$ values. For a family $\Phi$ of policies, $r$ is sufficient for every member if and only if $\ker r\subseteq\kappa(\Phi):=\bigcap_{\pi\in\Phi}\ker\pi$, and the least number of values is $|X/\kappa(\Phi)|$.
+\end{newresult}
+\begin{proof}
+Sufficiency is Result~\ref{a:factor}. A representation with $\ker r\subseteq\ker\pi$ has at least as many classes as $\ker\pi$, with equality exactly when the kernels are equal. The statement for a family follows by applying the same argument to the joint kernel.
+\end{proof}
+
+\begin{newresult}[Compression is free only for injective representations]\label{a:inj}
+A representation of $X$ is sufficient for every policy $X\to\{0,1\}$ if and only if it is injective.
+\end{newresult}
+\begin{proof}
+An injective $r$ satisfies $\pi=(\pi\circ r^{-1})\circ r$. If $r(x)=r(x')$ with $x\ne x'$ then the indicator of $\{x\}$ separates them, so $\ker r\not\subseteq\ker\pi$.
+\end{proof}
+
+\section{Histories, continuation equivalence, and maintainable representations}
+
+Let $\Events$ be an alphabet and $\Hist\subseteq\Events^{*}$ a prefix-closed set of histories. A \emph{property} is a function $P$ on $\Hist$. The \emph{continuation equivalence} is $h\approx_Ph'$ if and only if $\{w:hw\in\Hist\}=\{w:h'w\in\Hist\}$ and $P(hw)=P(h'w)$ for all such $w$. A representation $r$ of $\Hist$ is \emph{maintainable} if $\ker r$ is a right congruence: $r(h)=r(h')$ implies $r(ha)=r(h'a)$ for every event $a$ with $ha,h'a\in\Hist$.
+
+\begin{established}[Myhill--Nerode]\label{a:nerode}
+The relation $\approx_P$ is the coarsest right congruence contained in $\ker P$. A maintainable representation $r$ is sufficient for $P$ if and only if $\ker r\subseteq{\approx_P}$, and the minimal number of values of a maintainable sufficient representation is the number of classes of $\approx_P$.
+\end{established}
+\source{Myhill (1957); Nerode (1958).}
+\begin{proof}
+Taking $w=\varepsilon$ shows $\approx_P\subseteq\ker P$. If $h\approx_Ph'$ and $ha\in\Hist$ then $\{w:haw\in\Hist\}=\{w:h'aw\in\Hist\}$ and $P(haw)=P(h'aw)$, so $ha\approx_Ph'a$. If $\sim$ is a right congruence inside $\ker P$ and $h\sim h'$ then $hw\sim h'w$ for every $w$, so $P(hw)=P(h'w)$, and the extensions agree because $\sim$ is a right congruence on a prefix-closed set; hence $\sim\ \subseteq\ \approx_P$. A maintainable representation sufficient for $P$ has kernel a right congruence inside $\ker P$, hence inside $\approx_P$, which gives the counting statement.
+\end{proof}
+
+\section{Safety and viable histories}
+
+Assume in this section that $\Events$ is finite. A \emph{safety condition} is given by a prefix-closed set $\mathcal S\subseteq\Hist$ of acceptable histories. A history $h\in\mathcal S$ is \emph{viable} if for every $n$ there is $w$ with $|w|=n$ and $hw\in\mathcal S$.
+
+\begin{established}[Viable histories]\label{a:viable}
+The set $\Viable(\mathcal S)$ of viable histories is prefix closed, contained in $\mathcal S$, and is the largest subset $\mathcal V\subseteq\mathcal S$ such that every $h\in\mathcal V$ has an extension $ha\in\mathcal V$ with $a\in\Events$.
+\end{established}
+\source{Alpern and Schneider (1985); Kechris on pruned trees.}
+\begin{proof}
+Prefix closure: if $hu$ is viable, extensions of $hu$ of every length give extensions of $h$ of every length, and $h\in\mathcal S$ by prefix closure of $\mathcal S$. Successor property: if $h$ is viable then for each $n$ there is an acceptable extension of length $n+1$, which begins with some event; since $\Events$ is finite, one event $a$ occurs as the first event for infinitely many $n$, and prefix closure of $\mathcal S$ then gives $ha$ acceptable extensions of every length, so $ha$ is viable. Maximality: if $\mathcal V\subseteq\mathcal S$ has the successor property then each $h\in\mathcal V$ has extensions in $\mathcal V\subseteq\mathcal S$ of every length, so $h$ is viable.
+\end{proof}
+
+The set $\Viable(\mathcal S)$ is the pruned tree of $\mathcal S$ in the language of the first volume; Chapter~\ref{ch:viability} identifies it with the set of histories whose reached state lies in the viability kernel.

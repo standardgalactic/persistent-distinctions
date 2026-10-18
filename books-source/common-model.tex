@@ -1,0 +1,56 @@
+% common-model.tex
+% Opening chapter material shared verbatim by both volumes.
+% Edit this file only; both books \input it.
+
+\section{A common model}
+
+Let $\Events$ be a set of events and let $\Hist\subseteq\Events^{*}$ be a prefix-closed set of finite words, the \emph{histories}. Write $h\concat w$ for the history obtained by appending the word $w$ to $h$, and $\Ext(h)=\{w : h\concat w\in\Hist\}$ for the extensions available after $h$. Each history determines three things.
+\begin{itemize}[nosep]
+  \item Its \emph{physical state} $\phys(h)\in\PhysSp$, which fixes the set $\Reach(\phys(h))\subseteq\Ext(h)$ of continuations that can physically be executed.
+  \item Its \emph{retained representation} $\rep(h)\in\RepSp$, which is everything a decision procedure is permitted to consult.
+  \item Its \emph{obligations} $\Obl(h)$, a set of commitments that restrict which continuations count as acceptable.
+\end{itemize}
+A \emph{proposed continuation} after $h$ is a nonempty set $c\subseteq\Ext(h)$ of words, understood as a specification that any acceptable realization must meet. Its realizations are $\Real(h,c)=c\cap\Reach(\phys(h))$, and its admissible realizations are those realizations $w$ for which every obligation in $\Obl(h)$ is satisfied along $h\concat w$. We write $\Adm(h,c)$ for that set.
+
+\begin{definition}[Three obstructions]\label{def:obstructions}
+A proposed continuation $c$ after $h$ is subject to
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item the \emph{physical obstruction} $\ObsPhys(h,c)$ when $\Real(h,c)=\varnothing$;
+  \item the \emph{obligation obstruction} $\ObsObl(h,c)$ when $\Real(h,c)\neq\varnothing$ and $\Adm(h,c)=\varnothing$;
+  \item the \emph{representational obstruction} $\ObsRep(h,c)$ when there is a history $h'$ with $\rep(h')=\rep(h)$ and $\ind[\Adm(h',c)\neq\varnothing]\neq\ind[\Adm(h,c)\neq\varnothing]$.
+\end{enumerate}
+\end{definition}
+
+The first two are properties of the world and of the commitments in force. The third is a property of the pair $(\rep,\text{decision})$: it records that the retained representation fails to separate histories that require different answers. The obstructions are analytically distinct but they interact, and Example~\ref{ex:masking} below shows one form of the interaction. They are therefore presented as distinct obstructions and not as mutually exclusive cases.
+
+\subsection*{The representational obstruction}
+
+Let $P:\Hist\to\Dec$ assign to each history the decision it requires. For admissibility of a fixed $c$, take $\Dec=\{0,1\}$ and $P(h)=\ind[\Adm(h,c)\neq\varnothing]$.
+
+\begin{established}[Factorization through a representation]\label{prop:factorization}
+There is a map $\delta:\rep(\Hist)\to\Dec$ with $\delta\circ\rep=P$ if and only if $\rep(h_1)=\rep(h_2)$ implies $P(h_1)=P(h_2)$ for all $h_1,h_2\in\Hist$. In particular, if $\rep(h_1)=\rep(h_2)$ but $P(h_1)\neq P(h_2)$, then no decision procedure that receives only $\rep(h)$ returns $P$ correctly on both $h_1$ and $h_2$.
+\end{established}
+\source{Standard factorization of a function through a quotient; developed in the chapter on equivalence relations and quotient constructions in the first volume.}
+\begin{proof}
+If $\delta\circ\rep=P$ and $\rep(h_1)=\rep(h_2)$, then $P(h_1)=\delta(\rep(h_1))=\delta(\rep(h_2))=P(h_2)$. Conversely, if equal representations force equal decisions, define $\delta(s)=P(h)$ for any $h$ with $\rep(h)=s$; the hypothesis makes this independent of the choice of $h$.
+\end{proof}
+
+This result establishes the impossibility of \emph{uniformly correct adjudication} from $\rep$. It does not by itself establish that any future becomes unavailable, because a procedure that errs on one of the two histories has not thereby foreclosed anything. Turning the impossibility into a claim about availability needs a further rule that says what the system does when admissibility cannot be established. The following proposition states the simplest such rule and what it yields.
+
+\begin{newresult}[Conservative gating removes admissible futures]\label{prop:gating}
+Fix a proposed continuation $c$ and call a map $g:\RepSp\to\{\text{permit},\text{refuse}\}$ a \emph{sound gate} if $g(\rep(h))=\text{permit}$ implies $\Adm(h,c)\neq\varnothing$ for every $h\in\Hist$. If $\rep(h_1)=\rep(h_2)$, $\Adm(h_1,c)\neq\varnothing$ and $\Adm(h_2,c)=\varnothing$, then every sound gate refuses $c$ after $h_1$.
+\end{newresult}
+\assumes{The gate consults $\rep(h)$ alone, and soundness is required for all histories in $\Hist$, not only for those that have occurred.}
+\begin{proof}
+Suppose a sound gate permitted $c$ after $h_1$. Then $g(\rep(h_1))=\text{permit}$, so $g(\rep(h_2))=\text{permit}$ because $\rep(h_1)=\rep(h_2)$, and soundness gives $\Adm(h_2,c)\neq\varnothing$, a contradiction.
+\end{proof}
+
+The qualification matters. Proposition~\ref{prop:gating} says that a future which is physically executable and obligation-compliant at $h_1$ is nevertheless unavailable through any sound gate, and it says this \emph{only} under the policy of refusing what cannot be established. A system that permitted such transitions on a best-effort basis would keep the future available at the price of occasionally acting inadmissibly at $h_2$. Which trade is acceptable is a design question that the later chapters treat explicitly.
+
+\begin{example}[Representation concealing an obligation]\label{ex:masking}
+Let two histories reach the same physical state, so that $\Reach(\phys(h_1))=\Reach(\phys(h_2))$. Suppose $h_2$ contains an unresolved consent request and $h_1$ does not, while the retained representation records only the physical state. Then $\rep(h_1)=\rep(h_2)$, the continuation $c$ is admissible after $h_1$ and obstructed by $\ObsObl$ after $h_2$, and Proposition~\ref{prop:gating} shows that a sound gate refuses $c$ after $h_1$ as well. The obstruction experienced at $h_1$ is $\ObsRep$, even though neither $\ObsPhys$ nor $\ObsObl$ holds there. Here $\ObsRep$ is an inherited effect of $\ObsObl$ at a different history.
+\end{example}
+
+\subsection*{The division of the two volumes}
+
+The first volume develops what a representation must preserve for a given family of decisions to be well defined, and proves the corresponding sufficiency and impossibility results. The second volume studies how actions transform the set of reachable futures and what it costs to reach, keep, or restore them. A future can be lost because the physical means to reach it are gone, because obligations prohibit the path, or because the retained representation can no longer distinguish the circumstances in which the path would be admissible. Each of these obstructions recurs throughout both volumes, and the table in the following section records which volume owns which part of the mathematics.

@@ -1,0 +1,135 @@
+% ch10-verification.tex
+\chapter{Verification Relative to Retained Evidence}\label{ch:verification}
+\spec{What does verification establish about a formal object, and what additional evidence connects that object to the world?}
+{Certifying algorithms (McConnell, Mehlhorn, N\"aher, Schweitzer); proof-carrying code (Necula); proof objects and checkers.}
+{Verification defined relative to a retained evidence set, with soundness stated relative to that set (Definition~\ref{def:verification}); the verified region of a claim is its interior in the partition induced by the evidence (Result~\ref{prop:interior}); a formal proof reaches the world only through evidence that settles its assumptions (Result~\ref{prop:gap}).}
+{None.}
+{Chapter~\ref{ch:fixed}.}
+
+A formal proof establishes that a claim holds for every object satisfying a stated set of assumptions. A system that relies on the proof has to act on a particular case, and whether the claim holds for that case depends on whether the assumptions hold for it. The connection is made by evidence, and evidence is retained or it is not. This chapter defines verification as a relation between a claim and a retained evidence set, shows that the cases for which a claim is verified are determined by the partition the evidence induces, and uses that to state the gap between a proof about a model and a conclusion about a case.
+
+\section{Verification relative to evidence}
+
+Let $W$ be a set of cases, which in later chapters are histories. A \emph{claim} is a subset $\varphi\subseteq W$, the set of cases in which it holds. \emph{Evidence} is a function $e:W\to V$, where $e(w)$ is the retained record of the case $w$. The evidence is a representation in the sense of Chapter~\ref{ch:common}, and the fibers $e^{-1}(v)$ are the sets of cases that the record does not separate.
+
+\begin{definition}[Verification relative to evidence]\label{def:verification}
+A \emph{verifier} for the evidence $e$ is a function $v$ that assigns to each pair $(u,\varphi)$ of a record $u\in e(W)$ and a claim $\varphi$ a value in $\{0,1\}$. It is \emph{sound relative to $e$} if $v(u,\varphi)=1$ implies $e^{-1}(u)\subseteq\varphi$. It is \emph{complete relative to $e$} if $e^{-1}(u)\subseteq\varphi$ implies $v(u,\varphi)=1$. A claim $\varphi$ is \emph{verified at $w$} by $v$ if $v(e(w),\varphi)=1$.
+\end{definition}
+
+Soundness says that the verifier never accepts a claim unless it holds in every case compatible with the record. Completeness says it accepts whenever the record entails the claim. Both conditions are relative to $e$: a verifier cannot be held to account for distinctions the record has discarded.
+
+\begin{newresult}[The verified region is the interior of the claim]\label{prop:interior}
+For a claim $\varphi\subseteq W$ and evidence $e$, let $\operatorname{int}_e(\varphi)=\{w:e^{-1}(e(w))\subseteq\varphi\}$. Then:
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\operatorname{int}_e(\varphi)$ is the largest union of fibers of $e$ contained in $\varphi$.
+  \item A verifier that is sound relative to $e$ verifies $\varphi$ only inside $\operatorname{int}_e(\varphi)$, and a verifier that is sound and complete relative to $e$ verifies $\varphi$ exactly on $\operatorname{int}_e(\varphi)$.
+  \item $\operatorname{int}_e(\varphi)=\varphi$ if and only if $\mathbf 1_\varphi$ factors through $e$, that is, if and only if the evidence settles the claim in every case.
+  \item If $e'=g\circ e$ is a coarsening of $e$ then $\operatorname{int}_{e'}(\varphi)\subseteq\operatorname{int}_e(\varphi)$.
+\end{enumerate}
+\end{newresult}
+\assumes{No assumption on $W$ or on the cardinality of $V$.}
+\begin{proof}
+(a) A union of fibers is contained in $\varphi$ exactly when each of its fibers is, and $\operatorname{int}_e(\varphi)$ is the union of all fibers contained in $\varphi$. (b) Soundness gives $e^{-1}(e(w))\subseteq\varphi$ at every verified $w$, which is the definition of membership in the interior; completeness gives the reverse. (c) If $\operatorname{int}_e(\varphi)=\varphi$ then $\varphi$ is a union of fibers, so $\ker e\subseteq\ker\mathbf 1_\varphi$, which is factorization by Result~\ref{thm:factorization}; the converse is the same argument read backwards. (d) A fiber of $e'$ is a union of fibers of $e$, so if it lies in $\varphi$ then so does each fiber of $e$ it contains.
+\end{proof}
+
+Part (d) is the verification form of the principle that coarsening is irreversible: a coarser record never verifies more. Part (c) identifies the claims that can be verified in all the cases where they hold: exactly those that the evidence answers in the sense of Definition~\ref{def:question}.
+
+\begin{example}[The balance does not verify the absence of overdraft]\label{ex:no-verify}
+Take $W$ to be all finite event sequences of the account of Example~\ref{ex:bank}, and the claim $\varphi=\{q_{\mathrm{neg}}=0\}$. For $e=\beta$ and any balance $b\ge0$, the fiber of $b$ contains the history $\mathrm{w}(1)\,\mathrm{d}(1)\,\mathrm{d}(b)$ for $b\ge1$, or $\mathrm{w}(1)\,\mathrm{d}(1)$ for $b=0$, which overdraws. For $b<0$ every history in the fiber has overdrawn. Hence $\operatorname{int}_\beta(\varphi)=\varnothing$: no history is verified overdraft-free by its balance alone, even though most histories with a given balance are. For $e=(\beta,q_{\mathrm{neg}})$ the claim is settled and $\operatorname{int}_e(\varphi)=\varphi$.
+\end{example}
+
+\section{Certificates}
+
+The standard device for retaining just enough evidence to verify a result is the certificate. A \emph{certifying algorithm} returns, with its answer, an additional record from which the correctness of the answer can be checked by a procedure that is simpler than the algorithm and independent of it.
+
+\begin{established}[Certifying algorithms and checkers]\label{def:certifying}
+A certifying algorithm for a decision problem on instances $I$ outputs a pair $(y,c)$ with $y\in\{\text{yes},\text{no}\}$ and $c$ a certificate, together with a checker $\mathrm{Chk}(I,y,c)\in\{0,1\}$ such that: if $\mathrm{Chk}(I,y,c)=1$ then $y$ is the correct answer for $I$, and the algorithm always outputs a pair that the checker accepts. Correctness of the algorithm then reduces to correctness of the checker.
+\end{established}
+\source{McConnell, Mehlhorn, N\"aher, and Schweitzer, ``Certifying algorithms,'' \emph{Computer Science Review} 5 (2011); the same pattern appears in proof-carrying code, Necula, ``Proof-carrying code,'' POPL 1997.}
+
+\begin{example}[Bipartiteness]
+For the question whether a graph is bipartite, a yes answer is certified by a proper two-colouring, which is checked edge by edge, and a no answer by an odd cycle, which is checked by following it. In the language of Definition~\ref{def:verification}, the retained record for an instance is the pair of the instance and the certificate, the claim is the correctness of $y$, and the checker is a sound verifier relative to that record. The record is far smaller than the algorithm's computation and the checker can be trusted without trusting the algorithm.
+\end{example}
+
+\section{The gap between a proof and a case}
+
+A theorem of the form ``every case satisfying the assumptions $A$ has property $\varphi$'' is the inclusion $A\subseteq\varphi$. The following result states what such a theorem delivers for an individual case, in terms of the retained evidence.
+
+\begin{newresult}[A proof reaches a case only through evidence that settles its assumptions]\label{prop:gap}
+Let $A\subseteq\varphi\subseteq W$ be established by proof. Then:
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item The claim $\varphi$ is verified at every $w\in\operatorname{int}_e(A)$ by a verifier whose only premise is the proof.
+  \item If $w\notin\operatorname{int}_e(A)$, then no sound verifier relative to $e$ accepts the claim $A$ at $w$. Since $A$ is the strongest claim the proof supports, the proof by itself verifies, for arbitrary $\varphi\supseteq A$, exactly the region $\operatorname{int}_e(A)$.
+\end{enumerate}
+\end{newresult}
+\assumes{$A$ is the set of cases satisfying the assumptions of the theorem. The evidence $e$ is fixed in advance.}
+\begin{proof}
+(a) If $w\in\operatorname{int}_e(A)$ then every case sharing the record of $w$ lies in $A$, hence in $\varphi$. (b) For a record $u=e(w)$ with $e^{-1}(u)\not\subseteq A$ the sound-verifier condition for the claim $A$ fails, which is Result~\ref{prop:interior}(b) for $\varphi=A$. A case outside $\operatorname{int}_e(A)$ is therefore unverified for the claim $A$, and the proof supports no stronger claim.
+\end{proof}
+
+The content of the result is easiest to read from part (a). The assumptions of a theorem about a controller, a protocol, or a model are claims about the case, and the proof carries no information about whether they hold. Unless the retained evidence determines membership of $A$ on the region of interest, the theorem verifies nothing there. The designer's task is therefore to choose evidence whose fibers lie inside $A$ wherever the theorem is to be used, and the task is a question about the kernel of the evidence in the sense of Chapter~\ref{ch:quotients}.
+
+
+\section{A bounded-horizon computation of the verified region}\label{sec:bounded-verify}
+
+Example~\ref{ex:no-verify} shows that the balance verifies nothing over all histories. The conclusion depends on the unboundedness of the domain, and the dependence can be seen exactly by restricting the domain to histories of length at most $L$ over the two events $\mathrm d=\mathrm d(1)$ and $\mathrm w=\mathrm w(1)$. Write $W_L$ for that set, which has $2^{L+1}-1$ elements, and $\varphi=\{q_{\mathrm{neg}}=0\}\cap W_L$ for the claim that no prefix is overdrawn.
+
+\begin{newresult}[Verified region of the never-overdrawn claim under the balance]\label{prop:bounded-verify}
+For $L\ge2$ the interior of $\varphi$ in $W_L$ under the evidence $e=\beta$ consists of exactly two histories, $\mathrm d^{L-1}$ and $\mathrm d^{L}$. Hence the fraction of $W_L$ verified by the balance is $2/(2^{L+1}-1)$, although the claim holds in $\varphi$ for a constantly growing share of cases, and under the evidence $e=(\beta,q_{\mathrm{neg}})$ the whole of $\varphi$ is verified.
+\end{newresult}
+\assumes{The domain is $W_L$, the set of words of length at most $L$ over $\{\mathrm d,\mathrm w\}$; amounts are one unit; the evidence is the balance.}
+\begin{proof}
+Since the number of deposits minus withdrawals is the balance $b$ and the number of events is their sum, the length of a history of balance $b$ is congruent to $b$ modulo $2$ and is at least $|b|$. For $b\ge0$ the fibre of $b$ in $W_L$ contains an overdrawing history if and only if it contains one of length at most $L$; the shortest overdrawing history of balance $b$ is $\mathrm w\,\mathrm d^{\,b+1}$, of length $b+2$, so the fibre contains an overdrawing history if and only if $b+2\le L$. For $b<0$ every history of the fibre is overdrawn. Hence the fibre of $b$ lies in $\varphi$ if and only if $b\ge L-1$, and the only balances in $[L-1,L]$ present in $W_L$ are $L-1$ and $L$, each realized by the histories whose length is congruent to $b$ and at most $L$: for $b=L$ this is $\mathrm d^{L}$ alone, and for $b=L-1$ it is $\mathrm d^{L-1}$ alone, because the next admissible length $L+1$ exceeds $L$. The last statement is Result~\ref{prop:interior}(c).
+\end{proof}
+
+The table gives the counts for small horizons, confirmed by enumeration.
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+$L$ & $|W_L|$ & never overdrawn & verified by $\beta$\\
+\midrule
+$2$ & $7$ & $4$ & $2$\\
+$3$ & $15$ & $7$ & $2$\\
+$4$ & $31$ & $13$ & $2$\\
+$5$ & $63$ & $23$ & $2$\\
+$6$ & $127$ & $43$ & $2$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The number of histories that satisfy the claim grows almost as fast as $2^{L}$, the ratio of consecutive entries being near $1.9$, while the number that the balance verifies stays at two. The verified histories are the ones whose balance is so high that no overdraft could have occurred within the horizon, so the balance verifies the claim only where the horizon itself rules out the counterexample. This is the quantitative form of the point made after Result~\ref{prop:gap}: the evidence has to settle the assumptions on the region of use, and a record that settles them only by virtue of an unstated bound on how long the system has run provides assurance that is lost as the system keeps operating.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For the account, compute $\operatorname{int}_e(\varphi)$ for $\varphi=\{\beta\ge0\}\cap\{q_{\mathrm{neg}}=0\}$ and for each of $e=\beta$, $e=q_{\mathrm{neg}}$, and $e=(\beta,q_{\mathrm{neg}})$. Which of the three verify the largest region, and what does the comparison show?
+\end{exercise}
+
+\begin{exercise}
+Prove that for two evidence functions $e_1,e_2$, $\operatorname{int}_{(e_1,e_2)}(\varphi)\supseteq\operatorname{int}_{e_1}(\varphi)\cup\operatorname{int}_{e_2}(\varphi)$ and give an example where the inclusion is strict.
+\end{exercise}
+
+\begin{exercise}
+Describe the certificate for the question ``is there a path from $s$ to $t$ in this directed graph?'' for each of the answers yes and no. State the checker and argue that its soundness does not depend on the algorithm that produced the certificate.
+\end{exercise}
+
+\begin{exercise}
+A controller is proved safe provided its sensor error is at most $\delta$. The retained evidence records the sensor reading and a bit stating whether a self-test passed. Describe the set $A$ and the sets of cases in the interior of $A$ under the evidence consisting of the reading alone, and under the reading together with the self-test bit. State what further property of the self-test is needed for the second evidence to verify safety.
+\end{exercise}
+
+\begin{exercise}
+Show that $\operatorname{int}_e(\varphi\cap\psi)=\operatorname{int}_e(\varphi)\cap\operatorname{int}_e(\psi)$ and that $\operatorname{int}_e(\varphi\cup\psi)\supseteq\operatorname{int}_e(\varphi)\cup\operatorname{int}_e(\psi)$ with strict inclusion possible. Explain what the second statement means for a system that verifies a disjunction of claims.
+\end{exercise}
+
+
+\begin{exercise}
+Compute the interior of $\varphi$ in $W_L$ under the evidence $e=(\beta,|h|)$, the balance together with the length, and under $e=(\#_{\mathrm d},\#_{\mathrm w})$. Show that they coincide and that the interior is $\{\mathrm d^{k}:k\le L\}$, and compare its size with the two histories of Result~\ref{prop:bounded-verify}.
+\end{exercise}
+
+\begin{exercise}
+Show that the evidence $(\beta,q_{\mathrm{neg}})$ takes exactly $12$ values on $W_4$, list them, and explain why this is fewer than the $2\cdot9=18$ pairs of a balance in $\{-4,\dots,4\}$ and a flag. Which of the twelve values lie in the interior of $\varphi$?\end{exercise}
+
+\begin{exercise}
+Let the claim be $\psi=\{\beta\ge0\}\cap W_L$, the claim that the present balance is nonnegative. Show that $\psi$ is settled by $\beta$, that its interior is $\psi$, and explain why verifying $\psi$ and verifying $\varphi$ differ in the way the evidence must be maintained as the history grows.
+\end{exercise}
+

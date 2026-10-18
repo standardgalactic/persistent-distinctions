@@ -1,0 +1,115 @@
+% ch12-retrieval.tex
+\chapter{Memory Architecture and Retrieval}\label{ch:retrieval}
+\spec{When does a system retain evidence that it can no longer effectively recover?}
+{The cell-probe model (Yao); indexing and caching models.}
+{Retrieval adequacy defined separately from storage adequacy (Definition~\ref{def:retrieval}); lower bounds on probes for parity and for locating a single marked cell (Result~\ref{prop:probes}); adding cells that are functions of the content leaves storage adequacy unchanged and can change retrieval adequacy completely (Result~\ref{prop:index}).}
+{None.}
+{Chapters~\ref{ch:fixed} to~\ref{ch:incremental}.}
+
+Chapters~\ref{ch:fixed} to~\ref{ch:incremental} asked whether the information needed for a decision is present in a representation. That is a question about the kernel and it ignores the cost of reading. A system can store everything it needs and still be unable to act on it in the time it has, because finding the relevant part requires reading most of the store. This chapter separates the two notions, storage adequacy and retrieval adequacy, and shows by elementary lower bounds that they come apart.
+
+\section{Storage adequacy and retrieval adequacy}
+
+A stored object is a function $M:X\to\Sigma^{N}$ from cases to arrays of $N$ cells, each cell holding an element of a finite alphabet $\Sigma$. A \emph{reader} for a question $q:X\to B$ is a deterministic decision tree: it chooses a cell to read, sees its content, chooses the next cell as a function of what it has seen, and after at most $t$ reads outputs an answer. This is the cell-probe model.
+
+\begin{established}[Cell-probe model]
+In the cell-probe model, the cost of a computation on stored data is the number of cells read; computation between reads is free.
+\end{established}
+\source{Yao, ``Should tables be sorted?'' \emph{Journal of the ACM} 28 (1981).}
+
+\begin{definition}[Storage adequacy and retrieval adequacy]\label{def:retrieval}
+The stored object $M$ is \emph{storage adequate} for $q$ if $q$ factors through $M$, that is $\ker M\subseteq\ker q$. The \emph{retrieval depth} $D(M,q)$ is the least $t$ such that some reader of depth at most $t$ outputs $q(x)$ for every $x$ when run on $M(x)$. The stored object is \emph{$t$-retrieval adequate} for $q$ if $D(M,q)\le t$.
+\end{definition}
+
+Storage adequacy is the condition of Definition~\ref{def:question}. If $M$ is storage adequate then $D(M,q)\le N$, because reading all cells determines $M(x)$ and hence $q(x)$; and if $M$ is not storage adequate then no reader can output $q$ correctly, because the reader sees only $M(x)$. Retrieval adequacy therefore refines storage adequacy by a quantitative measure that lies between $0$ and $N$.
+
+\section{Two lower bounds}
+
+\begin{newresult}[Reading cost of parity and of a single marked cell]\label{prop:probes}
+Let $X=\{0,1\}^{n}$ and let $M$ be the identity with $N=n$ cells, one bit each.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item For $q=$ parity of $x$, $D(M,q)=n$.
+  \item Let $X'\subseteq\{0,1\}^{n}$ be the strings with exactly one bit equal to $1$ and let $q'(x)$ be the position of that bit. Then $D(M,q')=n-1$.
+\end{enumerate}
+\end{newresult}
+\assumes{Readers are deterministic and are required to be correct on every $x$ in the domain.}
+\begin{proof}
+(a) Suppose a reader of depth less than $n$ is correct. Run it on the string $0^{n}$ and let $j$ be a cell that it does not read; such a cell exists. Changing $x_j$ does not alter any answer the reader sees, so its trajectory and output are the same on $0^{n}$ and on the string with $x_j=1$, but the parities differ. Hence depth $n$ is necessary, and reading all cells suffices. (b) Run a reader of depth at most $n-2$ on the adversary's answers, which return $0$ to every query. At the end at least two cells remain unread, and the strings with the single $1$ at either of them are consistent with every answer given, so the reader errs on one of them. Hence depth at least $n-1$ is needed, and reading $n-1$ cells suffices, since if all of them are $0$ the remaining cell holds the $1$.
+\end{proof}
+
+\section{Adding derived cells}
+
+The remedy for expensive retrieval is an index: additional cells that are computed from the content. The next result records what an index does and does not change.
+
+\begin{newresult}[Derived cells leave storage adequacy unchanged]\label{prop:index}
+Let $M:X\to\Sigma^{N}$ and let $M^{+}(x)=(M(x),I(x))$, where $I(x)$ is a function of $M(x)$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\ker M^{+}=\ker M$, so $M^{+}$ is storage adequate for exactly the same questions as $M$.
+  \item $D(M^{+},q)\le D(M,q)$ for every $q$.
+  \item The inequality in (b) can be as strong as possible: in the setting of Result~\ref{prop:probes}(a), adding a single cell holding the parity gives $D(M^{+},q)=1$, while $D(M,q)=n$. In the setting of Result~\ref{prop:probes}(b), adding a single cell holding the position of the $1$ gives $D(M^{+},q')=1$, while $D(M,q')=n-1$.
+\end{enumerate}
+\end{newresult}
+\assumes{The index is computed from the stored content, which is the situation in which an index is a pure acceleration structure.}
+\begin{proof}
+(a) Since $I$ is a function of $M$, two cases with equal $M$ have equal $M^{+}$, and $M^{+}$ determines $M$. (b) A reader for $M$ is also a reader for $M^{+}$ that ignores the added cells. (c) A reader that reads the added cell outputs the answer.
+\end{proof}
+
+The result states formally why the adequacy notion of the earlier chapters is blind to indexing. An index adds nothing to the kernel, so a criterion that depends only on kernels cannot tell a store with a good index from one without. A system's ability to use what it keeps is therefore a property of the pair of the stored object and the access structure, and a design that argues from sufficiency alone concludes only that the information is present. The question of whether it can be found within a given time has to be asked separately.
+
+The index has a price. The added cells enlarge the stored object, they must be maintained as the content changes, and an index tuned for one family of questions does nothing for another. Parity is answered by the first added cell and not by the second; the position of the marked bit is answered by the second and not by the first. The cost of keeping an index for every anticipated family of questions is of the same kind as the cost of keeping a representation sufficient for every anticipated family of policies, which Chapter~\ref{ch:families} bounds, and Volume~2 returns to it as a question of the cost of maintaining a capacity to answer.
+
+\begin{remark}
+A cache is a different kind of derived cell: it holds copies of content that can be read cheaply. Like an index it adds no information, and it improves retrieval depth only for the questions whose answers depend on cached cells. It also can fail by returning stale content when the content changes, which is a failure of the maintainability studied in Chapter~\ref{ch:incremental} and not of storage.
+\end{remark}
+
+
+\section{Packing derived cells: how many are needed for depth one}\label{sec:packing}
+
+Result~\ref{prop:index} shows that a single derived cell can give depth one for a single question. For a family of questions the number of derived cells needed depends on how much each cell can hold, and the count is exact. Let the stored object be $m$ blocks of $b$ bits, $X=\{0,1\}^{mb}$, with the original cells $M(x)=x$, and let the family be the $m$ block parities $\mathcal Q=\{p_1,\dots,p_m\}$, $p_k(x)=\bigoplus_{i\in\text{block }k}x_i$. Derived cells may take values in an alphabet of size $s\ge2$.
+
+\begin{newresult}[Derived cells needed for depth one]\label{prop:packing}
+For $b\ge2$, the family $\mathcal Q$ has retrieval depth $b$ for each question on the raw store, and a store $M^{+}=(M,I_1,\dots,I_c)$ with derived cells over an alphabet of size $s$ has retrieval depth one for every member of $\mathcal Q$ if and only if $c\ge\lceil m/\lfloor\log_2 s\rfloor\rceil$. The bound is attained by packing $\lfloor\log_2s\rfloor$ block parities into each derived cell.
+\end{newresult}
+\assumes{Readers are deterministic; derived cells are functions of the stored content; the original cells are single bits and $b\ge2$, so that no original cell determines a block parity.}
+\begin{proof}
+A reader of depth one reads a cell fixed in advance and outputs a function of its content, so the question $p_k$ is served at depth one exactly when some cell $\gamma$ has $\ker\gamma\subseteq\ker p_k$. An original cell is a single bit $x_i$ with $b\ge2$, so it is constant on no set that determines a parity, and it serves nothing. A derived cell $\gamma$ with values in an alphabet of size $s$ serves a set $T$ of block parities exactly when its kernel is contained in the joint kernel of $\{p_k:k\in T\}$; the block parities are independent uniformly distributed bits on $X$, so the joint kernel has $2^{|T|}$ classes, and $\gamma$ takes at least $2^{|T|}$ values, whence $2^{|T|}\le s$ and $|T|\le\lfloor\log_2s\rfloor$. The $m$ questions must each be served by some cell, so $c\lfloor\log_2s\rfloor\ge m$. For attainment partition the questions into groups of $\lfloor\log_2s\rfloor$ and let each derived cell store the tuple of the block parities of its group, which has at most $2^{\lfloor\log_2 s\rfloor}\le s$ values. The depth on the raw store is $b$ by the argument of Result~\ref{prop:probes}(a) applied to one block.
+\end{proof}
+
+For $m=4$ blocks of $b=3$ bits the raw store has depth $3$, and with binary derived cells four cells are needed, with four-valued cells two, and with sixteen-valued cells one. The intermediate case is the practical one: a derived cell is typically a word, and a word can carry several summaries, so the index adds cells in proportion to the number of independent questions divided by the width of a word, and not in proportion to the number of questions. The result is the retrieval analogue of Result~\ref{thm:separating}, in which a family that separates every pair of cases forces an injective representation: a family of independent questions forces an index whose total information is at least one bit per question, however the bits are packed.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Prove that the retrieval depth of the majority function on $n$ one-bit cells, with $n$ odd, is $n$. Adapt the adversary argument of Result~\ref{prop:probes}(a) by answering the first $(n-1)/2$ reads with $0$ and the next $(n-1)/2$ with $1$.
+\end{exercise}
+
+\begin{exercise}
+For the account of Example~\ref{ex:bank}, suppose the stored object is the full sequence of events, of fixed length $N$, in $N$ cells. State the retrieval depth for the question ``what is the current balance?'' and for ``has an overdraft ever occurred?'' Describe the derived cells that reduce each depth to $1$ and count the cells added.
+\end{exercise}
+
+\begin{exercise}
+Show that if $M^{+}=(M,I)$ with $I$ a function of $M$ then $D(M^{+},q)\le D(M,q)$ and construct an example where equality holds for a nonconstant question. Explain why such a question cannot be sped up by any derived cell.
+\end{exercise}
+
+\begin{exercise}
+Randomized readers are allowed to err with small probability. Argue that the lower bound of Result~\ref{prop:probes}(b) fails for readers that err with probability $\delta>0$, and compute the number of reads needed to find the marked cell with probability at least $1-\delta$ by reading in random order. Relate the answer to the difference between exact and probabilistic preservation in Chapter~\ref{ch:approx}.
+\end{exercise}
+
+\begin{exercise}
+A store holds $n$ records and answers the question ``is record $k$ present?'' for a variable $k$. Compare the retrieval depth of an unsorted array, a sorted array, and an idealized hash table with a single probe. Show that each is storage adequate for the question, and say why their kernels as stored objects nevertheless differ.
+\end{exercise}
+
+
+\begin{exercise}
+Show that Result~\ref{prop:packing} fails for the family of parities of overlapping blocks. Take $x\in\{0,1\}^{4}$ and the three questions $x_1\oplus x_2$, $x_2\oplus x_3$, $x_1\oplus x_3$, and show that three binary derived cells are needed for depth one while a single four-valued cell suffices. Explain how the dependence among the questions, which makes the third a function of the other two, enters the count and why the bound $\lfloor\log_2 s\rfloor$ per cell no longer holds.
+\end{exercise}
+
+\begin{exercise}
+Prove the lower bound on the raw retrieval depth for one block parity in Result~\ref{prop:packing}, namely that every reader that is correct on all of $\{0,1\}^{mb}$ reads all $b$ cells of the block, and give the number of cells read on average by the best reader that is allowed to err with probability $\delta$.
+\end{exercise}
+
+\begin{exercise}
+Suppose derived cells must be maintained: each write to an original cell must update every derived cell that depends on it. Compute the number of derived-cell updates per write for the packed index of Result~\ref{prop:packing} with $s=4$, and compare with the unpacked index. Explain why packing reduces the number of cells without reducing the update work.
+\end{exercise}
+

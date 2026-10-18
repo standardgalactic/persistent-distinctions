@@ -1,0 +1,187 @@
+% ch06-families.tex
+\chapter{Sufficiency for Families of Policies}\label{ch:families}
+\spec{How much finer must a representation become as the family of supported policies grows, and how many policies does a given representation support?}
+{Joint kernels of families; the Sauer--Shelah lemma and Assouad's bound on the dual VC dimension; the count of equivalence relations by Bell numbers.}
+{Fully separating families force injective representations (Result~\ref{thm:separating}); monotone growth of the minimal representation with the family and exact costs for chains and independent families; the number of policies a representation supports (Result~\ref{prop:bell}).}
+{None. Sharp bounds beyond the separating case are posed as Research problem~\ref{rp:families}.}
+{Chapters~\ref{ch:quotients}, \ref{ch:adequacy}, and~\ref{ch:fixed}.}
+
+A single policy requires only that its own verdict be recoverable. The reason for storing anything richer is that the policy may change. The set of policies that a system is expected to be able to implement is its policy family, and the richer the family the finer the representation that supports it. This chapter makes that relation exact. It shows that the cost of a family is determined by the joint kernel of its members, gives general bounds and exact values for the structured families that occur in practice, and turns the relation around by asking how many policies a representation of a given size can support at all.
+
+\section{Families and joint sufficiency}
+
+\begin{definition}[Policy family]\label{def:family}
+A \emph{policy family} on $X$ is a set $\Phi=\{\pi_i:X\to A_i\}_{i\in I}$ of policies. A representation $r$ is \emph{sufficient for $\Phi$} if it is sufficient for each $\pi_i$. Write $\kappa(\Phi)=\bigcap_i\ker\pi_i$ for the \emph{joint kernel}.
+\end{definition}
+
+\begin{established}[Joint sufficiency]\label{thm:joint-sufficiency}
+A representation $r$ is sufficient for $\Phi$ if and only if $\ker r\subseteq\kappa(\Phi)$. The minimal sufficient representations are, up to relabelling, the quotient map onto $X/\kappa(\Phi)$, whose number of values is the number of distinct \emph{profiles} $(\pi_i(x))_{i\in I}$ taken by the policies on $X$.
+\end{established}
+\source{Results~\ref{prop:joint} and~\ref{prop:least-adequate}.}
+\begin{proof}
+The first two claims are Result~\ref{prop:least-adequate}. Two cases lie in the same class of $\kappa(\Phi)$ exactly when every policy takes the same value on them, so the classes are the fibres of the profile map $x\mapsto(\pi_i(x))_i$, and their number is the size of its image.
+\end{proof}
+
+\begin{definition}[Separating family]\label{def:separating}
+A family $\Phi$ is \emph{separating} if $\kappa(\Phi)$ is the diagonal: for all $x\ne x'$ some $\pi_i$ has $\pi_i(x)\ne\pi_i(x')$.
+\end{definition}
+
+\begin{newresult}[Separating families force injectivity]\label{thm:separating}
+A family $\Phi$ is separating if and only if every sufficient representation for $\Phi$ is injective. When $X$ is finite with $n$ elements and $\Phi$ is separating, every sufficient representation takes at least $n$ values and therefore needs at least $\lceil\log_2 n\rceil$ bits. If the members of $\Phi$ take at most $m$ values each, then $|\Phi|\ge\lceil\log_m n\rceil$.
+\end{newresult}
+\assumes{For the quantitative statements, $X$ is finite and $m\ge2$.}
+\begin{proof}
+If $\Phi$ is separating then $\kappa(\Phi)$ is the diagonal, so $\ker r$ is the diagonal for every sufficient $r$, and $r$ is injective. Conversely if $\kappa(\Phi)$ contains a pair $x\ne x'$, the quotient map onto $X/\kappa(\Phi)$ is sufficient and not injective. The bound on values follows because an injective function on $n$ points has $n$ values. For the last claim, the profile map is injective on $X$ when $\Phi$ separates, and takes values in a set of size at most $m^{|\Phi|}$, so $n\le m^{|\Phi|}$.
+\end{proof}
+
+A separating family is the extreme case of the theory. If a system is to be ready to implement a family that tells every pair of cases apart, then no representation short of the case itself will do, and compression is impossible in the sense of Result~\ref{prop:no-free-compression}.
+
+\section{The cost of a growing family}
+
+\begin{established}[Monotonicity and bounds]\label{prop:family-bounds}
+Let $\Phi\subseteq\Phi'$ be families on $X$. Then $\kappa(\Phi')\subseteq\kappa(\Phi)$, so every representation sufficient for $\Phi'$ is sufficient for $\Phi$ and $|X/\kappa(\Phi')|\ge|X/\kappa(\Phi)|$. For every finite family $\Phi=\{\pi_1,\dots,\pi_k\}$,
+\[
+\max_i|\pi_i(X)|\ \le\ |X/\kappa(\Phi)|\ \le\ \min\Bigl(|X|,\ \prod_{i}|\pi_i(X)|\Bigr),
+\]
+and both bounds can be attained.
+\end{established}
+\source{Elementary consequences of Results~\ref{prop:coarsening} and~\ref{thm:joint-sufficiency}.}
+\begin{proof}
+Intersecting more kernels yields a smaller relation, which gives the first claim and the monotonicity of the number of classes by Result~\ref{prop:coarsening}. Since $\kappa(\Phi)\subseteq\ker\pi_i$ there is a surjection from $X/\kappa(\Phi)$ onto $X/{\ker\pi_i}\cong\pi_i(X)$, which gives the lower bound. The profile map injects $X/\kappa(\Phi)$ into $\prod_i\pi_i(X)$, and trivially $|X/\kappa(\Phi)|\le|X|$. For attainment of the upper bound take $X=\{0,1\}^{k}$ and $\pi_i$ the $i$th coordinate, so that $|X/\kappa(\Phi)|=2^{k}=\prod_i|\pi_i(X)|$. For attainment of the lower bound take $\pi_i=g_i\circ\pi$ for a single policy $\pi$ and functions $g_i$ with $g_1=\mathrm{id}$, so that $\ker\pi_1=\kappa(\Phi)$ and the number of classes equals $|\pi_1(X)|$.
+\end{proof}
+
+The two extreme cases correspond to two situations that occur constantly. In the first the policies depend on unrelated aspects of the case, so memory grows multiplicatively with the family. In the second they all depend on one underlying quantity, and memory is determined by that quantity alone. The thresholds of the account are of the second kind.
+
+\begin{newresult}[Chains of thresholds]\label{prop:chain}
+Let $\varphi:X\to\ZZ$ be a function and let $K\ge1$. The family $\Phi_K=\{\mathbf 1[\varphi\ge k]:k=1,\dots,K\}$ has $|X/\kappa(\Phi_K)|=|\{\min(\max(\varphi(x),0),K):x\in X\}|$, which is at most $K+1$, and is exactly $K+1$ if $\varphi(X)\supseteq\{0,1,\dots,K\}$. Thus the cost of supporting $K$ nested thresholds is linear in $K$ and not exponential in $K$.
+\end{newresult}
+\assumes{$\varphi$ is an arbitrary integer-valued function; the thresholds are consecutive integers.}
+\begin{proof}
+Write $c(x)=\min(\max(\varphi(x),0),K)\in\{0,\dots,K\}$. The profile of $x$ is $(\mathbf 1[\varphi(x)\ge1],\dots,\mathbf 1[\varphi(x)\ge K])$, which is a vector with a leading block of ones of length $c(x)$ followed by zeros. The profile determines $c(x)$ and is determined by it, so profiles correspond to values of $c$, and $c$ takes at most $K+1$ values and exactly $K+1$ when every integer in $\{0,\dots,K\}$ occurs among the values of $\varphi$.
+\end{proof}
+
+\begin{example}[The account and the monitor]
+For the account of Example~\ref{ex:bank} with $\varphi=\beta$, the family $\Phi_K$ of withdrawal approvals at thresholds $1,\dots,K$ has joint kernel with exactly $K+1$ classes, namely $\beta\le0$, $\beta=1,\dots,K-1$, and $\beta\ge K$. For the monitor of Example~\ref{ex:monitor} with $\varphi=c$, the family of escalation policies at $1,\dots,K$ has joint kernel with $K+1$ classes, the capped alarm count. In both cases the minimal sufficient representation for the family is the original quantity clamped to a window whose width equals the largest threshold supported.
+\end{example}
+
+\section{Structured families and general bounds}
+
+The bound in Result~\ref{prop:family-bounds} is attained by independent families, but exponential growth is not the typical situation. For families with bounded combinatorial complexity the number of classes grows only polynomially in the number of policies, and the classical lemma of Sauer and Shelah gives the exponent.
+
+Let $\mathcal S$ be a set system on $X$, that is, a set of subsets of $X$. A subset $B\subseteq X$ is \emph{shattered} by $\mathcal S$ if every subset of $B$ is of the form $B\cap S$ with $S\in\mathcal S$, and the \emph{VC dimension} of $\mathcal S$ is the largest size of a shattered set. The \emph{dual system} $\mathcal S^{*}$ is the system on $\mathcal S$ consisting, for each $x\in X$, of the set $\{S\in\mathcal S:x\in S\}$. A two-action policy $\pi$ corresponds to the set $\pi^{-1}(1)$.
+
+\begin{established}[Polynomial growth for bounded VC dimension]\label{thm:vc-bound}
+Let $\mathcal S$ be a set system on $X$ of VC dimension $d$, and let $\Phi$ be a family of $N$ two-action policies whose one-sets lie in $\mathcal S$. Then the number of classes of $\kappa(\Phi)$ is at most $\sum_{i=0}^{d^{*}}\binom{N}{i}$, where $d^{*}<2^{d+1}$ is the VC dimension of the dual system. In particular it is at most $(eN/d^{*})^{d^{*}}$ for $N\ge d^{*}$.
+\end{established}
+\source{Sauer (1972) and Shelah (1972) for the counting lemma; Assouad (1983) for the bound on the dual dimension.}
+\begin{proof}
+Let $A_1,\dots,A_N$ be the one-sets. The class of $x$ in $\kappa(\Phi)$ is determined by the pattern $\{j:x\in A_j\}\subseteq\{1,\dots,N\}$, which is the trace on $\{A_1,\dots,A_N\}$ of the set $\{S\in\mathcal S: x\in S\}$ of the dual system. By the Sauer--Shelah lemma, a set system of VC dimension $d^{*}$ has at most $\sum_{i=0}^{d^{*}}\binom{N}{i}$ distinct traces on an $N$-element set. Assouad's theorem gives $d^{*}<2^{d+1}$ for the dual of a system of VC dimension $d$. The closing bound is the standard estimate $\sum_{i\le d^{*}}\binom{N}{i}\le(eN/d^{*})^{d^{*}}$.
+\end{proof}
+
+The theorem converts a combinatorial hypothesis on what the policies can express into a bound on the memory needed to support $N$ of them. A family drawn from a class of bounded VC dimension has joint kernel with polynomially many classes in $N$, whereas an unrestricted family of $N$ two-action policies can have $2^{N}$ classes, as the coordinate policies on $\{0,1\}^{N}$ show. The bound is a bound and not an exact count. For families of halfspace policies $\mathbf 1[\langle w_j,x\rangle>t_j]$ on $X=\mathbb R^{d}$ the joint kernel is governed by the faces of an arrangement of $N$ hyperplanes, whose number is $O(N^{d})$, and this order of growth is attained by hyperplanes in general position, which cut $\mathbb R^{d}$ into $\sum_{i\le d}\binom{N}{i}$ regions.
+
+\begin{researchproblem}\label{rp:families}
+Determine, for the families of policies induced by the states of an obligation monitor with $n$ states (Chapter~\ref{ch:obligations}), the growth of $|X/\kappa(\Phi)|$ when a single admissible revision is added to the family, in terms of the transition structure of the monitor and not only of $n$. Characterize the monitors for which the growth is bounded independently of $n$.
+\end{researchproblem}
+
+\section{How many policies does a representation support?}
+
+The relation can be read in the opposite direction. A representation $\sigma$ fixes the set of policies that can be implemented from it.
+
+\begin{definition}[Implementable policies]\label{def:implementable}
+For a representation $\sigma$ of $X$, the set of \emph{implementable policies} is $\Pol(\sigma)=\{\pi:X\to A\text{ for some }A,\ \ker\sigma\subseteq\ker\pi\}$.
+\end{definition}
+
+\begin{established}[Forgetting contracts the implementable family]\label{prop:contraction}
+If $\sigma'=u\circ\sigma$ for some function $u$, then $\Pol(\sigma')\subseteq\Pol(\sigma)$. If moreover $\Pol(\sigma)\subseteq\Pol(\sigma')$ then $\ker\sigma=\ker\sigma'$.
+\end{established}
+\source{Elementary; Result~\ref{cor:norecover}.}
+\begin{proof}
+If $\ker\sigma'\subseteq\ker\pi$ then $\ker\sigma\subseteq\ker\sigma'\subseteq\ker\pi$, so $\pi\in\Pol(\sigma)$. If $\Pol(\sigma)\subseteq\Pol(\sigma')$ then, since $\sigma\in\Pol(\sigma)$ trivially, we have $\sigma\in\Pol(\sigma')$, so $\ker\sigma'\subseteq\ker\sigma$, and the two inclusions give equality.
+\end{proof}
+
+The number of policies that a finite representation supports is given by a classical sequence.
+
+\begin{established}[Counting implementable policies]\label{prop:bell}
+Let $\sigma$ take exactly $k$ values. Up to relabelling of the actions, the policies in $\Pol(\sigma)$ are in bijection with the equivalence relations on a $k$-element set, and their number is the Bell number $B_k$. In particular, a one-bit representation supports two policies up to relabelling, a two-bit representation with four values supports fifteen, and $B_k$ grows faster than $c^{k}$ for every constant $c$.
+\end{established}
+\source{Bell numbers; see, for example, Stanley, \emph{Enumerative Combinatorics}, Volume~1.}
+\begin{proof}
+A policy $\pi$ is determined up to relabelling of its actions by $\ker\pi$, and $\ker\pi$ ranges over the equivalence relations on $X$ containing $\ker\sigma$. These correspond to the equivalence relations on $X/{\ker\sigma}$, a $k$-element set. The values $B_2=2$ and $B_4=15$ are standard, and the superexponential growth of $B_k$ is classical.
+\end{proof}
+
+The count quantifies the dependence of the revision horizon on memory. A system with $k$ values of memory is prepared for $B_k$ different policies, but the preparedness is of a particular kind: the policies it supports are exactly those obtainable by merging values, and no others.
+
+
+\section{The marginal cost of one more policy}\label{sec:marginal-policy}
+
+The bounds of Result~\ref{prop:family-bounds} compare whole families. A designer more often asks what a single further policy will cost on top of a family already supported, and the answer is exact and computable class by class.
+
+\begin{newresult}[Marginal cost of a policy]\label{prop:marginal-policy}
+Let $\Phi$ be a family on a finite set $X$ and let $\pi$ be a further policy. For a class $c\in X/\kappa(\Phi)$ write $\pi(c)$ for the set of values taken by $\pi$ on $c$. Then
+\[
+|X/\kappa(\Phi\cup\{\pi\})|=\sum_{c\in X/\kappa(\Phi)}|\pi(c)|,
+\]
+so the marginal cost is $\sum_c(|\pi(c)|-1)$. It is zero if and only if $\pi$ is sufficiently represented by the profile map of $\Phi$, that is, if $\pi$ is a function of the profiles of the policies in $\Phi$, and it is at most $(|\pi(X)|-1)\,|X/\kappa(\Phi)|$.
+\end{newresult}
+\assumes{$X$ finite; $\kappa(\Phi)$ is the joint kernel of Definition~\ref{def:family}.}
+\begin{proof}
+The classes of $\kappa(\Phi\cup\{\pi\})=\kappa(\Phi)\cap\ker\pi$ are the nonempty sets $c\cap\pi^{-1}(a)$ for $c$ a class of $\kappa(\Phi)$ and $a$ an action, and the nonempty ones for a fixed $c$ correspond to the values $a\in\pi(c)$. Summing over $c$ gives the formula. The marginal cost vanishes exactly when $|\pi(c)|=1$ for every $c$, which says that $\pi$ is constant on each class of $\kappa(\Phi)$, that is, $\kappa(\Phi)\subseteq\ker\pi$, which by Result~\ref{thm:sufficiency} says that the quotient onto $X/\kappa(\Phi)$ is sufficient for $\pi$. The upper bound follows from $|\pi(c)|\le|\pi(X)|$.
+\end{proof}
+
+The formula makes three cases visible. A policy that is a function of policies already supported costs nothing, however complicated it looks. A policy that refines only one class costs the number of extra values taken within that class. An independent policy, constant on no class, costs the full product. A computed example shows all three in a small setting.
+
+\begin{example}[An account with an alarm count]\label{ex:marginal-policy}
+Let the cases be pairs $(b,a)$ of a balance $b\in\{0,\dots,5\}$ and an alarm count $a\in\{0,\dots,3\}$, twenty-four in all, and let $\Phi=\{[b\ge3],\,[a\ge2]\}$, whose joint kernel has four classes. Adding the policy $\pi=[b+a\ge4]$ gives
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+class of $\kappa(\Phi)$ & values of $b+a$ in the class & $|\pi(c)|$\\
+\midrule
+$b<3,\ a<2$ & $0,\dots,3$ & $1$\\
+$b\ge3,\ a<2$ & $3,\dots,6$ & $2$\\
+$b<3,\ a\ge2$ & $2,\dots,5$ & $2$\\
+$b\ge3,\ a\ge2$ & $5,\dots,8$ & $1$\\
+\bottomrule
+\end{tabular}
+\end{center}
+so the family grows from four classes to six, a marginal cost of two. In the same setting, adding the threshold $[b\ge4]$ to the chain $\{[b\ge1],[b\ge2],[b\ge3]\}$, which has four classes, gives five: the class $\{b\ge3\}$ is the only one the new policy splits. And adding $[a\ge2]$ to $\{[b\ge3]\}$ doubles two classes to four. In each case the count has been confirmed by enumerating the twenty-four cases.
+\end{example}
+
+Two lessons follow. The cost of a revision depends on the family that is already in place, and the same policy can be free for one memory and expensive for another; the bill is presented class by class, and it is the classes that the new policy cuts across that pay. And a policy that depends on a combination of quantities, as $b+a\ge4$ does, is cheap only if the combination is already recoverable from what is retained, which for sums of independently thresholded quantities it is not.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Construct a family of policies on the histories of Example~\ref{ex:document} with $m=2$ and $C=\{0,1\}$ whose joint kernel has exactly four classes, and a different family on the same cases whose joint kernel has exactly sixteen.
+\end{exercise}
+
+\begin{exercise}
+Prove Result~\ref{prop:chain} in full for the family of escalation policies at $1,\dots,K$ on the monitor, and determine $|X/\kappa(\Phi_K)|$ for the monitor with the histories restricted to words over $\{\mathrm{alarm}\}$ alone.
+\end{exercise}
+
+\begin{exercise}
+Show that the joint-kernel bound $|X/\kappa(\Phi)|\le\prod_i|\pi_i(X)|$ can be strict for dependent policies, and give a family of three policies on a six-element set for which the three bounds of Result~\ref{prop:family-bounds} take three different values.
+\end{exercise}
+
+\begin{exercise}
+For the account with thresholds $1,\dots,K$, the family is revised by replacing the threshold set $\{1,\dots,K\}$ with $\{2,4,\dots,2K\}$. Determine the joint kernel of the revised family, and decide whether a representation sufficient for the original is sufficient for the revised family. Determine the least representation sufficient for both.
+\end{exercise}
+
+\begin{exercise}
+Use Result~\ref{prop:bell} to determine the number of policies with at most two values, up to relabelling, supported by a representation with $k$ values, and show that this number is $2^{k-1}$, so that of the $B_k$ policies supported, those with at most two values form a small fraction for large $k$.
+\end{exercise}
+
+
+\begin{exercise}
+In Example~\ref{ex:marginal-policy} compute the marginal cost of $[b+a\ge4]$ to the family $\{[b\ge1],[b\ge2],[b\ge3],[b\ge4],[b\ge5],[a\ge1],[a\ge2],[a\ge3]\}$, and explain the answer in terms of Result~\ref{prop:marginal-policy}.
+\end{exercise}
+
+\begin{exercise}
+Show that the marginal cost of a policy is not monotone in the family. For $X=\{0,1\}^{2}$ and $\pi(x)=x_1\oplus x_2$ compute the marginal cost of $\pi$ to the empty family, to $\{x_1\}$ and to $\{x_1,x_2\}$, and explain why a policy can become more expensive to add after a related policy has been supported and then free once enough is supported.\end{exercise}
+
+\begin{exercise}
+Let $X=\{0,\dots,11\}$ and $\Phi=\{x\bmod 2,\ x\bmod 3\}$. Compute $|X/\kappa(\Phi)|$ and the marginal cost of $x\bmod 4$ and of $x\bmod 6$. State the general rule for the marginal cost of $x\bmod p$ in terms of the moduli already present.
+\end{exercise}
+

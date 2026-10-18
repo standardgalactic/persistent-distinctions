@@ -1,0 +1,126 @@
+% v2-ch18-interfaces.tex
+\chapter{Interfaces as Action Abstraction}\label{ch:interfaces}
+\spec{When does an interface preserve admissible reachability, as opposed to merely displaying a pre-existing action space?}
+{Simulation and bisimulation (Milner); weak simulation; interface automata (de Alfaro and Henzinger).}
+{An interface preserves admissible reachability from every admissible state if and only if the identity relation is a weak simulation in both directions on the admissible region (Result~\ref{thm:interface}); neither direction holds in general, and strong one-step simulation is sufficient but not necessary; an interface can preserve possible reachability and destroy forced reachability (Result~\ref{prop:forced-interface}).}
+{None. The characterization proposed in the outline is proved here, with both directions.}
+{Chapters~\ref{ch:reach} and~\ref{ch:counting}.}
+
+An interface presents some actions and hides others. A button groups several steps into one; a menu omits a rarely used command; a form walks the user through a sequence and forbids the rest. The designer asks whether the interface lets the user do what the system can do, and nothing more, within the region of states that the user is permitted to occupy. The question is not about what the interface looks like but about the reachability relation it induces, and the vocabulary of simulation applies. This chapter makes the question exact and answers it with a characterization, and then shows what the characterization does not capture: the user's ability to force an outcome rather than merely to make it possible.
+
+\section{Interfaces and admissible reachability}
+
+\begin{definition}[Concrete system, admissible region, interface]\label{def:interface}
+A \emph{concrete system} is a finite set $X$ of states, a finite set $C$ of concrete actions, and a relation $x\xrightarrow{c}y$. An \emph{admissible region} is a set $\mathrm{Ad}\subseteq X$. An \emph{interface} presents a finite set $A$ of actions, each with a \emph{denotation} $[\![a]\!]\subseteq C^{*}$, a nonempty set of concrete action words. A single concrete action is a word of length one, and a macro is a longer word. The presented step is $x\xrightarrow{a}_{\mathrm p}y$ if for some $w\in[\![a]\!]$ there is a concrete path from $x$ to $y$ labelled $w$.
+\end{definition}
+
+The presented step is existential: if the interface is used, some denoted behaviour is run, and the user is able to reach $y$ by $a$ when some behaviour does reach it. The macro can pass through states in between, and these need not be admissible.
+
+Define on $\mathrm{Ad}$ the concrete admissible step relation $S_{\mathrm c}=\{(x,y)\in\mathrm{Ad}^2:\exists c,\ x\xrightarrow{c}y\}$ and the presented admissible step relation $S_{\mathrm p}=\{(x,y)\in\mathrm{Ad}^2:\exists a,\ x\xrightarrow{a}_{\mathrm p}y\}$ (only the endpoints are required to be admissible). The \emph{admissible reach} of $x\in\mathrm{Ad}$ is $R^{\mathrm{Ad}}_{\mathrm c}(x)=\{y:(x,y)\in S_{\mathrm c}^{*}\}$ in the concrete system, and $R^{\mathrm{Ad}}_{\mathrm p}(x)=\{y:(x,y)\in S_{\mathrm p}^{*}\}$ under the interface, where $^{*}$ is the reflexive and transitive closure. The interface \emph{preserves admissible reachability} if $R^{\mathrm{Ad}}_{\mathrm p}(x)=R^{\mathrm{Ad}}_{\mathrm c}(x)$ for every $x\in\mathrm{Ad}$.
+
+\begin{newresult}[Characterization of preservation]\label{thm:interface}
+The interface preserves admissible reachability if and only if both of the following hold.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item (\emph{Completeness}; the interface hides nothing admissible.) Every admissible concrete step is matched by a finite sequence of admissible presented steps: $S_{\mathrm c}\subseteq S_{\mathrm p}^{*}$.
+  \item (\emph{Soundness}; the interface shows nothing inadmissible.) Every admissible presented step is matched by a finite sequence of admissible concrete steps: $S_{\mathrm p}\subseteq S_{\mathrm c}^{*}$.
+\end{enumerate}
+That is, the identity relation on $\mathrm{Ad}$ is a weak simulation of the concrete system by the interface, and of the interface by the concrete system. One-step matching, $S_{\mathrm c}\subseteq S_{\mathrm p}$ and $S_{\mathrm p}\subseteq S_{\mathrm c}$, is sufficient and is not necessary.
+\end{newresult}
+\assumes{Finite $X$ and $C$.}
+\begin{proof}
+Reflexive transitive closure is monotone and idempotent. ($\Leftarrow$) From (a), $S_{\mathrm c}^{*}\subseteq(S_{\mathrm p}^{*})^{*}=S_{\mathrm p}^{*}$; from (b), $S_{\mathrm p}^{*}\subseteq S_{\mathrm c}^{*}$. So the closures coincide and so do the reaches. ($\Rightarrow$) If the reaches coincide for every $x\in\mathrm{Ad}$ then $S_{\mathrm p}^{*}=S_{\mathrm c}^{*}$, and $S_{\mathrm c}\subseteq S_{\mathrm c}^{*}=S_{\mathrm p}^{*}$ and $S_{\mathrm p}\subseteq S_{\mathrm p}^{*}=S_{\mathrm c}^{*}$. One-step matching implies (a) and (b) since $S\subseteq S^{*}$. It is not necessary: with $z\in\mathrm{Ad}$, $S_{\mathrm c}=\{(x,y),(x,z),(z,y)\}$ and $S_{\mathrm p}=\{(x,z),(z,y)\}$, the closures coincide though $(x,y)\notin S_{\mathrm p}$.
+\end{proof}
+
+The characterization has the shape that the outline anticipated: a simulation on the admissible region. It shows that both directions are needed and that they are independent of each other. They are also interpretable. Completeness is the property that a user of the interface is not locked out of an admissible state that a user of the concrete system could reach, and failures of completeness are the hidden options of Chapter~\ref{ch:counting}. Soundness is the property that the interface does not display, as available, a state that cannot be reached admissibly.
+
+\begin{example}[A macro through an inadmissible state]\label{ex:macro}
+States $d,v,s,p,u$ with concrete actions \texttt{validate}: $d\to v$, \texttt{skip}: $d\to u$, \texttt{save-unchecked}: $u\to s$, and \texttt{publish}: $s\to p$. The admissible region is $\mathrm{Ad}=\{d,v,s,p\}$, excluding $u$ (a draft saved without validation). The concrete admissible reach of $d$ is $\{d,v\}$, since $s$ can only be reached through $u$. An interface offers the presented action \textit{quick save} with denotation $\{\texttt{skip}\,\texttt{save-unchecked}\}$ and \textit{publish} as a single action. Then $(d,s)\in S_{\mathrm p}$, and the interface's admissible reach of $d$ is $\{d,v,s,p\}$, which contains states not admissibly reachable: soundness fails, although every presented endpoint is in $\mathrm{Ad}$. The failure is in the middle of the macro.
+\end{example}
+
+\begin{example}[A missing button]\label{ex:missing}
+In the same concrete system without \texttt{skip} and \texttt{save-unchecked}, add \texttt{save}: $v\to s$. An interface that presents \texttt{validate} and \texttt{publish} but not \texttt{save} has $S_{\mathrm p}=\{(d,v),(s,p)\}$, so the admissible reach of $d$ is $\{d,v\}$ and that of $d$ in the concrete system is $\{d,v,s,p\}$. Completeness fails: the pair $(v,s)\in S_{\mathrm c}$ is not in $S_{\mathrm p}^{*}$. The interface displays a subset of a pre-existing action space and loses the states beyond $v$.
+\end{example}
+
+\begin{example}[Admissible region matters]\label{ex:restricted}
+Let a concrete step $x\xrightarrow{c}y$ with $y\notin\mathrm{Ad}$ be hidden by the interface. The pair $(x,y)\notin S_{\mathrm c}$ because $y\notin\mathrm{Ad}$, so completeness imposes no requirement on it. The interface may hide any step that leaves the admissible region without losing reachability within it, and may need to hide it for soundness.
+\end{example}
+
+\section{Possible and forced reachability}
+
+The characterization concerns what the user can reach if the system cooperates. When the interface merges actions with different outcomes, the user can make an outcome possible but not certain. Let the concrete system be deterministic, $x\xrightarrow{c}f(x,c)$, and consider the \emph{demonic} reading of an interface whose denotations are single letters: the presented action $a$ at $x$ is executed by the system by choosing some $c\in[\![a]\!]$ adversarially, with outcome set $\mathrm{Out}(x,a)=\{f(x,c):c\in[\![a]\!]\}$. For a target $T\subseteq\mathrm{Ad}$ let $\mathrm{Rec}_{\mathrm c}(T)$ be the recoverable region of Chapter~\ref{ch:fallback} in the concrete system and $\mathrm{Attr}_{\mathrm p}(T)$ the attractor of $T$ in the interface, where the interface action leads to $\mathrm{Out}(x,a)$ and the adversary picks the successor.
+
+\begin{newresult}[An interface can preserve possible reachability and destroy forced reachability]\label{prop:forced-interface}
+For every deterministic concrete system and interface with single-letter denotations, $\mathrm{Attr}_{\mathrm p}(T)\subseteq\mathrm{Rec}_{\mathrm c}(T)$. The inclusion can be strict even when the interface is complete and sound in the sense of Result~\ref{thm:interface} with respect to possible reachability.
+\end{newresult}
+\assumes{Deterministic concrete system; single-letter denotations.}
+\begin{proof}
+Induct on the rank: if $\mathrm{Out}(x,a)\subseteq\mathrm{Attr}^{k}_{\mathrm p}$ then every $c\in[\![a]\!]$ leads to a state in $\mathrm{Attr}^{k}_{\mathrm p}\subseteq\mathrm{Rec}_{\mathrm c}(T)$ by the induction hypothesis, and $[\![a]\!]\neq\varnothing$, so $x\in\mathrm{Rec}_{\mathrm c}(T)$. For strictness take states $x,t,z$ and two concrete actions $c_1:x\to t$ and $c_2:x\to z$, with $z$ a trap, and an interface with the single presented action $a$ denoting $\{c_1,c_2\}$ at $x$. The interface's possible reach from $x$ contains $t$ and $z$, as does the concrete reach, so possible reachability is preserved; but $\mathrm{Out}(x,a)=\{t,z\}$, so $x\notin\mathrm{Attr}_{\mathrm p}(\{t\})$ while $x\in\mathrm{Rec}_{\mathrm c}(\{t\})$.
+\end{proof}
+
+The second example shows the cost of grouping: the user of the interface cannot choose between the outcomes that the grouped actions produce. This is the point at which an interface is more than a display of a pre-existing menu. An interface that merges two concrete actions has changed the system that the user controls, even if it is complete and sound for possible reachability, and the right notion of preservation for control is a bisimulation-like condition on outcomes rather than a simulation.
+
+
+\section{The smallest interface and the cost in steps}\label{sec:min-interface}
+
+Preservation of admissible reachability fixes the closure $S_{\mathrm p}^{*}$ and leaves the interface free to choose which steps to present. Since the soundness half of Result~\ref{thm:interface} only requires $S_{\mathrm p}\subseteq S_{\mathrm c}^{*}$, a macro may present any pair of the concrete closure, whether or not a single concrete step joins it. The smallest interface that preserves admissible reachability is therefore the smallest graph with the same transitive closure as the admissible concrete graph.
+
+\begin{established}[Minimum equivalent graph]\label{thm:aho}
+Let $G$ be a finite directed graph, let $G^{\mathrm c}$ be its condensation (a DAG whose nodes are the strongly connected components), and let $\operatorname{tr}(G^{\mathrm c})$ be the transitive reduction of the condensation. The least number of edges of a graph on the same vertex set with the same transitive closure as $G$ is
+\[
+\sum_{C:\ |C|\ge2}|C|\;+\;|E(\operatorname{tr}(G^{\mathrm c}))|,
+\]
+attained by a directed cycle through each nontrivial component together with one edge for each edge of the reduction of the condensation.
+\end{established}
+\source{Aho, Garey and Ullman, \emph{The transitive reduction of a directed graph}, SIAM J.\ Comput.\ (1972).}
+
+In the vocabulary of the chapter the number is the minimum number of presented actions of single-step type that preserve admissible reachability; macros may stand for longer denotations without changing it. An example fixes the numbers. Consider a document workflow with states draft ($d$), review ($r$), rejected ($x$), approved ($a$), published ($p$) and archived ($z$), all admissible, and concrete steps $d\to r$, $r\to a$, $r\to x$, $x\to d$, $a\to p$, $p\to z$, and three shortcuts $d\to z$, $a\to z$, $r\to p$. The strongly connected components are $\{d,r,x\}$ and the singletons $a$, $p$, $z$, and the reduction of the condensation has the three edges $\{d,r,x\}\to a\to p\to z$. The minimum number of presented steps is therefore $3+3=6$, against $9$ concrete steps and $18$ ordered pairs of distinct states in the transitive closure. The interfaces of sizes $6$, $9$ and $18$ all preserve admissible reachability. They differ in the cost to the user, measured in presented steps. A computation of shortest paths gives, for the minimal interface of six steps, a total of $40$ presented steps summed over all reachable ordered pairs and a longest required path of $5$ (from $x$ through $d,r,a,p$ to $z$); for the nine concrete steps the total is $29$ and the longest path $3$; and for the closure every pair is one step apart, total $18$ for the off-diagonal pairs and longest path $1$.
+
+\begin{newresult}[Size and effort trade against each other]\label{prop:size-effort}
+Among interfaces that preserve admissible reachability, let $m$ be the number of presented steps and let $W$ be the sum over reachable ordered pairs of the least number of presented steps connecting them. Then $m\ge m_{\min}$ with $m_{\min}$ as in Result~\ref{thm:aho}, and $W\ge W_{\min}$, the number of reachable ordered pairs of distinct states. Both bounds are attained, but not by the same interface in general; for the workflow above $(m,W)=(6,40)$ for the minimal interface and $(m,W)=(18,18)$ for the closure, and adding shortcuts to the minimal interface lowers $W$ monotonically as $m$ grows.
+\end{newresult}
+\assumes{As in Result~\ref{thm:interface}.}
+\begin{proof}
+The bound on $m$ is Result~\ref{thm:aho}. Each reachable ordered pair of distinct states needs at least one presented step, so $W\ge W_{\min}$, with equality exactly when every such pair is directly presented, which is the closure. A presented step is added by adding a pair of the closure, which cannot lengthen any shortest path, so $W$ is nonincreasing as steps are added.
+\end{proof}
+
+The design reading is that preservation of reachability is a weak requirement: it asks that nothing be hidden or invented, and it does not ask how many steps the user needs. A minimal interface that preserves reachability can force a path of five presented steps where a single shortcut would do, and the cost to the user is invisible to the characterization. The interface designer is therefore choosing a point on a curve between the size of the menu and the length of the journey, and the characterization of the chapter marks the set of admissible points without selecting among them.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+In Example~\ref{ex:macro} give a second interface, with the same endpoints, that is sound, by routing \textit{quick save} through \texttt{validate} and \texttt{save}, and add the concrete action \texttt{save} to the system.
+\end{exercise}
+
+\begin{exercise}
+Show that the composition of two interfaces that each preserve admissible reachability, with denotations composed by substitution, preserves it, by showing that equality of closures is preserved under composition.
+\end{exercise}
+
+\begin{exercise}
+Find an interface with $S_{\mathrm c}\subseteq S_{\mathrm p}^{*}$ and $S_{\mathrm p}\not\subseteq S_{\mathrm c}^{*}$ in which every presented denotation has length one, and say what it displays.
+\end{exercise}
+
+\begin{exercise}
+State the bisimulation-like condition under which the attractor of every target is preserved by an interface with single-letter denotations, and prove that it implies $\mathrm{Attr}_{\mathrm p}(T)=\mathrm{Rec}_{\mathrm c}(T)$ for deterministic concrete systems.
+\end{exercise}
+
+\begin{exercise}
+Relate the characterization to the strongly connected component partition of Chapter~\ref{ch:reach}: show that the interface preserves admissible reachability if and only if it preserves the condensation of the admissible subgraph.
+\end{exercise}
+
+\begin{exercise}
+For the workflow of Section~\ref{sec:min-interface} give an interface with seven presented steps that preserves admissible reachability and has a smaller total $W$ than the minimal interface, and compute $W$ and the longest path.
+\end{exercise}
+
+\begin{exercise}
+Show that for a strongly connected admissible graph on $n$ states the minimal interface has $n$ presented steps, and that its longest path is $n-1$ presented steps. Give the interface with $2n-2$ steps (a star through a hub) and compute its longest path.
+\end{exercise}
+
+\begin{exercise}
+Explain why Result~\ref{thm:aho} is no longer polynomial to apply if the interface may present only concrete steps and not macros (the smallest subgraph with the same closure).
+\end{exercise}
+
+\begin{exercise}
+Show that adding a presented step that is in $S_{\mathrm c}^{*}$ but not in $S_{\mathrm c}$ never destroys soundness, and give an example in which it destroys the property that the presented step is a single concrete action, and say what the user loses.
+\end{exercise}
+

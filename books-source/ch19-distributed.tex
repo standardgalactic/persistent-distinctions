@@ -1,0 +1,110 @@
+% ch19-distributed.tex
+\chapter{Distributed Continuation}\label{ch:distributed}
+\spec{How does local evidence relate to global obligations?}
+{Lamport and vector clocks; conflict-free replicated data types (Shapiro et al.); the CAP theorem (Gilbert and Lynch); invariant confluence (Bailis et al.).}
+{A global property is decidable from a process's causal past exactly when it is insensitive to events concurrent with that past (Result~\ref{prop:local-decidable}); for a non-negativity obligation on a replicated counter, the capacities that replicas can spend without communication sum to at most the common balance (Result~\ref{thm:quota}).}
+{None.}
+{Chapters~\ref{ch:histories}, \ref{ch:provenance}, and~\ref{ch:obligations}.}
+
+A distributed system has no single history. Each process sees the events that reach it and the order in which they reach it. A global obligation, such as keeping a shared balance non-negative, is a property of the whole execution, but each process acts on what it knows. This chapter states what a process can decide about a global obligation from its causal past, and what the communication-free actions of several processes can safely add up to.
+
+\section{Evidence of a process}
+
+An \emph{execution} is a finite set $\mathcal E$ of events with a partial order $\to$, the happens-before relation of Result~\ref{prop:vector-clocks}, together with a partition of $\mathcal E$ among the processes such that the events of each process are totally ordered. For an event $e$, its \emph{causal past} is $\downarrow e=\{e'\in\mathcal E:e'\to e\text{ or }e'=e\}$ with the induced order and labels. A \emph{global property} is a function $\Pi$ on executions.
+
+\begin{definition}[Local decidability]\label{def:local}
+A global property $\Pi$ is \emph{decidable at $e$ from the causal past} if $\Pi(\mathcal E)=\Pi(\mathcal E')$ for all executions $\mathcal E,\mathcal E'$ and events $e\in\mathcal E$, $e'\in\mathcal E'$ with $\downarrow e\cong{\downarrow e'}$ (isomorphic as labelled partial orders).
+\end{definition}
+
+The causal past is the most a process can know under causal delivery: it is carried by a vector clock together with the events themselves, and by Result~\ref{prop:vector-clocks} the clock determines the order.
+
+\begin{newresult}[Decidability from the causal past]\label{prop:local-decidable}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\Pi$ is decidable at $e$ from the causal past if and only if $\Pi(\mathcal E)$ depends on $\mathcal E$ only through $\downarrow e$.
+  \item If there are executions $\mathcal E\subseteq\mathcal E^{+}$ with $e\in\mathcal E$, $\downarrow_{\mathcal E}e=\downarrow_{\mathcal E^{+}}e$, and $\Pi(\mathcal E)\ne\Pi(\mathcal E^{+})$, then $\Pi$ is not decidable at $e$. In particular a property that can be changed by an event concurrent with $e$ is not decidable at $e$.
+  \item A property of the form $\Pi(\mathcal E)=\mathbf 1[\Phi(\downarrow e)]$ for a fixed $e$ is decidable at $e$.
+\end{enumerate}
+\end{newresult}
+\assumes{Executions are finite; isomorphism is of labelled partial orders.}
+\begin{proof}
+(a) is Definition~\ref{def:local} restated as a factorization through the map $\mathcal E\mapsto\downarrow e$ (Result~\ref{thm:factorization}). (b) The two executions have the same causal past at $e$ and different values. (c) The value depends on the execution only through $\downarrow e$.
+\end{proof}
+
+The result is the factorization theorem of Chapter~\ref{ch:quotients} for the representation ``causal past''. It says that the information gap between local and global is the set of concurrent events, and that for a property sensitive to them no amount of cleverness in the local test closes it.
+
+\section{What communication-free actions can add up to}
+
+\begin{newresult}[Quota theorem for a non-negative replicated balance]\label{thm:quota}
+A balance of $B\ge0$ is held at $n$ replicas, each of which may execute withdrawals on its own, deciding by a rule that depends only on its causal past. The global obligation is that the total withdrawn never exceeds $B$. For replica $r$ let $q_r$ be the largest total that $r$ can withdraw when the execution so far consists of the common starting state and the events of $r$ alone. If the rule is safe, in the sense that the obligation holds in every execution consistent with it, then
+\[
+\sum_{r=1}^{n}q_r\;\le\;B.
+\]
+Conversely, any assignment of quotas $q_r$ with $\sum_rq_r\le B$ defines a safe local rule: replica $r$ permits a withdrawal if the total it has withdrawn plus the new amount is at most $q_r$.
+\end{newresult}
+\assumes{Withdrawals are positive integers; replicas may be isolated from one another for an arbitrary period; the rule at each replica depends only on its own events and the common starting state.}
+\begin{proof}
+Consider the execution in which every replica, starting from the common state and hearing from no other replica, performs withdrawals totalling its $q_r$. Each of these is permitted by the local rule, since the causal past of every event of replica $r$ consists of the common state and its own earlier events. Safety requires that the total withdrawn in this execution, which is $\sum_rq_r$, not exceed $B$. Conversely, with quotas summing to at most $B$ each replica stays within its quota whatever the others do, so the global total stays at most $B$.
+\end{proof}
+
+The theorem is the quantitative form of the familiar tension between availability and a global invariant under partition, which Gilbert and Lynch state as an impossibility. Here the cost is explicit: the sum of the independent capacities cannot exceed the common balance. Giving a replica more than its share removes it from some other, and the allocation of quotas is the allocation of the right to act without asking. Rebalancing quotas requires communication, and that is where coordination re-enters.
+
+\begin{established}[Convergence of replicated data types and invariant confluence]\label{prop:crdt}
+A state-based replicated data type whose states form a join-semilattice, whose updates are inflationary, and whose merge is the join, converges: replicas that have received the same updates are in the same state. An invariant can be maintained without coordination if and only if it is invariant confluent, meaning that the merge of any two reachable valid states is valid.
+\end{established}
+\source{Shapiro, Pregui\c{c}a, Baquero, and Zawirski (2011); Bailis, Fekete, Franklin, Ghodsi, Hellerstein, and Stoica, ``Coordination avoidance in database systems'' (2014).}
+
+Result~\ref{thm:quota} shows why the non-negativity of a balance is not invariant confluent: two valid states that each remove their share of the balance can merge to a state with a negative balance. It also shows exactly how much non-coordinated action the obligation allows.
+
+
+\section{What fixed quotas cost when demand is skewed}\label{sec:quota-cost}
+
+Result~\ref{thm:quota} says which allocations of the right to act are safe. It does not say how good they are. The quality of an allocation is measured by how much of the demand it serves, and since demand at each replica is unknown when the quotas are fixed, the measure is the worst case over demands. Let the demand at replica $r$ be a nonnegative integer $d_r$ with $\sum_rd_r\le B$, so that a coordinating system with full knowledge could serve all of it. A quota assignment $q=(q_r)$ with $\sum_rq_r\le B$ serves $\sum_r\min(d_r,q_r)$ of the demand without communication.
+
+\begin{newresult}[Worst-case service of fixed quotas]\label{prop:quota-ratio}
+For $n$ replicas and balance $B$, every safe fixed quota assignment, and every probability distribution over such assignments, has a demand vector with $\sum_rd_r=B$ on which the expected amount served without communication is at most $B/n$, that is, at most the fraction $1/n$ of the demand. The equal split $q_r=B/n$ attains the ratio $1/n$ against every demand concentrated at a single replica and does at least that well against every demand vector.
+\end{newresult}
+\assumes{Integer demands with total $B$; quotas independent of the realized demand; $n$ divides $B$ for the final statement, or else the floor is taken.}
+\begin{proof}
+For a deterministic assignment, $\sum_rq_r\le B$ implies that some replica $r_0$ has $q_{r_0}\le B/n$. Place the whole demand $d_{r_0}=B$ there; the amount served is $\min(B,q_{r_0})\le B/n$. For a randomized assignment the same argument applies to the expected quotas, $\sum_r\mathbb E q_r\le B$, which gives a replica with $\mathbb E q_{r_0}\le B/n$, and by concavity $\mathbb E\min(B,q_{r_0})\le\min(B,\mathbb E q_{r_0})\le B/n$. For the equal split, a demand vector $d$ with $\sum_rd_r=B$ is served to the extent $\sum_r\min(d_r,B/n)$; since $\min(d_r,B/n)\ge d_r/n$ whenever $d_r\le B$ (as $d_r\le B$ gives $d_r/n\le B/n$), the sum is at least $B/n$.
+\end{proof}
+
+The ratio $1/n$ is the price of giving up communication entirely; it is also a statement about how little prior knowledge helps. The bound holds for every allocation rule that fixes quotas before demand is seen, however cleverly it is chosen. A small computation fixes the scale. With $n=4$ replicas and $B=100$ the equal split gives each replica $25$. A skewed demand $(80,10,5,5)$, which totals exactly the balance, is served $\min(80,25)+10+5+5=45$ of $100$ without communication, and the remaining $55$ must be served by transferring unused quota from the other replicas, which is a coordination step. The worst case, all $100$ at one replica, is served $25$ of $100$. Each replica in the skewed example holds quota it cannot use, and the system cannot know in advance which one.
+
+This is the quantitative content of the remark that rebalancing requires communication. An allocation scheme may reduce the number of coordination rounds, for instance by transferring half of an exhausted replica's shortfall from the richest peer, but the first round of service without communication is always bounded by the fraction above, and the question of how much coordination to buy is the question of Chapter~\ref{ch:cost}.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Two replicas hold a balance of $10$ and each uses the rule ``withdraw if the locally known balance is at least the amount''. Give an execution in which the global balance becomes negative. Compute the quotas that make the local rule safe for each split of the $10$.
+\end{exercise}
+
+\begin{exercise}
+Show that the property ``replica $r$ has withdrawn at least as much as replica $s$'' is not decidable at an event of $r$ from its causal past, and identify the condition on communication under which it becomes decidable.
+\end{exercise}
+
+\begin{exercise}
+Extend Result~\ref{thm:quota} to deposits that increase the balance. Describe how a deposit at one replica can raise the quota of another only after a message transfers the right, and why the sum of quotas plus rights in transit is conserved.
+\end{exercise}
+
+\begin{exercise}
+Prove that the maximum, over executions consistent with the quota rule, of the number of withdrawals executed without any communication is $\sum_rq_r$ when all amounts are $1$, and decide whether it is attained.
+\end{exercise}
+
+\begin{exercise}
+A vector clock has $n$ coordinates. Show that a representation of the causal past of an event by its vector clock alone is not sufficient for questions that depend on the labels of other processes' events, and say what must be retained in addition.
+\end{exercise}
+
+
+\begin{exercise}
+For $n=3$ and $B=60$ list the demand vectors with $\sum_rd_r=60$ that are served least by the equal split, and compute the served amount for $(30,20,10)$, $(60,0,0)$ and $(20,20,20)$.
+\end{exercise}
+
+\begin{exercise}
+Show that if the demand is known to satisfy $d_r\le B/m$ for every $r$, with $m\le n$, the worst-case served fraction of the equal split improves, and find it as a function of $m$ and $n$. Interpret the bound as a statement about how much knowledge of the maximum demand of any single replica helps.
+\end{exercise}
+
+\begin{exercise}
+One round of rebalancing allows each replica that exhausts its quota to request unused quota from one peer of its choice. Show that for demand concentrated at two replicas this raises the served amount to the full demand if the requests are directed correctly, and construct a demand vector for which a single round of requests to a fixed peer still leaves service below the demand.
+\end{exercise}
+

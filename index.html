@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Room for Another Way</title>
+<meta name="description" content="A retro terminal-style music visualizer for Room for Another Way, with synchronized lyrics.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1226;
+  --panel:#0e1730;
+  --ink:#efe8d8;
+  --dim:#8d93a6;
+  --coral:#ec8468;
+  --line:#26314f;
+  --font:"VT323","Courier New",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font);font-size:20px;line-height:1.25;
+  display:flex;flex-direction:column;min-height:100vh;overflow-x:hidden;
+}
+header.bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);
+}
+.prompt{color:var(--ink);letter-spacing:.02em;word-break:break-word}
+.prompt b{color:var(--coral);font-weight:400}
+.cursor{display:inline-block;width:.6em;height:1em;background:var(--coral);vertical-align:-2px;margin-left:4px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.status{color:var(--dim);font-size:17px}
+main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:0;min-height:0}
+.stage{position:relative;min-height:56vh;border-right:1px solid var(--line);overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.crt{position:absolute;inset:0;pointer-events:none;
+  background:
+    repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.06) 3px),
+    radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%);
+}
+.caption{
+  position:absolute;left:0;right:0;top:9%;padding:0 6%;text-align:center;pointer-events:none;
+}
+.caption .sec{color:var(--coral);font-size:18px;letter-spacing:.18em;text-transform:uppercase;min-height:1.2em}
+.caption .now{font-size:clamp(30px,5.4vw,64px);line-height:1.05;margin:.25em 0;color:var(--ink);text-shadow:0 0 14px rgba(239,232,216,.25);min-height:2.1em}
+.caption .next{color:var(--dim);font-size:clamp(18px,2.4vw,26px);min-height:1.2em}
+aside{display:flex;flex-direction:column;min-height:0;background:var(--panel)}
+aside h2{margin:0;padding:10px 16px;font-weight:400;font-size:18px;color:var(--dim);border-bottom:1px solid var(--line);letter-spacing:.12em;text-transform:uppercase}
+#lyrics{flex:1;overflow-y:auto;padding:10px 16px 40px;max-height:calc(100vh - 210px);scroll-behavior:smooth}
+.slabel{color:var(--coral);font-size:16px;letter-spacing:.14em;text-transform:uppercase;margin:18px 0 4px}
+.l{padding:2px 8px;margin:0 -8px;color:var(--dim);cursor:pointer;border-left:3px solid transparent}
+.l:hover{color:var(--ink)}
+.l.on{color:var(--ink);border-left-color:var(--coral);background:rgba(236,132,104,.09)}
+.l.set::after{content:" \25AA";color:var(--coral)}
+.controls{
+  display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding:12px 16px;
+  border-top:1px solid var(--line);background:var(--panel);
+}
+button,.filebtn{
+  font:inherit;font-size:19px;color:var(--ink);background:transparent;border:1px solid var(--ink);
+  padding:3px 14px;cursor:pointer;letter-spacing:.06em;
+}
+button:hover,.filebtn:hover{background:var(--ink);color:var(--bg)}
+button:focus-visible,.filebtn:focus-within,input:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+button.primary{border-color:var(--coral);color:var(--coral)}
+button.primary:hover{background:var(--coral);color:var(--bg)}
+button[aria-pressed="true"]{background:var(--coral);border-color:var(--coral);color:var(--bg)}
+.filebtn input{position:absolute;opacity:0;width:1px;height:1px}
+.filebtn{position:relative;display:inline-block}
+.seek{flex:1 1 260px;display:flex;align-items:center;gap:10px;min-width:220px}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;width:100%;height:20px;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--line)}
+input[type=range]::-moz-range-track{height:4px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:18px;background:var(--coral);margin-top:-7px;border:0;border-radius:0}
+input[type=range]::-moz-range-thumb{width:12px;height:18px;background:var(--coral);border:0;border-radius:0}
+.time{color:var(--dim);min-width:3.2em;text-align:center}
+.vol{display:flex;align-items:center;gap:8px;width:150px}
+.hint{color:var(--dim);font-size:16px;padding:0 16px 12px;background:var(--panel)}
+.hint kbd{font:inherit;color:var(--ink);border:1px solid var(--line);padding:0 5px}
+dialog{background:var(--panel);color:var(--ink);border:1px solid var(--coral);font-family:var(--font);font-size:18px;max-width:640px;width:92vw;padding:16px}
+dialog::backdrop{background:rgba(5,8,18,.7)}
+dialog textarea{width:100%;height:220px;background:var(--bg);color:var(--ink);border:1px solid var(--line);font:inherit;font-size:16px;padding:8px}
+dialog .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.syncbanner{display:none;color:var(--bg);background:var(--coral);padding:3px 16px;font-size:18px}
+body.syncing .syncbanner{display:block}
+@media (max-width:900px){
+  main{grid-template-columns:1fr;flex:none}
+  .stage{border-right:0;border-bottom:1px solid var(--line);min-height:62vh}
+  #lyrics{height:46vh;max-height:46vh;flex:none}
+  .caption{top:6%}
+  .vol{width:120px}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="prompt"><b>C:\&gt;</b> play "Room for Another Way.mp3"<span class="cursor" aria-hidden="true"></span></div>
+  <div class="status" id="status" role="status">ready</div>
+</header>
+<div class="syncbanner" id="syncbanner">SYNC MODE: press Space as each line begins, Backspace to undo, S to finish.</div>
+
+<main>
+  <section class="stage" aria-label="Visualizer">
+    <canvas id="cv"></canvas>
+    <div class="crt"></div>
+    <div class="caption" aria-live="off">
+      <div class="sec" id="capSec"></div>
+      <div class="now" id="capNow"></div>
+      <div class="next" id="capNext"></div>
+    </div>
+  </section>
+  <aside>
+    <h2>Lyrics</h2>
+    <div id="lyrics" aria-label="Lyrics"></div>
+  </aside>
+</main>
+
+<div class="controls">
+  <button id="play" class="primary" type="button">PLAY</button>
+  <div class="seek">
+    <span class="time" id="tcur">0:00</span>
+    <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Seek">
+    <span class="time" id="tdur">0:00</span>
+  </div>
+  <label class="vol">VOL <input id="vol" type="range" min="0" max="100" value="85" aria-label="Volume"></label>
+  <label class="filebtn">LOAD FILE<input id="file" type="file" accept="audio/*"></label>
+  <button id="syncBtn" type="button" aria-pressed="false">SYNC</button>
+  <button id="timesBtn" type="button">TIMES</button>
+</div>
+<div class="hint"><kbd>Space</kbd> play or pause &nbsp; <kbd>&larr;</kbd><kbd>&rarr;</kbd> seek 5 s &nbsp; <kbd>S</kbd> sync lyrics by tapping &nbsp; click any line to jump to it</div>
+
+<audio id="audio" preload="metadata" src="Room%20for%20Another%20Way.mp3"></audio>
+
+<dialog id="dlg">
+  <form method="dialog">
+    <p>Line start times in seconds, one entry per lyric line (null means unset). Copy this into <code>const TIMES</code> in index.html to make it permanent, or paste a list and apply it.</p>
+    <textarea id="timesText" spellcheck="false"></textarea>
+    <div class="row">
+      <button type="button" id="applyTimes">APPLY</button>
+      <button type="button" id="copyTimes">COPY</button>
+      <button type="button" id="resetTimes">RESET TO ESTIMATE</button>
+      <button value="close">CLOSE</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+"use strict";
+
+/* Paste measured start times (seconds) here once the lyrics are synced, one per line, or leave null. */
+const TIMES = [0.0, 7.0, 13.6, 19.0, 54.0, 55.75, 57.5, 59.25, 61.0, 62.75, 64.5, 66.25, 68.0, 69.75, 71.5, 73.25, 75.0, 76.75, 78.5, 80.25, 82, 83.5, 85, 87, 89, 92, 95, 98, 101, 103, 106, 108, 109, 113, 119, 124, 128, 131, 133, 137, 139, 141.0, 142.75, 144.5, 146.25, 148.0, 149.75, 151.5, 153.25, 155.0, 156.75, 158.5, 160.25, 162.0, 163.75, 165.5, 167.25, 169, 171, 173, 174.5, 176, 179, 182, 186, 189, 191, 193, 197, 214.5, 218, 221, 224, 228, 231, 234, 237, 241, 243, 245, 247, 255.5, 259, 262, 265, 269, 273, 276.5, 280, 283, 285, 288, 292, 305];
+
+const SONG = [
+ {label:"Intro", lines:[
+  "Under the paint, an earlier colour.",
+  "Under the road, a riverbed.",
+  "Something survived the instruction",
+  "to leave the remainder for dead."]},
+ {label:"Verse 1", lines:[
+  "Chalk on the pavement, rain in the seams,",
+  "Small hands making a machine out of dreams.",
+  "Touch one circle and the whole thing changes,",
+  "Same little room with a thousand arrangements.",
+  "Colour means turn and the blue means grow,",
+  "A word makes a door where the wall said no.",
+  "Spherepop, start with a space and a move,",
+  "Let the next operation have something to prove.",
+  "Now the shape gets smaller, the record gets thin,",
+  "What did the saving forget to bring in?",
+  "Two roads look alike from the satellite height,",
+  "One has a bridge that went down last night.",
+  "Keep that difference when the map gets drawn,",
+  "Someone will need it when the signal\u2019s gone.",
+  "A beautiful answer can still go wrong",
+  "If the way back home never came along."]},
+ {label:"Pre-chorus", lines:[
+  "What did we keep?",
+  "What did we spend?",
+  "What has to travel",
+  "For the road to extend?"]},
+ {label:"Chorus", lines:[
+  "Leave room for another way,",
+  "A door in the wall of the world we made.",
+  "Let the sound fall out of the frame,",
+  "Let the lost distinction have a name.",
+  "When the lights go low",
+  "And the ground gives way,",
+  "Keep enough of the past",
+  "For another way."]},
+ {label:"Build", lines:[
+  "Keep enough\u2014",
+  "Keep enough\u2014",
+  "For another\u2014"]},
+ {label:"Drop", lines:[
+  "Way\u2014way\u2014another way.",
+  "Pop the frame.",
+  "Let it change.",
+  "Way\u2014way\u2014another way.",
+  "Keep the path",
+  "Through the break."]},
+ {label:"Verse 2", lines:[
+  "Every green light says the step went fine,",
+  "But the steps put a lock on the end of the line.",
+  "Every signature fresh, every checkbox clean,",
+  "Who kept track of the space between?",
+  "A promise travels when the service fails,",
+  "Through the power cut, through the broken rails.",
+  "Optional lights can fade from the station,",
+  "Still owe a route to the destination.",
+  "Adversaria, lay the evidence down,",
+  "Let the strongest objection come all the way round.",
+  "A thousand agreeing can share one source,",
+  "Let the reasons carry their actual force.",
+  "And the hand learns the motion, the thought steps back,",
+  "Till a change in the grain puts a catch in the track.",
+  "Bring attention home where the habit breaks,",
+  "Let the work teach the hand what the new world takes."]},
+ {label:"Pre-chorus", lines:[
+  "What can be reached?",
+  "Who bears the cost?",
+  "Who gets to name",
+  "What the choosing has lost?"]},
+ {label:"Chorus", lines:[
+  "Leave room for another way,",
+  "A door in the wall of the world we made.",
+  "Let the sound fall out of the frame,",
+  "Let the lost distinction have a name.",
+  "When the lights go low",
+  "And the ground gives way,",
+  "Keep enough of the past",
+  "For another way."]},
+ {label:"Bridge", lines:[
+  "Before the choosing, someone built the room,",
+  "Measured the windows, decided the view.",
+  "Somewhere a future was taken apart",
+  "Before it could look like a choice in the dark.",
+  "Roots lift the concrete a breath at a time.",
+  "Water remembers the slope of the land.",
+  "Build with a place for the weather to enter,",
+  "Build something still within reach of a hand."]},
+ {label:"Final build", lines:[
+  "Keep the receipt for the promise made.",
+  "Keep the distinction the average shaved.",
+  "Keep a return where the routes divide.",
+  "Keep the unfinished alive inside."]},
+ {label:"Final drop and chorus", lines:[
+  "Leave room for another way,",
+  "A door in the wall of the world we made.",
+  "Let the sound fall out of the frame,",
+  "Let the lost distinction have a name.",
+  "Way\u2014way\u2014another way.",
+  "Through the noise,",
+  "Through the change.",
+  "When the lights go low",
+  "And the ground gives way,",
+  "Keep enough of the past",
+  "For another way."]},
+ {label:"Outro", lines:[
+  "Under the paint, an earlier colour.",
+  "A little comes through in the rain."]}
+];
+
+/* ---------- flatten lyrics ---------- */
+const LINES = [];
+SONG.forEach((s, si) => s.lines.forEach((t, k) => LINES.push({text:t, sec:s.label, si, first:k===0})));
+const N = LINES.length;
+
+/* ---------- elements ---------- */
+const $ = id => document.getElementById(id);
+const audio = $("audio"), cv = $("cv"), g = cv.getContext("2d");
+const lyricsEl = $("lyrics"), statusEl = $("status");
+const capSec = $("capSec"), capNow = $("capNow"), capNext = $("capNext");
+
+/* ---------- lyric list ---------- */
+const lineEls = [];
+(function build(){
+  let last = -1;
+  LINES.forEach((L, i) => {
+    if (L.si !== last){
+      const h = document.createElement("div");
+      h.className = "slabel"; h.textContent = L.sec; lyricsEl.appendChild(h); last = L.si;
+    }
+    const d = document.createElement("div");
+    d.className = "l"; d.textContent = L.text; d.dataset.i = i;
+    d.addEventListener("click", () => jumpTo(i));
+    lyricsEl.appendChild(d); lineEls.push(d);
+  });
+})();
+
+/* ---------- timing ---------- */
+let times = new Array(N).fill(null);   // seconds, start of each line
+let measured = new Array(N).fill(false);
+
+function storeKey(){ return "rfaw-times-v1"; }
+function loadStored(){
+  try{
+    const raw = localStorage.getItem(storeKey());
+    if (!raw) return null;
+    const a = JSON.parse(raw);
+    return Array.isArray(a) && a.length === N ? a : null;
+  }catch(e){ return null; }
+}
+function save(){
+  try{ localStorage.setItem(storeKey(), JSON.stringify(measured.map((m,i)=>m?times[i]:null))); }catch(e){}
+}
+function estimate(dur){
+  /* Weights follow line length, with a pause added at each section change. */
+  const w = [], pad = 10;
+  LINES.forEach(L => w.push(Math.max(L.text.length, 14) + (L.first ? pad : 0)));
+  const total = w.reduce((a,b)=>a+b,0);
+  const start = dur * 0.012, span = dur * 0.97 - start;
+  let acc = 0;
+  return w.map(x => { const t = start + span * acc / total; acc += x; return t; });
+}
+function applyTimes(){
+  const dur = isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 240;
+  const est = estimate(dur);
+  const given = TIMES && TIMES.length === N ? TIMES : loadStored();
+  measured = new Array(N).fill(false);
+  times = est.slice();
+  if (given){
+    for (let i = 0; i < N; i++){
+      if (typeof given[i] === "number"){ times[i] = given[i]; measured[i] = true; }
+    }
+    /* Unset lines between measured ones fall back to interpolation. */
+    fillGaps();
+  }
+  lineEls.forEach((el, i) => el.classList.toggle("set", measured[i]));
+}
+function fillGaps(){
+  let i = 0;
+  while (i < N){
+    if (measured[i]){ i++; continue; }
+    let j = i; while (j < N && !measured[j]) j++;
+    const a = i > 0 ? times[i-1] : 0;
+    const b = j < N ? times[j] : (isFinite(audio.duration) ? audio.duration : times[i] + 8*(j-i));
+    for (let k = i; k < j; k++) times[k] = a + (b - a) * (k - i + 1) / (j - i + 1);
+    i = j;
+  }
+}
+function indexAt(t){
+  let idx = -1;
+  for (let i = 0; i < N; i++){ if (times[i] <= t) idx = i; else break; }
+  return idx;
+}
+
+/* ---------- audio graph ---------- */
+let actx = null, analyser = null, freq = null, wave = null, gainNode = null, usingFake = false, zeroFrames = 0;
+function ensureAudio(){
+  if (actx) { if (actx.state === "suspended") actx.resume(); return; }
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    actx = new AC();
+    const src = actx.createMediaElementSource(audio);
+    analyser = actx.createAnalyser();
+    analyser.fftSize = 2048; analyser.smoothingTimeConstant = 0.78;
+    gainNode = actx.createGain();
+    src.connect(analyser); analyser.connect(gainNode); gainNode.connect(actx.destination);
+    freq = new Uint8Array(analyser.frequencyBinCount);
+    wave = new Uint8Array(analyser.fftSize);
+    gainNode.gain.value = $("vol").value / 100;
+    audio.volume = 1;
+  }catch(e){
+    actx = null; usingFake = true;
+    freq = new Uint8Array(1024); wave = new Uint8Array(2048);
+    setStatus("signal: simulated (analyser unavailable)");
+  }
+}
+function setVolume(v){
+  if (gainNode) gainNode.gain.value = v; else audio.volume = v;
+}
+
+/* Used when the browser blocks real analysis, for example a file opened from disk. */
+function fakeSignal(t){
+  const beat = t * 140 / 60 / 2;         // half-time kick every two beats
+  const ph = beat % 1;
+  const kick = Math.pow(Math.max(0, 1 - ph * 3.2), 2);
+  const sn = Math.pow(Math.max(0, 1 - ((beat + .5) % 1) * 5), 2) * .6;
+  for (let i = 0; i < freq.length; i++){
+    const x = i / freq.length;
+    let v = kick * Math.exp(-x * 26) * 1.0 + sn * Math.exp(-Math.pow((x - .08) * 9, 2))
+          + (0.22 + 0.12 * Math.sin(t * .7 + i * .05)) * Math.exp(-x * 5)
+          + 0.08 * Math.abs(Math.sin(t * 3.1 + i * .31)) * (1 - x);
+    freq[i] = Math.max(0, Math.min(255, v * 255));
+  }
+  for (let i = 0; i < wave.length; i++){
+    const x = i / wave.length;
+    const v = Math.sin(x * 40 + t * 3) * .35 * (0.3 + kick) + Math.sin(x * 97 + t * 7) * .12;
+    wave[i] = 128 + v * 110;
+  }
+}
+
+/* ---------- canvas ---------- */
+let W = 0, H = 0, DPR = 1;
+function resize(){
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect();
+  W = Math.max(1, Math.floor(r.width)); H = Math.max(1, Math.floor(r.height));
+  cv.width = W * DPR; cv.height = H * DPR;
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  g.fillStyle = "#0b1226"; g.fillRect(0, 0, W, H);
+}
+window.addEventListener("resize", resize);
+
+const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+let bass = 0, mid = 0, high = 0, flash = 0, prevBass = 0, bands = [];
+const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function analyse(t){
+  if (!freq){ freq = new Uint8Array(1024); wave = new Uint8Array(2048); usingFake = true; }
+  const playing = !audio.paused && !audio.ended;
+  if (playing){
+    if (analyser && !usingFake){
+      analyser.getByteFrequencyData(freq); analyser.getByteTimeDomainData(wave);
+      let s = 0; for (let i = 0; i < 64; i++) s += freq[i];
+      if (s === 0){ if (++zeroFrames > 90){ usingFake = true; setStatus("signal: simulated (analyser blocked, serve the page over http to see the real spectrum)"); } }
+      else zeroFrames = 0;
+    }
+    if (usingFake) fakeSignal(t);
+  }else{
+    for (let i = 0; i < freq.length; i++) freq[i] *= 0.9;
+    for (let i = 0; i < wave.length; i++) wave[i] = 128 + (wave[i] - 128) * 0.9;
+  }
+  const avg = (a, b) => { let s = 0; for (let i = a; i < b; i++) s += freq[i]; return s / ((b - a) * 255); };
+  const nb = avg(1, 9), nm = avg(9, 90), nh = avg(90, 400);
+  prevBass = bass;
+  bass += (nb - bass) * 0.35; mid += (nm - mid) * 0.25; high += (nh - high) * 0.25;
+  if (bass - prevBass > 0.03 && bass > 0.35) flash = Math.min(1, flash + 0.5);
+  flash *= 0.9;
+
+  const count = W < 560 ? 16 : 24;
+  bands.length = count;
+  const lo = 2, hi = 700;
+  for (let b = 0; b < count; b++){
+    const a = Math.floor(lo * Math.pow(hi / lo, b / count));
+    const z = Math.max(a + 1, Math.floor(lo * Math.pow(hi / lo, (b + 1) / count)));
+    let s = 0; for (let i = a; i < z; i++) s += freq[i];
+    const v = s / ((z - a) * 255);
+    bands[b] = (bands[b] || 0) * 0.55 + v * 0.45;
+  }
+}
+
+function drawScene(t){
+  /* phosphor persistence */
+  g.fillStyle = "rgba(11,18,38,0.38)"; g.fillRect(0, 0, W, H);
+
+  const cy = H * 0.5, S = 28;
+  const gates = [0.64, 0.76, 0.88];
+
+  /* strands that converge to a bundle and pass through the gates */
+  g.lineWidth = 1;
+  for (let s = 0; s < S; s++){
+    const coral = s % 7 === 3;
+    const y0 = H * (0.1 + 0.8 * s / (S - 1));
+    const yc = cy + (s - S / 2) * 0.55;
+    g.beginPath();
+    for (let x = 0; x <= W; x += 6){
+      const u = x / W, conv = smooth(0.28, 0.78, u);
+      const wob = Math.sin(u * 9 + s * 0.7 + t * 0.6) * (1 - conv) * H * 0.03 * (0.4 + mid * 1.2);
+      const y = y0 + (yc - y0) * conv + wob;
+      if (x === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    }
+    const fade = coral ? 1 : 1;
+    g.strokeStyle = coral ? "rgba(236,132,104,0.5)" : "rgba(239,232,216," + (0.09 + bass * 0.1) + ")";
+    g.stroke();
+    if (!coral){
+      /* hide the cream strands behind the first gate so only a few pass */
+      g.fillStyle = "rgba(11,18,38,0.0)";
+    }
+  }
+
+  /* gates with a doorway that opens on the beat */
+  gates.forEach((gx, k) => {
+    const x = W * gx, w = W * 0.034, top = H * 0.17, bot = H * 0.83;
+    const open = H * (0.03 + (0.07 + 0.06 * k) * bass) + (reduceMotion ? 0 : Math.sin(t * 0.8 + k) * 2);
+    const skew = W * 0.012;
+    g.fillStyle = "#171f38";
+    g.strokeStyle = "rgba(239,232,216,0.55)";
+    g.lineWidth = 1;
+    /* upper block */
+    g.beginPath(); g.moveTo(x, top); g.lineTo(x + w, top - skew); g.lineTo(x + w, cy - open / 2); g.lineTo(x, cy - open / 2); g.closePath(); g.fill(); g.stroke();
+    /* lower block */
+    g.beginPath(); g.moveTo(x, cy + open / 2); g.lineTo(x + w, cy + open / 2); g.lineTo(x + w, bot); g.lineTo(x, bot + skew); g.closePath(); g.fill(); g.stroke();
+    /* light through the door */
+    g.fillStyle = "rgba(236,132,104," + (0.22 + bass * 0.35) + ")";
+    g.fillRect(x, cy - open / 2, w, open);
+  });
+
+  /* the few strands that continue past the gates */
+  g.lineWidth = 1.5;
+  for (let k = 0; k < 3; k++){
+    const off = (k - 1) * (4 + bass * 8);
+    g.beginPath();
+    for (let x = W * 0.6; x <= W; x += 5){
+      const y = cy + off * smooth(0.6, 0.95, x / W) + Math.sin(x * 0.03 + t * 2 + k) * (1 + high * 6);
+      if (x === W * 0.6) g.moveTo(x, y); else g.lineTo(x, y);
+    }
+    g.strokeStyle = k % 2 ? "rgba(239,232,216,0.8)" : "rgba(236,132,104,0.9)";
+    g.stroke();
+  }
+
+  /* stepped spectrum blocks */
+  const n = bands.length, gap = 3, bw = (W - gap * (n + 1)) / n, cell = 5, base = H - 16;
+  for (let b = 0; b < n; b++){
+    const levels = Math.floor(Math.min(1, bands[b] * 1.5) * (H * 0.13) / (cell + 2));
+    const x = gap + b * (bw + gap);
+    for (let c = 0; c < levels; c++){
+      const y = base - c * (cell + 2);
+      g.fillStyle = c === levels - 1 ? "#ec8468" : "rgba(239,232,216," + (0.55 + 0.4 * c / Math.max(1, levels)) + ")";
+      g.fillRect(x, y - cell, bw, cell);
+    }
+  }
+
+  if (flash > 0.02){ g.fillStyle = "rgba(239,232,216," + (flash * 0.025) + ")"; g.fillRect(0, 0, W, H); }
+}
+
+/* ---------- caption and list ---------- */
+let curIdx = -2;
+function showLine(i){
+  if (i === curIdx) return;
+  curIdx = i;
+  lineEls.forEach((el, k) => el.classList.toggle("on", k === i));
+  if (i < 0){
+    capSec.textContent = ""; capNow.textContent = ""; capNext.textContent = LINES[0].text;
+    return;
+  }
+  capSec.textContent = LINES[i].sec;
+  capNow.textContent = LINES[i].text;
+  capNext.textContent = i + 1 < N ? LINES[i + 1].text : "";
+  const el = lineEls[i];
+  const box = lyricsEl.getBoundingClientRect(), r = el.getBoundingClientRect();
+  if (r.top < box.top + 40 || r.bottom > box.bottom - 40){
+    lyricsEl.scrollTop += (r.top - box.top) - box.height / 3;
+  }
+}
+
+/* ---------- transport ---------- */
+const fmt = s => { if (!isFinite(s)) s = 0; const m = Math.floor(s / 60), x = Math.floor(s % 60); return m + ":" + (x < 10 ? "0" : "") + x; };
+function setStatus(s){ statusEl.textContent = s; }
+
+function togglePlay(){
+  ensureAudio();
+  if (audio.paused){
+    const p = audio.play();
+    if (p && p.catch) p.catch(() => setStatus("could not play, check that the file is beside this page or use LOAD FILE"));
+  }else audio.pause();
+}
+/* Seeking needs a server that supports byte ranges. When the browser cannot seek the
+   served file, the whole file is fetched once and played from memory instead. */
+let inMemory = false, seekToken = 0;
+function seekTo(t, thenPlay){
+  const target = Math.max(0, Math.min(t, isFinite(audio.duration) ? audio.duration - 0.1 : t));
+  const token = ++seekToken;
+  audio.currentTime = target;
+  if (thenPlay && audio.paused) togglePlay();
+  setTimeout(() => {
+    if (token !== seekToken || inMemory) return;
+    if (Math.abs(audio.currentTime - target) > 2.5 && target > 3) toMemory(target);
+  }, 700);
+}
+function toMemory(target){
+  if (inMemory) return;
+  inMemory = true;
+  const wasPlaying = !audio.paused;
+  setStatus("loading the file into memory so seeking works");
+  fetch(audio.currentSrc || audio.src).then(r => r.blob()).then(blob => {
+    const url = URL.createObjectURL(blob);
+    const onMeta = () => {
+      audio.removeEventListener("loadedmetadata", onMeta);
+      audio.currentTime = target;
+      if (wasPlaying) audio.play().catch(() => {});
+      setStatus(wasPlaying ? "playing" : "paused");
+    };
+    audio.addEventListener("loadedmetadata", onMeta);
+    audio.src = url; audio.load();
+  }).catch(() => { inMemory = false; setStatus("seeking is not supported by this server, use LOAD FILE"); });
+}
+function jumpTo(i){
+  const t = times[i];
+  if (typeof t === "number") seekTo(Math.max(0, t - 0.05), true);
+}
+$("play").addEventListener("click", togglePlay);
+audio.addEventListener("play", () => { $("play").textContent = "PAUSE"; setStatus(usingFake ? "signal: simulated" : "playing"); });
+audio.addEventListener("pause", () => { $("play").textContent = "PLAY"; setStatus("paused"); });
+audio.addEventListener("ended", () => { $("play").textContent = "PLAY"; setStatus("finished"); });
+audio.addEventListener("loadedmetadata", () => { $("tdur").textContent = fmt(audio.duration); applyTimes(); setStatus("ready"); });
+audio.addEventListener("durationchange", () => { if (isFinite(audio.duration)) { $("tdur").textContent = fmt(audio.duration); } });
+audio.addEventListener("error", () => setStatus("audio not found: put the mp3 beside index.html or use LOAD FILE"));
+$("seek").addEventListener("input", e => { if (isFinite(audio.duration)) seekTo(audio.duration * e.target.value / 1000); });
+$("vol").addEventListener("input", e => setVolume(e.target.value / 100));
+$("file").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  inMemory = true; audio.src = URL.createObjectURL(f);
+  setStatus("loaded " + f.name);
+  audio.load();
+});
+
+/* ---------- sync mode ---------- */
+let syncing = false, syncPos = 0;
+function setSync(on){
+  syncing = on; document.body.classList.toggle("syncing", on);
+  $("syncBtn").setAttribute("aria-pressed", on ? "true" : "false");
+  if (on){
+    measured = new Array(N).fill(false); syncPos = 0;
+    lineEls.forEach(el => el.classList.remove("set"));
+    audio.currentTime = 0; if (audio.paused) togglePlay();
+    setStatus("sync: waiting for line 1");
+  }else{
+    fillGaps(); save();
+    lineEls.forEach((el, i) => el.classList.toggle("set", measured[i]));
+    setStatus("sync saved in this browser, use TIMES to copy it");
+  }
+}
+function stamp(){
+  if (syncPos >= N) return;
+  times[syncPos] = audio.currentTime; measured[syncPos] = true;
+  lineEls[syncPos].classList.add("set");
+  syncPos++;
+  setStatus(syncPos < N ? "sync: line " + (syncPos + 1) + " of " + N : "sync: all lines stamped, press S");
+}
+function unstamp(){
+  if (syncPos <= 0) return;
+  syncPos--; measured[syncPos] = false; lineEls[syncPos].classList.remove("set");
+  setStatus("sync: back to line " + (syncPos + 1));
+}
+$("syncBtn").addEventListener("click", () => setSync(!syncing));
+
+/* ---------- times dialog ---------- */
+const dlg = $("dlg");
+$("timesBtn").addEventListener("click", () => {
+  $("timesText").value = JSON.stringify(times.map((t, i) => measured[i] ? Math.round(t * 10) / 10 : null));
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+});
+$("copyTimes").addEventListener("click", () => {
+  const ta = $("timesText"); ta.select();
+  try{ navigator.clipboard.writeText(ta.value); }catch(e){ document.execCommand("copy"); }
+});
+$("applyTimes").addEventListener("click", () => {
+  try{
+    const a = JSON.parse($("timesText").value);
+    if (!Array.isArray(a) || a.length !== N) throw new Error("length");
+    measured = a.map(v => typeof v === "number");
+    times = a.map((v, i) => typeof v === "number" ? v : times[i]);
+    fillGaps(); save();
+    lineEls.forEach((el, i) => el.classList.toggle("set", measured[i]));
+    setStatus("times applied");
+  }catch(e){ setStatus("could not read the times list, expected " + N + " entries"); }
+});
+$("resetTimes").addEventListener("click", () => {
+  try{ localStorage.removeItem(storeKey()); }catch(e){}
+  measured = new Array(N).fill(false); times = estimate(isFinite(audio.duration) ? audio.duration : 240);
+  lineEls.forEach(el => el.classList.remove("set")); setStatus("timings reset to estimate");
+});
+
+/* ---------- keys ---------- */
+window.addEventListener("keydown", e => {
+  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT" && e.target.type !== "range") return;
+  if (dlg.open) return;
+  if (e.code === "Space"){
+    e.preventDefault();
+    if (syncing) stamp(); else togglePlay();
+  }else if (e.key === "Backspace" && syncing){ e.preventDefault(); unstamp(); }
+  else if (e.key === "s" || e.key === "S"){ setSync(!syncing); }
+  else if (e.key === "ArrowRight"){ seekTo(Math.min(audio.duration || 0, audio.currentTime + 5)); }
+  else if (e.key === "ArrowLeft"){ seekTo(Math.max(0, audio.currentTime - 5)); }
+});
+
+/* ---------- main loop ---------- */
+function frame(now){
+  const t = audio.currentTime || 0;
+  analyse(now / 1000);
+  drawScene(now / 1000);
+  showLine(indexAt(t));
+  $("tcur").textContent = fmt(t);
+  if (isFinite(audio.duration) && audio.duration > 0 && document.activeElement !== $("seek")){
+    $("seek").value = Math.round(t / audio.duration * 1000);
+  }
+  requestAnimationFrame(frame);
+}
+
+applyTimes();
+resize();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+.
+├── CHANGELOG.md
+├── CITATION.cff
+├── CONTRIBUTING.md
+├── LICENSE
+├── MANIFEST.in
+├── README.md
+├── ROADMAP.md
+├── Room for Another Way.mp3
+├── Room for Another Way.vtt
+├── benchmarks
+│   ├── README.md
+│   ├── accuracy.py
+│   ├── generate_report.py
+│   ├── memory.py
+│   ├── runtime.py
+│   └── scaling.py
+├── books-source
+│   ├── README.md
+│   ├── Room for Another Way.mp3:Zone.Identifier
+│   ├── appA-proof-techniques.tex
+│   ├── appB-category.tex
+│   ├── appC-automata.tex
+│   ├── appD-information.tex
+│   ├── appE-examples.tex
+│   ├── appF-recap.tex
+│   ├── book1-distinction-continuation.pdf
+│   ├── book1-distinction-continuation.tex
+│   ├── book2-shape-of-possibility.pdf
+│   ├── book2-shape-of-possibility.tex
+│   ├── ch01-histories.tex
+│   ├── ch02-quotients.tex
+│   ├── ch03-adequacy.tex
+│   ├── ch04-histories.tex
+│   ├── ch05-fixed-policy.tex
+│   ├── ch06-families.tex
+│   ├── ch07-incremental.tex
+│   ├── ch08-products.tex
+│   ├── ch09-approx.tex
+│   ├── ch10-verification.tex
+│   ├── ch11-provenance.tex
+│   ├── ch12-retrieval.tex
+│   ├── ch13-admissible.tex
+│   ├── ch14-obligations.tex
+│   ├── ch15-identity.tex
+│   ├── ch16-disposition.tex
+│   ├── ch17-degradation.tex
+│   ├── ch18-compensation.tex
+│   ├── ch19-distributed.tex
+│   ├── ch20-interfaces.tex
+│   ├── ch21-revision.tex
+│   ├── ch22-cost.tex
+│   ├── ch23-worked.tex
+│   ├── ch24-open.tex
+│   ├── common-model.tex
+│   ├── distinction-and-continuation-cover.png
+│   ├── division-of-labour.tex
+│   ├── examples
+│   │   ├── continuation.out
+│   │   ├── continuation.py
+│   │   ├── kernel.out
+│   │   ├── kernel.py
+│   │   ├── monitor.out
+│   │   └── monitor.py
+│   ├── file_00000000bad081f99b1ea2a2d36bdc2d.png:Zone.Identifier
+│   ├── file_00000000c50081f9a1cf6cd223181a96.png:Zone.Identifier
+│   ├── flyxion-books.sty
+│   ├── proof-spine.pdf
+│   ├── proof-spine.tex
+│   ├── shape-of-possibility-cover.png
+│   ├── v2-appA-sufficiency.tex
+│   ├── v2-appB-linalg.tex
+│   ├── v2-appC-graphs.tex
+│   ├── v2-appD-dynamics.tex
+│   ├── v2-appE-opt.tex
+│   ├── v2-appF-stoch.tex
+│   ├── v2-appG-numerics.tex
+│   ├── v2-ch01-obstructions.tex
+│   ├── v2-ch02-reachability.tex
+│   ├── v2-ch03-viability.tex
+│   ├── v2-ch04-mdp.tex
+│   ├── v2-ch05-pomdp.tex
+│   ├── v2-ch06-petri.tex
+│   ├── v2-ch07-history-state.tex
+│   ├── v2-ch08-irreversibility.tex
+│   ├── v2-ch09-endogenous.tex
+│   ├── v2-ch10-domain.tex
+│   ├── v2-ch11-counting.tex
+│   ├── v2-ch12-costs.tex
+│   ├── v2-ch13-robust.tex
+│   ├── v2-ch14-obligations.tex
+│   ├── v2-ch15-admcost.tex
+│   ├── v2-ch16-fallback.tex
+│   ├── v2-ch17-relegation.tex
+│   ├── v2-ch18-interfaces.tex
+│   ├── v2-ch19-revision.tex
+│   ├── v2-ch20-proxies.tex
+│   ├── v2-ch21-exploration.tex
+│   ├── v2-ch22-sufficiency-cost.tex
+│   ├── v2-ch23-architecture.tex
+│   └── v2-ch24-cases.tex
+├── conftest.py
+├── data
+│   └── README.md
+├── examples
+│   ├── README.md
+│   ├── baseline_model.py
+│   ├── comparison.py
+│   ├── distinction_model.py
+│   └── parameter_sweep.py
+├── experiment.md
+├── experiments
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── core.cpython-312.pyc
+│   │   ├── experiment.cpython-312.pyc
+│   │   ├── framework.cpython-312.pyc
+│   │   └── metrics.cpython-312.pyc
+│   ├── core.py
+│   ├── experiment.py
+│   ├── framework.py
+│   ├── metrics.py
+│   ├── models
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── baseline.cpython-312.pyc
+│   │   │   └── distinctions.cpython-312.pyc
+│   │   ├── baseline.py
+│   │   └── distinctions.py
+│   └── protocols.py
+├── file-list.txt
+├── index.html
+├── notebooks
+│   ├── 01_introduction.ipynb
+│   ├── 02_baseline_model.ipynb
+│   ├── 03_distinctions_principle.ipynb
+│   ├── 04_experiments.ipynb
+│   ├── 05_results_summary.ipynb
+│   └── README.md
+├── notes
+│   ├── framework.md
+│   ├── hypotheses.md
+│   ├── questions.md
+│   └── theory.md
+├── papers
+│   └── README.md
+├── project.json
+├── pyproject.toml
+├── pytest.ini
+├── reproducibility
+│   ├── README.md
+│   ├── expected_hashes.json
+│   ├── experiment_parameters.json
+│   └── seed_values.json
+├── requirements.txt
+├── results
+│   ├── README.md
+│   └── benchmarks
+│       ├── report.md
+│       └── runtime_results.csv
+├── run.sh
+├── scripts
+│   └── manage.sh
+├── setup.py
+├── tests
+│   ├── __init__.py
+│   ├── test_baseline_model.py
+│   ├── test_core.py
+│   ├── test_distinction_model.py
+│   ├── test_example.py
+│   ├── test_framework.py
+│   └── test_metrics.py
+├── theory.md
+└── tox.ini
+
+18 directories, 158 files

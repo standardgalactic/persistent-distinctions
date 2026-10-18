@@ -1,0 +1,151 @@
+% v2-ch22-sufficiency-cost.tex
+\chapter{Maintaining and Acquiring Revision Sufficiency}\label{ch:suffcost}
+\spec{What does it cost to keep or to restore the distinctions that revision requires?}
+{Informational and physical reachability as developed in the first volume; Myhill--Nerode (Appendix~\ref{app:suff}); online rent-or-buy problems (Karlin, Manasse, Rudolph and Sleator).}
+{The least maintainable representation sufficient for a family of anticipated properties is the intersection of their Nerode congruences, with between the largest and the product of their class counts (Result~\ref{thm:family}); the marginal cost of anticipating one more property (Result~\ref{prop:marginal}); a rent-or-buy theorem with competitive ratio two and its optimality among deterministic rules (Result~\ref{thm:rent}); irreversible loss forces indefinite maintenance (Result~\ref{prop:irrev-maint}).}
+{None. This chapter closes the cost-bound obligation for maintaining a representation sufficient for an anticipated policy family, under the cost model of Definition~\ref{def:cost-model}.}
+{Chapters~\ref{ch:history-state}, \ref{ch:costs}, \ref{ch:vobl}, and Appendix~\ref{app:suff}.}
+
+A system that may later be asked to revise a rule must retain the distinctions that the revised rule will depend on. Which rule will be adopted is not known in advance, so the question is how many distinctions to keep for a family of anticipated rules and what it costs to restore one that was discarded. The first volume proves that sufficiency for a property is exactly refinement of its continuation equivalence; this chapter adds costs to that statement.
+
+\section{Sizes of sufficient representations for families}
+
+Fix a history system $\Hist$ and properties $P_1,\dots,P_m:\Hist\to B_i$. Write $\approx_i$ for the continuation equivalence of $P_i$ and $Q_i=\Hist/{\approx_i}$ for its set of classes, and let $\approx_F=\bigcap_i\approx_i$ for the family $F=\{P_1,\dots,P_m\}$.
+
+\begin{newresult}[Least maintainable sufficient representation for a family]\label{thm:family}
+A maintainable representation is sufficient for every $P_i$ if and only if its kernel is contained in $\approx_F$. The relation $\approx_F$ is itself a right congruence, so the representation $h\mapsto([h]_{\approx_1},\dots,[h]_{\approx_m})$ is maintainable and sufficient, and its number of values $|Q_F|$ satisfies
+\[
+\max_i|Q_i|\ \le\ |Q_F|\ \le\ \prod_i|Q_i|,
+\]
+with both bounds attained: the lower bound when the $\approx_i$ coincide, the upper bound for the parities below. Any maintainable sufficient representation takes at least $|Q_F|$ values, hence at least $\lceil\log_2|Q_F|\rceil$ bits.
+\end{newresult}
+\assumes{Finite $Q_i$.}
+\begin{proof}
+By Result~\ref{a:nerode} a maintainable $r$ is sufficient for $P_i$ iff $\ker r\subseteq{\approx_i}$; this holds for all $i$ iff $\ker r\subseteq\bigcap_i{\approx_i}$. An intersection of right congruences is a right congruence: if $h\approx_ih'$ for all $i$ and $ha\in\Hist$ then $ha\approx_ih'a$ for every $i$. Hence the product representation, whose kernel is $\approx_F$, is maintainable. The map from $Q_F$ to $Q_i$ induced by $\approx_F\subseteq\approx_i$ is onto, which gives $|Q_F|\ge|Q_i|$; the map $Q_F\to\prod Q_i$ is injective, giving the upper bound. If all $\approx_i$ coincide, $|Q_F|=|Q_1|$. For the parities, let $\Events=\{a,b\}$, $P_1(h)=$ parity of the number of $a$ in $h$, $P_2(h)=$ parity of the number of $b$. Then $\approx_1$ has two classes (by parity of $a$'s), $\approx_2$ two classes, and $\approx_F$ four, which is $2\cdot 2$. A lower bound on values is the number of classes, and on bits its logarithm.
+\end{proof}
+
+The theorem identifies the memory needed to keep $m$ distinctions open and shows that the cost is additive in bits only in the independent case. When anticipated properties are correlated through the dynamics, the family representation can be much smaller than the product, down to the single largest factor.
+
+\begin{newresult}[Marginal cost of anticipating one more property]\label{prop:marginal}
+Let $F'=F\cup\{P\}$. Then $|Q_{F'}|/|Q_F|\le|Q_P|$, so the additional memory is at most $\log_2|Q_P|$ bits, and it is zero if and only if ${\approx_F}\subseteq{\approx_P}$, that is, if the representation already maintained for $F$ is sufficient for $P$.
+\end{newresult}
+\assumes{As above.}
+\begin{proof}
+$\approx_{F'}=\approx_F\cap\approx_P$ refines $\approx_F$, and each class of $\approx_F$ splits into at most $|Q_P|$ classes. The additional memory is zero exactly when no class splits, that is, ${\approx_F}\subseteq{\approx_P}$.
+\end{proof}
+
+\begin{example}[An evidence archive]\label{ex:archive}
+An archive receives records, each with a source $s\in\{1,\dots,k\}$ and a label. The rule currently in force requires, for admission of a claim, that at least one record from each of two sources has been received (2 bits suffice: two flags). A revised rule under consideration requires that the number of records from source $1$ be at least $3$ (a counter capped at $3$: 4 values). The naive family representation is the pair (two flags, capped counter) with $4\cdot4=16$ values, but the flag for source $1$ is the indicator that the counter is positive, so the representation actually needs the flag for source $2$ and the capped counter, $2\cdot4=8$ values, 3 bits rather than 4. The saving is the dependence between the properties, and a design that stored each rule's state separately would pay for it.
+\end{example}
+
+\section{The cost of a discarded distinction}
+
+A representation that has discarded a distinction cannot recover it by computation (Result~\ref{a:joint}). Recovery requires new information from outside, and it has a cost.
+
+\begin{definition}[Cost model]\label{def:cost-model}
+Maintaining a representation with $b$ bits of distinctions costs $\rho=\varrho\,b$ per unit time, where $\varrho$ is the rent per bit. If a distinction is not maintained and is later needed, restoring it costs a one-time amount $C\in[0,\infty]$, the \emph{acquisition cost}; $C=\infty$ means the distinction cannot be restored. The need arises at an unknown time $T\in[0,\infty)$ (the \emph{demand time}), after which the distinction is needed and maintained or acquired as the case may be. The acquisition cost $C$ is the optimal value of the inspection problem of Chapter~\ref{ch:domain} when the distinction can be recovered by inspection, and is $\infty$ when the information has left the system (Chapter~\ref{ch:irreversibility}).
+\end{definition}
+
+A strategy for a single distinction is a time $s\in[0,\infty]$ up to which it is maintained; if $T\le s$ the cost is $\rho T$, and if $T>s$ the cost is $\rho s+C$. The offline optimum, knowing $T$, is $\min(\rho T,C)$.
+
+\begin{newresult}[Rent or buy]\label{thm:rent}
+The strategy $s^*=C/\rho$ (maintain until the rent paid equals the acquisition cost) satisfies $\mathrm{cost}(s^*,T)\le2\min(\rho T,C)$ for every demand time $T\ge0$: it is $2$-competitive. No deterministic strategy has a competitive ratio below $2$. If the demand time has an exponential law with rate $h$, the expected-cost optimal strategy is $s=\infty$ (always maintain) if $\rho\le hC$ and $s=0$ (never maintain) if $\rho\ge hC$.
+\end{newresult}
+\assumes{Known $\rho$ and $C$; demand time unknown, adversarial in the competitive statement and exponential in the last.}
+\begin{proof}
+For $T\le s^*$ the cost is $\rho T=\min(\rho T,C)$, since $\rho T\le C$. For $T>s^*$ it is $\rho s^*+C=2C=2\min(\rho T,C)$.
+
+Let $s$ be any deterministic strategy. If $s=0$, take demand time $T\downarrow0$: the cost is $C$ and the optimum $\rho T\to0$, so the ratio is unbounded. If $s=\infty$ take $T\to\infty$: the cost $\rho T$ against the optimum $C$, unbounded as $T\to\infty$ when $C<\infty$. Otherwise take $T=s+\epsilon$: the cost is $\rho s+C$ and the optimum is $\min(\rho s+\rho\epsilon,C)$, so the ratio tends to $(\rho s+C)/\min(\rho s,C)\ge2$ as $\epsilon\downarrow0$, since the numerator is the sum of $C$ and $\rho s$ and the denominator is the smaller of the two.
+
+For exponential demand with rate $h$: the expected cost of strategy $s$ is $\int_0^s\rho te^{-ht}h\,dt+e^{-hs}(\rho s+C)$. Differentiating in $s$ gives $e^{-hs}(\rho-hC)$, which is nonpositive for all $s$ iff $\rho\le hC$ (so $s=\infty$ is best) and nonnegative iff $\rho\ge hC$ (so $s=0$ is best).
+\end{proof}
+
+The result shows that the choice between maintaining and acquiring is a rent-or-buy decision whose break-even is $C/\rho$, and that a rule which maintains a distinction exactly as long as the rent paid is less than the cost of re-acquisition loses at most a factor of two to a clairvoyant. When demand has a constant hazard $h$, no intermediate strategy is optimal: the distinction is either kept always or not at all, and the boundary is $\rho=hC$.
+
+\begin{newresult}[Irreversible loss forces indefinite maintenance]\label{prop:irrev-maint}
+If $C=\infty$ and the demand time is finite with positive probability, every strategy with $s<\infty$ has infinite expected cost, so the only finite-cost strategy is to maintain indefinitely, at cost $\rho\,\mathbb E[T]$ (finite if $\mathbb E[T]<\infty$). If maintenance is itself impossible beyond a budget, $\rho s\le B$ for a finite $B$, the distinction is lost with probability at least $\Pr(T>B/\rho)$.
+\end{newresult}
+\assumes{As stated.}
+\begin{proof}
+For $s<\infty$ the event $\{T>s\}$ has positive probability when $T$ has unbounded support, or in general whenever it is positive, and on it the cost is infinite. For $s=\infty$ the cost is $\rho T$ with expectation $\rho\mathbb E[T]$. With a budget, maintenance stops at $s=B/\rho$, and the distinction is lost on $\{T>s\}$.
+\end{proof}
+
+This is the cost-side statement of the irreversibility of Chapter~\ref{ch:irreversibility}: a representation that has coarsened beyond recovery imposes the maintenance obligation on every earlier time at which the distinction might later be needed. The design question is therefore which distinctions are cheap to restore and which are not, and rent-or-buy applies only to the former.
+
+\section{Many distinctions at once}
+
+For a family of $m$ distinctions with rents $\rho_i$, acquisition costs $C_i$ and independent demand times, Result~\ref{thm:rent} applies distinction by distinction when the costs are additive. They are not additive when the representation is shared, since by Result~\ref{prop:marginal} the rent of a set of distinctions is $\varrho\log_2|Q_S|$ for the maintained subset $S$ and not the sum of the individual rents.
+
+\begin{newresult}[Shared rent reduces the break-even time]\label{prop:shared}
+Let a set $S$ of distinctions share a representation with rent $\rho_S=\varrho\log_2|Q_S|$, and suppose demands arrive for each $i\in S$ at independent exponential rates $h_i$ with acquisition costs $C_i$. The always-maintain strategy for $S$ has lower expected cost than never maintaining if $\rho_S\le\sum_{i\in S}h_iC_i$. The sum of the individual break-even conditions $\rho_i\le h_iC_i$ implies this condition whenever $\rho_S\le\sum_i\rho_i$, which holds because $|Q_S|\le\prod|Q_i|$.
+\end{newresult}
+\assumes{Independent exponential demands; the cost of never maintaining is the sum of acquisition costs paid at the first demand for each distinction, with each distinction acquired at most once per demand; the comparison is made per unit time in the stationary regime in which each demand repeats at its rate.}
+\begin{proof}
+In the stationary regime, never maintaining costs $\sum_ih_iC_i$ per unit time and maintaining $S$ costs $\rho_S$. The first claim is the comparison. If $\rho_i\le h_iC_i$ for all $i$ then $\sum_ih_iC_i\ge\sum_i\rho_i\ge\rho_S$, the last by the product bound of Result~\ref{thm:family}.
+\end{proof}
+
+
+\section[Counters on a common event]{Counters on a common event: the size of the family representation}\label{sec:lcm}
+
+The bounds of Result~\ref{thm:family} are attained at both ends by simple families, and a third family fills in the interior exactly. Let the only event be $a$ and let the property $P_i$ be the count of $a$ modulo $m_i$.
+
+\begin{newresult}[Counters on one event]\label{prop:lcm}
+For the properties $P_i(h)=\#_a(h)\bmod m_i$, $i=1,\dots,r$, the continuation equivalence $\approx_i$ has $m_i$ classes and $\approx_F$ has exactly $\operatorname{lcm}(m_1,\dots,m_r)$ classes. Hence $|Q_F|=\operatorname{lcm}(m_i)$ lies between $\max_im_i$ (attained when each $m_i$ divides the largest) and $\prod_im_i$ (attained when the $m_i$ are pairwise coprime), and the memory needed is $\log_2\operatorname{lcm}(m_i)$ bits against $\sum_i\log_2m_i$ bits for separate counters.
+\end{newresult}
+\assumes{One event; counts modulo $m_i$.}
+\begin{proof}
+Two histories with counts $n,n'$ are equivalent for $P_i$ iff $n\equiv n'\pmod{m_i}$, since appending $k$ further events shifts both counts by $k$ and the residues differ for some $k$ otherwise. They are equivalent for all $i$ iff $n-n'$ is divisible by every $m_i$, that is, by the least common multiple. So $\approx_F$ identifies counts modulo $\operatorname{lcm}(m_i)$, giving exactly that many classes. The bounds follow from $\max m_i\le\operatorname{lcm}\le\prod m_i$, with equality on the right iff the moduli are pairwise coprime and on the left iff every modulus divides the largest.
+\end{proof}
+
+For the moduli $(2,3,4,6)$ the family representation has $\operatorname{lcm}=12$ values, against a maximum of $6$ and a product of $144$; it needs $3.58$ bits where separate counters would need $7.17$. For the moduli $(2,3,5)$ the three counters are coprime and the saving vanishes: $30$ values and $4.91$ bits in both accounts. The arithmetic character of the dependence is the point: properties that are correlated through the dynamics share state, and the amount of sharing is a divisibility relation among the moduli, so a designer who chooses the moduli of related counters (retention periods, audit cycles, rotation schedules) with a common multiple in mind pays the memory of the largest cycle and not of the product.
+
+\section{Randomized maintenance}\label{sec:randomized-rent}
+
+Result~\ref{thm:rent} shows that no deterministic strategy beats a competitive ratio of $2$. If the strategy may be randomized, with the adversary choosing $T$ without seeing the random draw, the ratio improves.
+
+\begin{established}[Randomized rent-or-buy]\label{thm:rand-rent}
+In the discrete version with acquisition cost $B$ times the unit rent, the best randomized strategy has competitive ratio $\bigl(1-(1-1/B)^{B}\bigr)^{-1}$, which tends to $e/(e-1)\approx1.582$ as $B\to\infty$. The optimal distribution of the switching time $k$ is proportional to $(1-1/B)^{B-k}$ for $k=1,\dots,B$. The best deterministic strategy has ratio $2-1/B$.
+\end{established}
+\source{Karlin, Manasse, McGeoch and Owicki (1990); Karlin, Manasse, Rudolph and Sleator (1988).}
+
+For $B=10$ the randomized ratio is $1.5353$ and the deterministic ratio is $1.9$, as a linear program over the switching distribution confirms; the optimal distribution places probability $0.0595$ on switching at the first step and increases geometrically to $0.1535$ at the tenth. The randomized strategy matters here because the demand for a distinction is not announced: a system that maintains each of a large set of distinctions for a randomly drawn time, from a distribution of this shape, loses at most about $1.5$ times the clairvoyant cost on each of them, against about $2$ for the deterministic threshold, and the improvement does not depend on the demand times being drawn from any known law.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For the parities in Result~\ref{thm:family} verify that $\approx_1\cap\approx_2$ has four classes by exhibiting a representative for each and a separating continuation for each pair.
+\end{exercise}
+
+\begin{exercise}
+Compute $|Q_F|$ for $P_1=$ ``the number of $a$ is even'' and $P_2=$ ``the number of $a$ is divisible by $3$''. Compare with the product bound and explain the discrepancy.
+\end{exercise}
+
+\begin{exercise}
+In Example~\ref{ex:archive} replace the revised rule by ``at least $3$ records from source $1$ and at least one from source $2$'' and recompute $|Q_F|$.
+\end{exercise}
+
+\begin{exercise}
+In the continuous version of rent-or-buy, with rent rate $\rho$, purchase price $C$ and unknown demand length $T$, let the player buy at the random time $S$ with density proportional to $e^{\rho s/C}$ on $[0,C/\rho]$. Show that the expected cost is at most $\tfrac{e}{e-1}\min(\rho T,C)$ for every fixed $T$. Explain why the guarantee requires the adversary to fix $T$ without seeing $S$, and why an adversary who ends the demand just after the purchase forces ratio $2$.
+\end{exercise}
+
+\begin{exercise}
+Combine Result~\ref{thm:rent} with a finite horizon $N$ for the demand: demands beyond $N$ are of no concern. Show that the break-even changes from $C/\rho$ to $\min(C/\rho,N)$ and that maintaining until $N$ is then optimal whenever $\rho N\le C$.
+\end{exercise}
+
+\begin{exercise}
+For the moduli $(4,6,10)$ compute $\operatorname{lcm}$, the product, and the two bit counts, and say whether the representation can be built by combining counters modulo $4$ and $6$ into one counter modulo $12$ plus the residue modulo $10$.
+\end{exercise}
+
+\begin{exercise}
+Show that in Result~\ref{prop:lcm} adding a property $P_{r+1}$ with modulus $m_{r+1}$ costs $\log_2\bigl(\operatorname{lcm}(m_1,\dots,m_{r+1})/\operatorname{lcm}(m_1,\dots,m_r)\bigr)$ additional bits, and that this is zero iff $m_{r+1}$ divides the previous lcm.
+\end{exercise}
+
+\begin{exercise}
+For $B=3$ solve the randomized rent-or-buy linear program by hand for the switching distribution on $k\in\{1,2,3\}$ and verify the ratio $(1-(2/3)^3)^{-1}=27/19$.
+\end{exercise}
+
+\begin{exercise}
+Combine the shared rent of Result~\ref{prop:shared} with the randomized strategy: if $m$ distinctions share a representation whose rent is the logarithm of the lcm of their moduli, describe a randomized schedule that drops them all at one random time, and compute its competitive ratio against the clairvoyant that pays only for the distinctions that are demanded.
+\end{exercise}
+

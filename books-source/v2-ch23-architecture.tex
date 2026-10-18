@@ -1,0 +1,144 @@
+% v2-ch23-architecture.tex
+\chapter{Architecture for Revisable Systems}\label{ch:architecture}
+\spec{How are immediate efficiency and later intervention traded off?}
+{Modularity; reversible and deferred commitment; real options; vertex cover (Karp).}
+{The design problem as a constrained optimization over early commitments with flexibility requirements stated as admissible-intervention constraints (Definition~\ref{def:design}); a commit-or-defer criterion $g>hR$ (Result~\ref{thm:commit}); the constrained problem is polynomial for single-route requirements and NP-hard with alternative routes (Result~\ref{thm:design-np}); the efficiency price of flexibility is the total gain of the modules that interventions touch, and refining modules reduces it (Result~\ref{prop:flex-price}).}
+{None.}
+{Chapters~\ref{ch:admcost}, \ref{ch:interfaces}, and~\ref{ch:suffcost}.}
+
+Efficiency usually comes from commitment: a module that is fixed can be optimized, specialized, and fused with its neighbours. Intervention requires the opposite: a module that may later be replaced, reconfigured, or inspected must remain open. A design is therefore a choice of which modules to commit early, and the choice is constrained by the interventions that the system must still admit. This chapter states the choice as an optimization problem and solves it in the cases where it can be solved.
+
+\section{The design problem}
+
+\begin{definition}[Design problem]\label{def:design}
+A \emph{design problem} consists of a finite set $M$ of modules, a gain $g_i\ge0$ per unit time for committing module $i$ (the efficiency obtained from fixing it), a reopening cost $R_i\in[0,\infty]$ (the cost of undoing the commitment when an intervention touches it), and a finite set $\mathcal J$ of required interventions. Each intervention $j\in\mathcal J$ has a set of \emph{routes} $W_{j1},\dots,W_{jq_j}\subseteq M$; a route is a set of modules that must be uncommitted for the intervention to be carried out by that route. A \emph{commitment set} $S\subseteq M$ is \emph{flexible} if every required intervention has a route disjoint from $S$. The \emph{flexibility-constrained design problem} is
+\[
+\max_{S\subseteq M}\ \sum_{i\in S}g_i\quad\text{subject to}\quad\forall j\in\mathcal J\ \exists l:\ W_{jl}\cap S=\varnothing .
+\]
+\end{definition}
+
+In the language of earlier chapters, the routes are the admissible ways of reaching an altered configuration, a committed module removes the actions that touch it, and a flexible commitment set is one for which the set of admissible interventions retains every required one. The constraint is an admissibility constraint, and the objective is the ordinary one.
+
+\section{When to commit}
+
+If the interventions arrive at random, the constraint is replaced by a cost. A committed module $i$ is reopened when an intervention touching it is demanded, at a time $T_i$ that is unknown.
+
+\begin{newresult}[Commit or defer]\label{thm:commit}
+Suppose the demand time $T$ for an intervention touching module $i$ is exponential with rate $h>0$, a horizon $N\in(0,\infty]$ is fixed, the module yields gain $g$ per unit time while committed and costs $R$ to reopen, and after reopening it yields no further gain. The expected net value of committing at time $0$ and not otherwise is
+\[
+V=\bigl(1-e^{-hN}\bigr)\Bigl(\frac gh-R\Bigr)\qquad(\text{with }1-e^{-hN}=1\text{ if }N=\infty),
+\]
+so committing is optimal if and only if $g>hR$, independently of the horizon. By memorylessness the same criterion applies at every later time, so the optimal policy is to commit at once or never. If $R=\infty$ and $h>0$, the module should never be committed. If the demand time is deterministic, $T=t_0$, the module is committed if and only if $g\min(t_0,N)>R\,1\{t_0\le N\}$.
+\end{newresult}
+\assumes{Independent exponential demand; additive gain.}
+\begin{proof}
+The net value is $g\min(T,N)-R\,1\{T\le N\}$. Its expectation is $g\int_0^N\Pr(T>t)\,dt-R\Pr(T\le N)=g\frac{1-e^{-hN}}{h}-R(1-e^{-hN})$. This is positive if and only if $g/h>R$. For a later commitment time $t$ the horizon becomes $N-t$ and, by memorylessness, the remaining demand time is again exponential with rate $h$, so the sign is unchanged. If $R=\infty$ the value is $-\infty$ for every $N>0$ when $h>0$. For deterministic $T$ the value is $g\min(t_0,N)$ minus $R$ if the demand falls inside the horizon.
+\end{proof}
+
+The criterion has the form of the rent-or-buy criterion of Chapter~\ref{ch:suffcost}, with the hazard rate $h$ the ratio between how often the module is needed and how much it earns. Two design levers appear. Raising the gain $g$ (better specialization) favours commitment. Lowering the reopening cost $R$ favours it too, and a good interface in the sense of Chapter~\ref{ch:interfaces} is one that lowers $R$ by confining the effect of an intervention to few modules.
+
+\section{The constrained problem}
+
+\begin{newresult}[Complexity of the flexibility-constrained design]\label{thm:design-np}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item If every intervention has a single route $W_j$, the unique optimum is $S^*=M\setminus\bigcup_jW_j$ with value $\sum_{i\notin\bigcup W_j}g_i$, computed in linear time.
+  \item If interventions may have two routes of size one each, the decision problem ``is there a flexible $S$ with $\sum_{i\in S}g_i\ge G$?'' is NP-complete, even when all $g_i=1$.
+  \item The value of the optimum is nonincreasing in the set of required interventions, and the flexible commitment sets form a down-closed family (subsets of flexible sets are flexible).
+\end{enumerate}
+\end{newresult}
+\assumes{Finite sets; the gains are additive and nonnegative.}
+\begin{proof}
+(a) With one route per intervention, $S$ is flexible iff $S\cap W_j=\varnothing$ for all $j$, iff $S\subseteq M\setminus\bigcup_jW_j$. Since gains are nonnegative the maximum is attained at the largest such set.
+
+(b) Membership in NP is clear: a flexible $S$ is a certificate. For hardness reduce from VERTEX COVER: given a graph $(V,E)$ and an integer $k$, let $M=V$, $g_i=1$, and for each edge $\{u,v\}\in E$ add an intervention with the two routes $\{u\}$ and $\{v\}$. A set $S$ is flexible iff for each edge at least one endpoint lies outside $S$, that is, iff $V\setminus S$ is a vertex cover. Thus $\sum_{i\in S}g_i=|V|-|V\setminus S|\ge|V|-k$ for a flexible $S$ iff there is a vertex cover of size at most $k$.
+
+(c) Adding an intervention adds a constraint, so the feasible set can only shrink. If $S$ is flexible and $S'\subseteq S$ then $W_{jl}\cap S'\subseteq W_{jl}\cap S=\varnothing$ for the route that works for $S$.
+\end{proof}
+
+The dichotomy has an engineering reading. When each intervention has one known route, the problem is a trivial reservation of modules. When an intervention can be done in alternative ways, deciding which modules to keep open so that at least one way survives is as hard as covering. The practical approach is therefore either to make routes unique by design or to use an approximation, such as the factor-two approximation for vertex cover obtained from a maximal matching.
+
+\begin{example}[Three modules]\label{ex:three-modules}
+Modules $\{1,2,3\}$ with gains $(5,3,2)$. Interventions: $j_1$ with routes $\{1\}$ and $\{2\}$; $j_2$ with the single route $\{2,3\}$. A set $S$ is flexible iff $S\cap\{2,3\}=\varnothing$ and ($1\notin S$ or $2\notin S$). The first condition forces $S\subseteq\{1\}$, which satisfies the second. The optimum is $S^*=\{1\}$ with value $5$. If $j_2$ is withdrawn, the flexible sets are those omitting $1$ or $2$ (or both): the maximal ones are $\{1,3\}$ (value 7) and $\{2,3\}$ (value 5), so the optimum rises from $5$ to $7$. The requirement $j_2$ costs $2$ units of gain.
+\end{example}
+
+\section{The price of flexibility}
+
+\begin{newresult}[Efficiency lost to flexibility]\label{prop:flex-price}
+For single-route interventions, the efficiency lost relative to committing everything is $\Lambda=\sum_{i\in\bigcup_jW_j}g_i$. It is nondecreasing in the family of required interventions, and it is nonincreasing under \emph{refinement}: if a module $i$ is split into submodules $i',i''$ with $g_i=g_{i'}+g_{i''}$ and every route through $i$ now contains only the submodules that the intervention actually touches, then the new loss is at most the old, with a strict decrease by $g_{i''}$ if no route touches $i''$.
+\end{newresult}
+\assumes{As stated.}
+\begin{proof}
+The loss is the gain of the union of routes, which grows with the union. Under refinement the union of routes is replaced by a subset of the refined modules, whose total gain is at most that of the original union; if $i''$ is touched by no route it is no longer in the union and the loss decreases by $g_{i''}$.
+\end{proof}
+
+\begin{example}[Refinement pays]\label{ex:refine}
+A controller module has gain $10$ per unit time and an intervention that touches only its logging subroutine, which accounts for $2$ of that gain. With the controller committed as a single module, flexibility costs $10$. After refinement into a core (gain $8$) and a logging part (gain $2$), flexibility costs $2$. The same intervention is carried out; the architecture changes only the grain at which commitment is applied.
+\end{example}
+
+
+\section[A weighted instance]{A weighted instance: the price of flexibility as a vertex cover}\label{sec:weighted-instance}
+
+When every intervention has two routes consisting of one module each, the interventions form the edges of a graph on the modules, and the design problem has a direct graph-theoretic form.
+
+\begin{newresult}[Flexibility price equals minimum weight vertex cover]\label{prop:cover-price}
+Let the interventions be edges $\{u,v\}$ of a graph $H$ on $M$, each with routes $\{u\}$ and $\{v\}$. A commitment set $S$ is flexible if and only if $S$ is an independent set of $H$, and the efficiency lost to flexibility, $\Lambda=\sum_{i\in M}g_i-\max_S\sum_{i\in S}g_i$, equals the minimum total gain of a vertex cover of $H$.
+\end{newresult}
+\assumes{Single-module routes; additive gains.}
+\begin{proof}
+$S$ is flexible iff each edge has an endpoint outside $S$, that is, iff no edge has both endpoints in $S$, so $S$ is independent. The complement of an independent set is a vertex cover and conversely, so maximizing the gain of $S$ is minimizing the gain of the complementary cover.
+\end{proof}
+
+Because exact minimum weight cover is NP-hard, the quality of approximations matters, and the unit-gain bound of the maximal matching does not carry over to unequal gains. The following instance makes the point. Eight modules have gains $(6,5,5,4,3,3,2,1)$, and the required interventions are the nine pairs
+\[
+\{1,2\},\{2,3\},\{3,4\},\{4,5\},\{5,6\},\{6,7\},\{7,8\},\{2,7\},\{1,5\}.
+\]
+The total gain is $29$. Exhaustive search over the $256$ commitment sets gives the optimal flexible set $\{1,3,6,8\}$ with value $15$, so $\Lambda=14$; the next best flexible sets have value $14$. A greedy rule that adds modules in decreasing order of gain while preserving independence finds the optimum here. The matching heuristic that takes the first maximal matching in the listed order, $\{1,2\},\{3,4\},\{5,6\},\{7,8\}$, is perfect, so it uncommits all eight modules and loses $29$, which is $2.07$ times the optimal loss: with unequal gains the factor two of the unit-gain argument fails.
+
+\begin{established}[Local-ratio cover]\label{thm:local-ratio}
+For a weighted graph, process the edges in any order, and for each edge $\{u,v\}$ subtract $\min(w_u,w_v)$ from the residual weights of both endpoints. The vertices of zero residual weight form a vertex cover of total weight at most twice the minimum.
+\end{established}
+\source{Bar-Yehuda and Even (1981).}
+
+On the instance above the procedure leaves the residual weights $(1,0,1,0,0,0,1,0)$, so the cover is $\{2,4,5,6,8\}$ with weight $5+4+3+3+1=16$ and no member is redundant. The commitment set is its complement $\{1,3,7\}$ with value $13$ against the optimum $15$, and the loss is $16\le2\cdot14=28$ (in fact $1.14$ times optimal). The design reading is that the approximation guarantee for unit gains does not transfer to graded gains without the local-ratio step, and that a design process that ranks modules by gain and commits greedily should be compared against the cover bound before its result is relied upon.
+
+For the commit-or-defer rule of Result~\ref{thm:commit}, a module with gain $g=3$, hazard $h=\tfrac12$, reopening cost $R=5$ and horizon $N=4$ has $g/h=6>5=R$, so committing is optimal, and the expected net value is $(1-e^{-2})(6-5)=0.865$. The same module with $R=7$ has expected value $-0.865$ and should not be committed, however long the horizon.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For Result~\ref{thm:commit} compute $V$ with $g=3$, $h=1/2$, $R=5$, $N=4$ and decide.
+\end{exercise}
+
+\begin{exercise}
+Allow partial reopening: with probability $\theta$ an intervention needs only a repair of cost $R'<R$. Replace $R$ by the expected cost and restate the criterion.
+\end{exercise}
+
+\begin{exercise}
+Prove that in Result~\ref{thm:design-np}(b) the problem remains NP-hard when each module occurs in at most three routes, by reduction from vertex cover on graphs of maximum degree three.
+\end{exercise}
+
+\begin{exercise}
+Give a greedy algorithm for the case in which each intervention has two routes of size one, based on a maximal matching in the graph whose edges are the interventions, and show that its value is within a factor $2$ of the best flexible commitment in the sense of covering size. State what changes if the gains are unequal.
+\end{exercise}
+
+\begin{exercise}
+In Example~\ref{ex:three-modules} compute the optimum if $j_1$ is replaced by an intervention with routes $\{1\}$, $\{2\}$, $\{3\}$, with and without $j_2$.
+\end{exercise}
+
+\begin{exercise}
+Run the local-ratio procedure on the instance of Section~\ref{sec:weighted-instance} with the edges taken in reverse order, and compare the resulting cover weight with $14$ and with $28$.
+\end{exercise}
+
+\begin{exercise}
+Show that for a path on $n$ modules with unit gains the flexibility price is $\lfloor n/2\rfloor$, and give the optimal commitment set. Compute the price for a cycle of length $n$.
+\end{exercise}
+
+\begin{exercise}
+Show that when the intervention graph is bipartite the minimum weight vertex cover is computed in polynomial time by a minimum cut, and use it to solve the design problem for the bipartite graph with parts $\{1,2,3\}$, $\{4,5\}$, edges $\{1,4\},\{2,4\},\{3,5\},\{2,5\}$ and gains $(3,2,4,5,1)$.
+\end{exercise}
+
+\begin{exercise}
+Modify Result~\ref{prop:cover-price} so that an intervention with routes $\{u\}$ and $\{v\}$ is required only with probability $p_j$, and each unmet required intervention costs a penalty $P_j$. State the new objective and say when it reduces to the cover problem.
+\end{exercise}
+

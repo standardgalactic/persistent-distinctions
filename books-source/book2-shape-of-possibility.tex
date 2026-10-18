@@ -1,0 +1,95 @@
+\documentclass[11pt,twoside]{book}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{flyxion-books}
+
+\title{The Shape of Possibility\\[0.4em]\large Memory, Constraint, and Admissible Change}
+\author{Flyxion\\Independent Researcher}
+\date{Working skeleton, October 2026}
+
+\begin{document}
+\frontmatter
+\maketitle
+\tableofcontents
+
+\input{division-of-labour}
+
+\chapter*{Preface}
+\addcontentsline{toc}{chapter}{Preface}
+This volume asks how present actions change the structure of what can subsequently be reached, chosen, or revised. It begins with finite graphs, convex constraints, and viability, adds stochastic, partially observed, and resource-sensitive models, and then develops history-dependent feasibility, the acquisition of new capabilities, and the cost of preserving future alternatives. The final parts give concrete mathematical commitments to adaptive control, interfaces, institutional revision, and proxy optimization, each built on a named formal core with a theorem the chapter is organized around. Results are labelled as established, new, or proof obligations, and no proof obligation is cited as a theorem. Appendix~A recaps the sufficiency results needed from the first volume, so this volume can be read first.
+
+\mainmatter
+
+% =====================================================================
+\part{Spaces of possible action}
+
+\input{v2-ch01-obstructions}
+
+\input{v2-ch02-reachability}
+
+\input{v2-ch03-viability}
+
+% =====================================================================
+\part{Stochastic, partially observed, and resource-bounded systems}
+
+\input{v2-ch04-mdp}
+
+\input{v2-ch05-pomdp}
+
+\input{v2-ch06-petri}
+
+% =====================================================================
+\part{Histories that change feasibility}
+
+\input{v2-ch07-history-state}
+
+\input{v2-ch08-irreversibility}
+
+\input{v2-ch09-endogenous}
+
+\input{v2-ch10-domain}
+
+% =====================================================================
+\part{Measures of possibility}
+
+\input{v2-ch11-counting}
+
+\input{v2-ch12-costs}
+
+\input{v2-ch13-robust}
+
+% =====================================================================
+\part{Preserving future admissibility}
+
+\input{v2-ch14-obligations}
+
+\input{v2-ch15-admcost}
+
+\input{v2-ch16-fallback}
+
+% =====================================================================
+\part{Adaptive control and institutions}
+
+\input{v2-ch17-relegation}
+\input{v2-ch18-interfaces}
+\input{v2-ch19-revision}
+\input{v2-ch20-proxies}
+
+% =====================================================================
+\part{Learning and design}
+
+\input{v2-ch21-exploration}
+\input{v2-ch22-sufficiency-cost}
+
+\input{v2-ch23-architecture}
+\input{v2-ch24-cases}
+
+\appendix
+\input{v2-appA-sufficiency}
+\input{v2-appB-linalg}
+\input{v2-appC-graphs}
+\input{v2-appD-dynamics}
+\input{v2-appE-opt}
+\input{v2-appF-stoch}
+\input{v2-appG-numerics}
+
+\end{document}

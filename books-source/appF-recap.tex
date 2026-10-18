@@ -1,0 +1,73 @@
+% appF-recap.tex
+\chapter[Recap of Reachability and Viability]{Recap of Reachability and Viability for Readers of This Volume First}\label{app:recap}
+
+The second volume develops reachability and viability in full. This appendix gives the definitions and the results of that development that the present volume uses, with proofs, so that this volume can be read first. Statuses follow the main text.
+
+\section{Controlled systems and reachability}
+
+A \emph{controlled system} consists of a finite set $X$ of states, a finite set $U$ of actions, and a transition relation $E\subseteq X\times U\times X$; write $x\xrightarrow{u}y$ for $(x,u,y)\in E$. A \emph{trajectory} is a finite or infinite sequence $x_0\xrightarrow{u_0}x_1\xrightarrow{u_1}\cdots$. The system is \emph{deterministic} if for each $(x,u)$ there is at most one $y$. The set of states \emph{reachable} from $x$ is $\mathrm{Reach}(x)$, the least set containing $x$ and closed under successors.
+
+\begin{newresult}[Reachability is a preorder; components]\label{pr:reach}
+The relation $x\to^*y$ ($y\in\mathrm{Reach}(x)$) is a preorder on $X$. Its symmetric part is an equivalence relation whose classes are the strongly connected components, and the preorder induces a partial order on the set of components (the condensation), which is acyclic. A state from which no component other than its own is reachable lies in a \emph{terminal} component, and every state reaches a terminal component.
+\end{newresult}
+\assumes{Finite state set.}
+\begin{proof}
+Reflexivity is the empty trajectory and transitivity is concatenation. The symmetric part is the mutual reachability relation, an equivalence relation. On components the induced relation is reflexive and transitive, and antisymmetric because mutual reachability of two components makes them the same. A longest chain of components must end, by finiteness, at a component with no outgoing edge to another; every state reaches one by following a chain upward.
+\end{proof}
+
+Components and the condensation are computed in time linear in the size of the system (Tarjan's algorithm, Appendix~\ref{app:automata} gives the same quotient construction for automata). In a history system the components are the sets of states between which the system can move in both directions; a state in a terminal component of size one is \emph{absorbing}, and a history that reaches it can no longer change the future except by waiting.
+
+\section{Viability}
+
+Fix a \emph{constraint set} $C\subseteq X$. A set $S\subseteq C$ is a \emph{viability domain} if every $x\in S$ has an action $u$ and a successor $y$ with $x\xrightarrow{u}y$ in the deterministic case, and in the nondeterministic case (a disturbance chooses the successor) an action $u$ all of whose successors lie in $S$ and at least one exists.
+
+\begin{newresult}[The viability kernel]\label{pr:kernel}
+The union of all viability domains contained in $C$ is a viability domain, the \emph{viability kernel} $\Viab(C)$; it is the greatest fixed point of $\Gamma_C(S)=\{x\in C:\exists u\ (\varnothing\ne\mathrm{succ}(x,u)\subseteq S)\}$, and is obtained by the iteration $S_0=C$, $S_{k+1}=\Gamma_C(S_k)$, which stabilizes in at most $|C|$ steps. A state lies in the kernel iff there is a strategy that keeps the trajectory in $C$ forever against any choice of successor. If $x\notin\Viab(C)$, every strategy is forced out of $C$ within $k_x\le|C|$ steps, where $k_x$ is the step at which $x$ leaves the iteration.
+\end{newresult}
+\assumes{Finite system.}
+\begin{proof}
+A union of viability domains is a viability domain: a state in one of them has its action into that one, hence into the union. So the union $K$ of all viability domains inside $C$ is the greatest one. $\Gamma_C$ is monotone, and $S\subseteq\Gamma_C(S)$ with $S\subseteq C$ exactly states that $S$ is a viability domain, so by Result~\ref{pa:kt} the greatest fixed point is $K$ and the descending iteration reaches it in at most $|C|$ steps. If $x\in K$, the strategy ``choose an action into $K$'' keeps the trajectory in $K\subseteq C$ forever. If $x\notin K$ then $x$ is removed at some stage $k_x$; by induction on $k_x$, from $x$ every action has either a successor outside $C$ (when $k_x=1$) or a successor removed earlier (when $k_x>1$), so the adversary can force exit within $k_x$ steps.
+\end{proof}
+
+\begin{newresult}[A linear-time algorithm]\label{pr:kernel-alg}
+Let $|E|$ be the number of transitions. The kernel is computed in time $O(|X|+|E|)$ by maintaining, for each state-action pair, a flag that records whether every successor lies in the current candidate set, and for each state the number of actions whose flag is true; a state is removed when its count reaches zero, and removing a state clears the flags of the pairs having it as a successor.
+\end{newresult}
+\assumes{Finite system.}
+\begin{proof}
+The invariant is that a pair's flag is true iff all its successors are in the candidate set $S$ and in $C$, and the count of a state equals the number of its true pairs. A state is removed exactly when it has no true pair, which is the condition $x\notin\Gamma_C(S)$, so the final set is a fixed point reached by removing only states outside the greatest fixed point (each removal is justified by the previous ones, as in the iteration). Each pair's flag is cleared at most once and each state is removed at most once, and each transition is examined when one of its endpoints is removed, giving the linear bound.
+\end{proof}
+
+\begin{example}[The account with a reserve]\label{pr:ex-account}
+States $\{0,1,\dots,N\}$ are balances and the constraint is balance $\ge r$ for a reserve $0<r<N$. At each step the controller chooses to deposit one unit or not, and a disturbance withdraws one unit (the withdrawal is applied after the deposit, and the balance is capped at $N$ and floored at $0$). With a deposit the balance changes by $0$ from any $b<N$ and by $-1$ from $b=N$; without it, by $-1$. The iteration of Result~\ref{pr:kernel} starts from $[r,N]$. Every $b\in[r,N-1]$ has the action ``deposit'', whose successor is $b$ itself, and $N$ has the successor $N-1\ge r$. So no state is removed at the first step and $[r,N]$ is a fixed point: the kernel is $[r,N]$, and states below $r$ are outside the constraint set to begin with.
+\end{example}
+
+\section{Connection to histories and obligations}
+
+For a history system with representation $r$ (Chapter~\ref{ch:quotients}), viability is a property of the representation: a history is viable iff the state it reaches is in the kernel of the transition system generated by the Nerode quotient (Result~\ref{prop:viable}). The monitor states of an obligation (Appendix~\ref{app:automata}) are appended to the physical state to obtain the product system in which obligations are constraints, and the kernel of the product is the set of \emph{compliantly admissible} histories studied in Chapter~\ref{ch:obligations}.
+
+\section{Robust viability}
+
+When a disturbance chooses the successor among a set $D(x,u)$, the nondeterministic definition above gives the \emph{robust} kernel: a state is robustly viable iff the controller has an action all of whose successors are viable. The two statements of Result~\ref{pr:kernel} and Result~\ref{pr:kernel-alg} cover it verbatim, and it is monotone in the disturbance: enlarging $D$ can only shrink the kernel. The scalar system $x^+=ax+u$, $|u|\le1$, constraint $[-k,k]$, has kernel $[-c^*,c^*]$ with $c^*=k$ if $|a|\le1$ and $c^*=\min(k,1/(|a|-1))$ otherwise, as is checked by solving $|a|c\le c+1$; this is the standard example used throughout the second volume.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute the condensation of the system on $\{1,\dots,6\}$ with transitions $1\to2$, $2\to3$, $3\to1$, $3\to4$, $4\to5$, $5\to4$, $5\to6$. Which components are terminal?
+\end{exercise}
+
+\begin{exercise}
+Run the iteration of Result~\ref{pr:kernel} on the same system with $C=\{1,2,3,4,5\}$ and one action per state (deterministic). What is the kernel, and what is the exit step of state $3$?
+\end{exercise}
+
+\begin{exercise}
+Show that the kernel of the intersection of two constraint sets is contained in the intersection of their kernels, with equality failing in general. Give an example.
+\end{exercise}
+
+\begin{exercise}
+For $x^+=2x+u$, $|u|\le1$ and $C=[-3,3]$, show that $x=1.5$ is not in the kernel and compute the step at which it is forced out.
+\end{exercise}
+
+\begin{exercise}
+Verify the counts in Result~\ref{pr:kernel-alg} by tracing the algorithm on the vehicle system of Appendix~\ref{app:examples} for $B=2$, $L=3$.
+\end{exercise}

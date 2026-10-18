@@ -1,0 +1,148 @@
+% ch14-obligations.tex
+\chapter{Obligation Semantics}\label{ch:obligations}
+\spec{How are obligations that cannot be assessed from a single instantaneous state specified and monitored?}
+{Linear temporal logic (Pnueli); monitorability and runtime verification (Bauer, Leucker, and Schallhart).}
+{The exact size of the minimal monitor for a fragment of bounded-response obligations over disjoint alphabets, with a matching lower bound (Result~\ref{thm:monitor}).}
+{The shared-clock case is open (Research problem~\ref{rp:shared-clock}).}
+{Chapters~\ref{ch:histories}, \ref{ch:incremental}, and~\ref{ch:admissible}.}
+
+An obligation that is created by an event and discharged by a later one cannot be assessed from the instantaneous state of the world. Whether a payment is overdue depends on when the invoice arrived; whether a report is owed depends on whether one has been sent since the incident. The specification must say what the obligation is, and the monitor must keep exactly the information about the past that the specification makes relevant. This chapter fixes a fragment, bounded-response obligations, in which both can be stated precisely, and proves the size of the smallest monitor.
+
+\section{Obligations and monitors}
+
+\begin{established}[Linear temporal logic and bad prefixes]
+Linear temporal logic over finite and infinite words was introduced by Pnueli as a specification language for reactive systems. A property is a \emph{safety property} when every violation is detected on a finite prefix, in the sense of Definition~\ref{def:safety-liveness}, and a \emph{monitor} for it is a deterministic machine that reads the history event by event and signals as soon as a bad prefix has been read. Safety properties are monitorable in this sense.
+\end{established}
+\source{Pnueli, ``The temporal logic of programs'' (1977); Alpern and Schneider (1985); Bauer, Leucker, and Schallhart, ``Runtime verification for LTL and TLTL,'' \emph{ACM Transactions on Software Engineering and Methodology} 20 (2011).}
+
+\begin{definition}[Bounded-response obligation]\label{def:bounded-response}
+Let $\Sigma=\{a,b,e\}$ be a three-letter alphabet and $k\ge1$. The \emph{bounded-response obligation} $\mathrm{Resp}(a,b,k)$ holds of a word $u\in\Sigma^{*}$ if for every position $t$ with $u_t=a$ there is a position $t'$ with $t<t'\le t+k$ and $u_{t'}=b$, whenever $|u|\ge t+k$. A word is \emph{violating} if it fails this condition, that is, if some $a$ at position $t$ is followed by $k$ further events none of which is $b$. In temporal logic the obligation is $\mathbf G\bigl(a\to X b\vee X^{2}b\vee\dots\vee X^{k}b\bigr)$ read on finite prefixes.
+\end{definition}
+
+The letter $a$ creates an obligation and $b$ discharges it; $e$ stands for every other event of the component, and its role is to let time pass. A $b$ discharges every obligation created before it, so only the oldest undischarged $a$ matters.
+
+\begin{definition}[Monitor state]\label{def:monitor-state}
+For $u\in\Sigma^{*}$ define $\rho(u)\in\{0,1,\dots,k\}\cup\{\bot\}$ as follows. $\rho(\varepsilon)=0$. From $\rho=0$: the event $a$ gives $k$; $b$ and $e$ give $0$. From $\rho\in\{1,\dots,k\}$: the event $b$ gives $0$; the events $a$ and $e$ give $\rho-1$ if $\rho\ge2$ and $\bot$ if $\rho=1$. The value $\bot$ is absorbing. The value $\rho$ is the number of further events during which the oldest pending $a$ may remain undischarged.
+\end{definition}
+
+\begin{newresult}[Minimal monitor for one bounded-response obligation]\label{prop:single-monitor}
+$u$ is violating if and only if $\rho(u)=\bot$, and $\rho$ is a maintainable representation. Its kernel is the continuation equivalence of the property $P(u)=\mathbf 1[u\text{ is not violating}]$, so $\rho$ is minimal, with exactly $k+2$ values.
+\end{newresult}
+\assumes{Alphabet $\{a,b,e\}$, $k\ge1$, and all finite words.}
+\begin{proof}
+That $\rho=\bot$ exactly on the violating words follows by induction on $|u|$ from the definition: $\rho$ is the remaining allowance of the oldest pending $a$ and reaches $\bot$ when that allowance is exhausted without $b$. The next value of $\rho$ is a function of the current value and the event, so $\ker\rho$ is a right congruence. All values occur: $0$ at $\varepsilon$, $r\in\{1,\dots,k\}$ at $a\,e^{k-r}$, and $\bot$ at $a\,e^{k}$. They are pairwise distinguishable by the property $P$. The value $\bot$ is separated from all others by the empty word. For $r=0<r'$ the word $e^{r'}$ is violating from $r'$ and not from $0$. For $1\le r<r'$ the word $e^{r}$ is violating from $r$ and not from $r'$, which is left with allowance $r'-r\ge1$. Hence there are at least $k+2$ classes of continuation equivalence, and $\rho$ has exactly that many values, so $\ker\rho={\approx_P}$.
+\end{proof}
+
+\section{Several obligations}
+
+The general fragment places several such obligations side by side. Each obligation $i$ lives in its own component alphabet, and time for obligation $i$ is measured in events of that component.
+
+\begin{definition}[Disjoint bounded-response fragment]\label{def:fragment}
+Let $\Events=\bigsqcup_{i=1}^{m}\Sigma_i$ with $\Sigma_i=\{a_i,b_i,e_i\}$. The obligation $\Phi=\bigwedge_i\mathrm{Resp}(a_i,b_i,k_i)$ is satisfied by a word $u\in\Events^{*}$ if for every $i$ the projection $\mathrm{proj}_i(u)$ is not violating in the sense of Definition~\ref{def:bounded-response}. Let $\mathcal O_\Phi$ be the set of non-violating words.
+\end{definition}
+
+\begin{newresult}[Exact size of the minimal monitor]\label{thm:monitor}
+For $\Phi$ as in Definition~\ref{def:fragment} with all $k_i\ge1$, the vector $\rho(u)=(\rho_1(\mathrm{proj}_1u),\dots,\rho_m(\mathrm{proj}_m u))$, with all coordinates collapsed to a single value $\bot$ when any coordinate is $\bot$, is a maintainable representation that determines whether $u$ is violating. The minimal monitor for $\Phi$, namely the Nerode system of $\mathcal O_\Phi$, has exactly
+\[
+\prod_{i=1}^{m}(k_i+1)\;+\;1
+\]
+states, where the last state is the absorbing violation state.
+\end{newresult}
+\assumes{The alphabets $\Sigma_i$ are pairwise disjoint, and time for each obligation is counted in its own events. All finite words are histories.}
+\begin{proof}
+\emph{Upper bound and correctness.} Each coordinate evolves by Definition~\ref{def:monitor-state} on the events of its own component and is unchanged by events of other components. The word is violating if and only if some coordinate is $\bot$, and once any coordinate is $\bot$ the word and all its extensions are violating, so collapsing is consistent with the transitions. This gives a deterministic machine with $\prod_i(k_i+1)$ live states, indexed by the vectors in $\prod_i\{0,\dots,k_i\}$, together with one violation state.
+
+\emph{Reachability.} Every live vector is reached: for target $(r_1,\dots,r_m)$ concatenate the words $a_i\,e_i^{k_i-r_i}$ over the coordinates with $r_i\ge1$. Events of one component do not affect another, so each coordinate acquires its target value. The violation state is reached by $a_1e_1^{k_1}$.
+
+\emph{Distinguishability.} The violation state is separated from every live state by the empty word. Let two live vectors differ in coordinate $i$, with values $r\ne r'$, and suppose $r<r'$. If $r\ge1$, apply $e_i^{r}$. This drives coordinate $i$ of the first vector to $\bot$ and leaves the second at $r'-r\ge1$, and it does not affect other coordinates, so the first is violating and the second is not. If $r=0$ apply $e_i^{r'}$, which violates from $r'$ and not from $0$. Hence the live vectors are pairwise distinguishable by the property of being non-violating.
+
+By Result~\ref{prop:nerode-system} the Nerode system is minimal among transition systems for which the property is a state property, and it has exactly the number of classes of $\approx_P$. The classes are therefore the $\prod_i(k_i+1)+1$ states above.
+\end{proof}
+
+\begin{newresult}[Any maintained representation of admissibility must carry the monitor]\label{prop:monitor-lower}
+Every maintainable representation $r$ of $\Events^{*}$ for which $\mathcal O_\Phi$ is a state property takes at least $\prod_i(k_i+1)+1$ values. In particular a system that keeps an obligation-compliant history and must continue to know which continuations remain compliant needs, for $m$ obligations with all $k_i\ge1$, at least $2^{m}+1$ states.
+\end{newresult}
+\assumes{As in Result~\ref{thm:monitor}.}
+\begin{proof}
+By Result~\ref{prop:nerode-system}(b), any transition system that generates the histories and has $\mathcal O_\Phi$ as a state property has at least as many states as classes of $\approx_P$. A maintainable representation induces such a system. The count is Result~\ref{thm:monitor}, and $\prod_i(k_i+1)\ge2^{m}$.
+\end{proof}
+
+The state of the monitor is the obligation component of the retained representation $\rep$ of Chapter~\ref{ch:common}. The earlier example of a pending-report flag is the case $m=1$, $k=1$. A representation that records the balance of an account but not the age of the oldest unreported incident has a kernel that does not contain $\ker\rho$, and the representational obstruction of Chapter~\ref{ch:common} follows.
+
+\begin{remark}
+In the fragment of Definition~\ref{def:fragment} every live monitor state is viable: from any state the discharging events $b_i$ are always available and move all coordinates to $0$. The set $\mathcal O_\Phi$ is therefore the pruned history set of Result~\ref{prop:safety-trees}, and the admissible next events at a state are exactly those that do not lead to the violation state. The one-step map $\Adm_1$ of Chapter~\ref{ch:admissible} is a function of the monitor state but not conversely.
+\end{remark}
+
+\begin{researchproblem}\label{rp:shared-clock}
+Replace the disjoint alphabets by a single shared alphabet in which every event advances every deadline. Live vectors then have distinct ages and a vector may be doomed, in the sense that no continuation avoids violation, because two obligations expire at the same step and a single event cannot discharge both. Determine the number of states of the minimal monitor for $m$ obligations $\mathrm{Resp}(a_i,b_i,k_i)$ on the alphabet $\{a_i,b_i\}_{i\le m}\cup\{e\}$, in particular the number of reachable states that are doomed and the effect of treating doomed states as violations (monitoring for inevitable violation) rather than as live (monitoring for realized violation).
+\end{researchproblem}
+
+
+\section{Data for the shared-clock problem}\label{sec:shared-data}
+
+Research problem~\ref{rp:shared-clock} asks for the size of the minimal monitor when every event advances every deadline. Two obligations already show how different the answer is from the disjoint case. Take the alphabet $\{a_1,b_1,a_2,b_2,e\}$ and the following semantics, which extend Definition~\ref{def:monitor-state} coordinatewise: every event advances every pending obligation by one step, so that a pending coordinate with allowance $1$ becomes the violation value unless the event is its own discharging letter; the event $b_i$ sets coordinate $i$ to $0$; the event $a_i$ sets coordinate $i$ to $k_i$ if it is $0$ and otherwise acts as $e$ on that coordinate.
+
+\begin{newresult}[Reachable states of two shared-clock obligations of equal length]\label{prop:shared-equal}
+For two obligations with the same deadline $k$ on a shared clock, the live states reachable from $(0,0)$ are exactly the pairs $(r_1,r_2)\in\{0,\dots,k\}^{2}$ other than those with $r_1=r_2\ne0$. There are $k^{2}+k+1$ of them, and none is doomed. By contrast the disjoint-alphabet monitor of Result~\ref{thm:monitor} has $(k+1)^{2}$ live states.
+\end{newresult}
+\assumes{Two obligations, equal deadline $k$, shared clock as defined above; states are the allowance vectors.}
+\begin{proof}
+The two obligations are created at different events, so when both are pending the earlier one has the strictly smaller allowance, and $r_1\ne r_2$ whenever both are nonzero. Every pair with at most one nonzero coordinate is reached: $(r,0)$ by $a_1e^{\,k-r}$, $(0,r)$ by $a_2e^{\,k-r}$, and $(0,0)$ by the empty word. For a pair with $r_2>r_1\ge1$ put $d=r_2-r_1$ and apply $a_1e^{\,d-1}a_2e^{\,k-r_2}$: the first coordinate is $k$ after $a_1$, equals $k-d$ after $e^{d-1}$ and $a_2$, and $r_1$ at the end, while the second coordinate is $k$ after $a_2$ and $r_2$ at the end; the first coordinate decreases to its final value $r_1\ge1$, so it never becomes the violation value on the way. The case $r_1>r_2\ge1$ is symmetric. Counting, there are $(k+1)^{2}-k=k^{2}+k+1$ pairs. No state is doomed: from a state with one pending coordinate the discharging letter clears it, and from a state with $r_1<r_2$ both nonzero the letter $b_1$ gives $(0,r_2-1)$ with $r_2-1\ge r_1\ge1$, and then $b_2$ clears the rest; the case $r_1>r_2$ is symmetric.
+\end{proof}
+
+Minimization by partition refinement on the reachable machines gives the sizes below, which count the violation state as a state. The column ``inevitable'' monitors for inevitable violation, merging doomed states with the violation state, and the last column is the disjoint-alphabet size of Result~\ref{thm:monitor}.
+\begin{center}
+\begin{tabular}{lrrrrr}
+\toprule
+deadlines & live reachable & minimal (realized) & minimal (inevitable) & doomed & disjoint\\
+\midrule
+$(1,1)$ & $3$ & $4$ & $4$ & $0$ & $5$\\
+$(2,1)$ & $5$ & $6$ & $5$ & $1$ & $7$\\
+$(2,2)$ & $7$ & $8$ & $8$ & $0$ & $10$\\
+$(3,2)$ & $10$ & $11$ & $10$ & $1$ & $13$\\
+$(3,3)$ & $13$ & $14$ & $14$ & $0$ & $17$\\
+$(4,2)$ & $13$ & $14$ & $13$ & $1$ & $16$\\
+$(1,1,1)$ & $4$ & $5$ & $5$ & $0$ & $9$\\
+$(2,2,2)$ & $13$ & $14$ & $14$ & $0$ & $28$\\
+$(3,2,1)$ & $15$ & $13$ & $12$ & $4$ & $25$\\
+\bottomrule
+\end{tabular}
+\end{center}
+For equal deadlines $k=1,\dots,7$ the minimal realized monitor has exactly $k^{2}+k+2$ states, one more than the reachable live states, so that no two live states are merged; this is a computation and is not proved here. The pattern in the table is suggestive. For two obligations a doomed state is reachable exactly when the deadlines differ; for $(3,2,1)$ there are four doomed states, and the realized monitor is smaller than the number of reachable states plus one, so merging does occur once three obligations compete; and the shared-clock monitors are consistently smaller than the disjoint ones, by a margin that grows with the number of obligations (from $5$ to $4$ for $(1,1)$ and from $28$ to $14$ for $(2,2,2)$). The data are evidence about the shape of an answer and not an answer to the problem.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For $m=2$, $k_1=2$, $k_2=1$ list the live monitor states of Result~\ref{thm:monitor} and the transitions on each of the six letters. Verify that the state count is $(3)(2)+1=7$.
+\end{exercise}
+
+\begin{exercise}
+Show by an explicit pair of histories that a representation consisting only of the number of $a_1$ events not yet followed by $b_1$ is not sufficient for non-violation of $\mathrm{Resp}(a_1,b_1,2)$, and describe what it fails to retain.
+\end{exercise}
+
+\begin{exercise}
+Change the semantics so that each $a$ creates its own obligation that only a later $b$ within $k$ events can discharge, and a $b$ discharges only the oldest pending obligation. Compute the minimal monitor for $k=2$ and compare its size with that of Result~\ref{prop:single-monitor}.
+\end{exercise}
+
+\begin{exercise}
+Prove that if the same event $b$ discharges two obligations with different deadlines, the disjointness hypothesis of Definition~\ref{def:fragment} fails. Describe how the product bound of Result~\ref{prop:product} applies and why the exact count of Result~\ref{thm:monitor} need not.
+\end{exercise}
+
+\begin{exercise}
+An obligation of the form $\mathbf G(a\to\mathbf F b)$ is a liveness property. Show that its non-violating histories are all histories, and explain in terms of Result~\ref{prop:viable} why the monitor of this chapter does not apply and what a monitor for the viability of the obligation must record.
+\end{exercise}
+
+
+\begin{exercise}
+List the $13$ live states of the shared-clock monitor for three obligations of deadline $2$ and verify by hand that the number of reachable states is smaller than the $27$ of the disjoint case. Identify which vectors of the product are unreachable and give the invariant that excludes them.
+\end{exercise}
+
+\begin{exercise}
+For deadlines $(2,1)$ find the doomed state, a word that reaches it, and the shortest word that violates from it. Show that a monitor for inevitable violation signals strictly earlier than a monitor for realized violation on this word, and compute by how many events.
+\end{exercise}
+
+\begin{exercise}
+Prove that for two obligations on a shared clock with deadlines $k_1>k_2$ the live reachable states include every pair $(r_1,0)$ with $1\le r_1\le k_1$ and every pair $(0,r_2)$ with $1\le r_2\le k_2$, and that a doomed state is reachable. Find the doomed state for $(3,2)$.
+\end{exercise}
+

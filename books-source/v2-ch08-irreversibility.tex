@@ -1,0 +1,167 @@
+% v2-ch08-irreversibility.tex
+\chapter{Irreversibility and Path Dependence}\label{ch:irreversibility}
+\spec{How is costly reversal distinguished from impossible reversal?}
+{Absorbing sets; hysteresis; weighted shortest paths (Dijkstra); finite Markov chains (Norris).}
+{Return cost is a quasi-metric whose finite part is the reversibility relation of Chapter~\ref{ch:reach} (Result~\ref{prop:quasi}); no budget above $|X|-1$ unit steps buys reversibility that a smaller budget does not (Result~\ref{prop:budget-cap}); path dependence is the failure of the state to be sufficient (Result~\ref{prop:pathdep}); a policy can make a reversible move irreversible in effect and never the reverse (Result~\ref{prop:policy-sccs}).}
+{None.}
+{Chapter~\ref{ch:reach} and Chapter~\ref{ch:history-state}.}
+
+Chapter~\ref{ch:reach} separated edges that can be undone by some sequence of actions from edges that cannot, and gave the first the name reversible without saying what undoing costs. A move that can be undone at a price that no one will pay differs little in practice from one that cannot, and a move that is undone at a negligible price differs little from one that never happened. This chapter attaches costs, shows that reversal cost has the structure of an asymmetric distance, and relates it to path dependence, the property that two histories reaching the same place leave different futures behind.
+
+\section{The cost of return}
+
+Let $G$ be a finite transition graph on $X$ whose edges carry costs $c(x\xrightarrow{u}y)\ge0$. The cost of a path is the sum of its edge costs. Define the \emph{return cost}
+\[
+\rho(x,y)=\min\{\text{cost}(\pi):\pi\text{ a path from }x\text{ to }y\},
+\]
+with $\rho(x,y)=\infty$ if there is no such path and $\rho(x,x)=0$.
+The cost of reversing an edge $x\to y$ is $\rho(y,x)$. The shortest paths, and hence $\rho$, are computed for all pairs in polynomial time by Dijkstra's algorithm run from each source.
+
+\begin{newresult}[Return cost is a quasi-metric]\label{prop:quasi}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\rho(x,x)=0$ and $\rho(x,z)\le\rho(x,y)+\rho(y,z)$ for all $x,y,z$, with the convention $\infty+t=\infty$.
+  \item $\rho(x,y)<\infty$ if and only if $y\in R(x)$, the set reachable from $x$. An edge $x\to y$ is reversible in the sense of Chapter~\ref{ch:reach} if and only if $\rho(y,x)<\infty$.
+  \item The symmetrization $\sigma(x,y)=\rho(x,y)+\rho(y,x)$ is symmetric, satisfies the triangle inequality, and is finite exactly when $x$ and $y$ lie in the same strongly connected component. On each component it is a pseudometric.
+\end{enumerate}
+\end{newresult}
+\assumes{Nonnegative edge costs; $X$ finite.}
+\begin{proof}
+(a) Concatenating a cheapest path from $x$ to $y$ with one from $y$ to $z$ gives a path from $x$ to $z$ of cost $\rho(x,y)+\rho(y,z)$, so the minimum is at most this; if either term is infinite the inequality is trivial. (b) is the definition of reachability together with Result~\ref{prop:ratchet}. (c) Symmetry is evident. For the triangle inequality add the two instances $\rho(x,z)\le\rho(x,y)+\rho(y,z)$ and $\rho(z,x)\le\rho(z,y)+\rho(y,x)$ to get $\sigma(x,z)\le\sigma(x,y)+\sigma(y,z)$. Finiteness of $\sigma$ means that each of $x,y$ is reachable from the other.
+\end{proof}
+
+The return cost is not symmetric. A well in which descent is cheap and climbing is dear gives $\rho(\text{top},\text{bottom})\ll\rho(\text{bottom},\text{top})$, and the structure is that of a quasi-metric rather than of a metric: the length of a round trip is symmetric, but the price of each leg is not. In a graph of unit costs $\rho$ is the directed graph distance.
+
+\begin{newresult}[A budget above the number of states buys no further reversibility]\label{prop:budget-cap}
+For a budget $\beta$ say that an edge $x\to y$ is \emph{$\beta$-reversible} if $\rho(y,x)\le\beta$. The $\beta$-reversible edges increase with $\beta$ and for unit costs the set of $\beta$-reversible edges for $\beta=|X|-1$ is the set of all reversible edges. For general nonnegative costs the same holds with $\beta=(|X|-1)\,c_{\max}$, where $c_{\max}$ is the largest edge cost.
+\end{newresult}
+\assumes{Finite $X$.}
+\begin{proof}
+Monotonicity in $\beta$ is clear. If $y\to^{*}x$ then there is a path from $y$ to $x$ visiting no state twice, since a repeated state can be cut out without raising cost, and such a path has at most $|X|-1$ edges, so cost at most $(|X|-1)c_{\max}$. Hence $\rho(y,x)\le(|X|-1)c_{\max}$ for every reversible edge.
+\end{proof}
+
+The result separates costly reversal from impossible reversal on a finite system by a threshold: an edge is impossible to reverse if and only if no finite budget reverses it, and in a system with $n$ states and unit costs it is enough to test the budget $n-1$. The distinction is therefore never a matter of degree in a fixed finite system, though it is a matter of degree across a family of systems whose size grows, which is where the difference between costly and impossible matters in practice.
+
+\begin{example}[A well]\label{ex:well}
+States $0,1,\dots,n$, with edges $i\to i-1$ of cost $1$ for $1\le i\le n$ (descent) and $i\to i+1$ of cost $k$ for $0\le i<n$ (ascent). State $0$ also has a waiting edge to itself of cost $0$. The graph is strongly connected, so every edge is reversible. Descending from $n$ to $0$ costs $n$ and returning costs $nk$. For $k=1$ the system is a symmetric chain; as $k\to\infty$ the ascent becomes unaffordable at any fixed budget, and at $k=\infty$ (edges removed) the system is a chain of $n+1$ singleton components and every descent is irreversible. The family interpolates between reversible and irreversible without a discontinuity in $\rho$ until the edge is deleted.
+\end{example}
+
+\section{Path dependence}
+
+\begin{definition}[Path dependence]\label{def:pathdep}
+A system with histories $\Hist$ and a state description $x$ is \emph{path dependent} if there are histories $h,h'$ with $x(h)=x(h')$ and $\mathrm{Fut}(h)\ne\mathrm{Fut}(h')$.
+\end{definition}
+
+\begin{newresult}[Path dependence is insufficiency of the state]\label{prop:pathdep}
+A system is path dependent with respect to a maintainable state description $x$ if and only if $x$ is not sufficient for feasible continuation, that is, if and only if the fibre count $N(x)>1$ in the sense of Chapter~\ref{ch:history-state}. In a path-dependent system the quantity that distinguishes $h$ and $h'$ is a function of the histories that is not a function of $x$, and its least encoding has $N(x)$ values.
+\end{newresult}
+\assumes{As in Result~\ref{thm:augment}.}
+\begin{proof}
+This is Result~\ref{thm:augment}(a), (c) with Definition~\ref{def:pathdep}.
+\end{proof}
+
+\begin{example}[A relay with hysteresis]\label{ex:relay}
+An input level $v\in\{0,1,2\}$ is applied at each step. A hidden output $y\in\{\mathrm{lo},\mathrm{hi}\}$ is set to hi when $v=2$, to lo when $v=0$, and left unchanged when $v=1$. The action \texttt{run} is feasible exactly when $y=\mathrm{hi}$. Take the state $x$ to be the last input level. The histories $2\,1$ and $0\,1$ both have $x=1$, but \texttt{run} is feasible after the first and not after the second. So the system is path dependent with fibre count $2$ at $x=1$, and the hidden bit $y$ is the minimal augmentation. Changing $y$ from hi to lo requires a step at level $0$ and from lo to hi a step at level $2$, so the feasibility of \texttt{run} depends on the last extreme input and not on the present one. This is the memory of a hysteresis loop in the vocabulary of control: the present input does not determine the output.
+\end{example}
+
+Irreversibility and path dependence are related but distinct. Irreversibility is a property of the transition graph, of the existence of paths. Path dependence is a property of the relation between a state description and the histories, of whether the description has dropped something that matters. A system with an irreversible edge can be path-independent in the state description that already records the component, and a system with no irreversible edge, the relay above, can be path dependent.
+
+\section{Policies and the components they induce}
+
+A stationary policy selects one feasible action in each state; it induces a subgraph with the same states and, at each state, the chosen edges (one per state in the deterministic case).
+
+\begin{newresult}[Policies refine components]\label{prop:policy-sccs}
+Let $G_\pi$ be the subgraph induced by a stationary policy $\pi$ of a deterministic system, or by the actions in the support of a stochastic policy. Every strongly connected component of $G_\pi$ is contained in a component of $G$. Hence an edge irreversible in $G$ is irreversible in $G_\pi$, while an edge reversible in $G$ can be irreversible in $G_\pi$.
+\end{newresult}
+\assumes{$X$ finite.}
+\begin{proof}
+A path of $G_\pi$ is a path of $G$, so if $x,y$ are mutually reachable in $G_\pi$ they are in $G$. For the last claim take the well of Example~\ref{ex:well} with finite $k$ and the policy that always descends: its subgraph has no edge ascending, and every descent is irreversible in $G_\pi$ though reversible in $G$.
+\end{proof}
+
+\begin{established}[Absorption in a finite Markov chain]\label{thm:absorb}
+Consider a finite Markov chain. With probability one the chain eventually enters a bottom strongly connected component (a component with no edge leaving it) and stays there forever; the expected time to do so is finite.
+\end{established}
+\source{Norris, \emph{Markov Chains} (1997), Chapter 1.}
+
+For a system under a stationary policy this says that, whatever the reversible structure of $G$, long-run behaviour is concentrated on the bottom components of $G_\pi$, and the reversible region of $G$ outside them is traversed only finitely often. A policy, by selecting among feasible actions, selects which part of the possible reversibility is exercised, and by Result~\ref{prop:policy-sccs} it can only reduce it. The reversibility that a system has is thus a property of the feasibility structure, an upper bound on what any policy can retain, and the reversibility that a system retains is a property of the policy it follows.
+
+
+\section{The reversibility profile}\label{sec:rev-profile}
+
+Result~\ref{prop:budget-cap} says that a finite system has a threshold beyond which no reversal becomes affordable. Below the threshold the picture is graded, and a convenient summary is the fraction of edges that can be reversed within a budget.
+
+\begin{definition}[Reversibility profile]\label{def:rev-profile}
+For a graph with edge set $E$ (self-loops excluded) and return cost $\rho$ the \emph{reversibility profile} is $\mathrm{Rv}(\beta)=|\{(x\to y)\in E:\rho(y,x)\le\beta\}|/|E|$ for $\beta\ge0$. It is a nondecreasing step function, with values changing only at the finitely many distinct values of $\rho$, and its limit is the fraction of reversible edges.
+\end{definition}
+
+For the well of Example~\ref{ex:well} (ignoring the waiting edge) the descents $i\to i-1$ have reversal cost $\rho(i-1,i)=k$ and the ascents have reversal cost $1$. So $\mathrm{Rv}(\beta)=0$ for $\beta<1$, $\tfrac12$ for $1\le\beta<k$, and $1$ for $\beta\ge k$. For the rover, with each move or charge costing one unit, the three edges of the component $\{(0,1),(0,3),(1,2)\}$ of Section~\ref{sec:census} each have reversal cost $2$: the edge $(0,3)\to(1,2)$ is undone by \texttt{left} and then \texttt{charge}, the edge $(1,2)\to(0,1)$ by \texttt{charge} and then \texttt{right}, and the edge $(0,1)\to(0,3)$ by \texttt{right} and then \texttt{left}. The other $18$ non-loop edges, such as $(1,2)\to(2,1)$, have infinite reversal cost. The profile of the rover graph is therefore $0$ for $\beta<2$ and $3/21$ for $\beta\ge2$, and stays there: a design in which most of the edges leave the component is a design in which most of the moves are final.
+
+\section{Making a system reversible}\label{sec:augment-reversible}
+
+If irreversible edges are costly, a designer may add edges, that is, new capabilities that undo. The minimum number of edges needed has a clean answer.
+
+\begin{established}[Strong connectivity augmentation]\label{thm:eswaran}
+Let $G$ be a directed graph whose condensation has $s$ source components (no incoming edge from another component) and $t$ sink components (no outgoing edge), not counting the case where $G$ is already strongly connected. The least number of edges that must be added to make $G$ strongly connected is $\max(s,t)$, except that components that are both source and sink (isolated components) count in both $s$ and $t$.
+\end{established}
+\source{Eswaran and Tarjan, ``Augmentation problems,'' \emph{SIAM Journal on Computing} 5 (1976).}
+
+For the chain $1\to2\to3\to4$ there is one source (the state $1$) and one sink (the state $4$), so one edge suffices, from $4$ to $1$. For three disjoint chains the count is three. The theorem says that the cost of making a system fully reversible is determined by the endpoints of its irreversible structure and not by its internal length: undoing a one-way process of any length takes a single return path, provided that path can be traversed. The practical obstacle is not the number of edges but their feasibility, which is the question of Chapter~\ref{ch:endogenous}.
+
+\section{Expected cost of return in a stochastic system}\label{sec:expected-return}
+
+When transitions are random, the cost of return is a random variable, and its expectation solves a linear system.
+
+\begin{newresult}[Expected return cost in a Markov chain]\label{prop:expected-return}
+Let a finite Markov chain have transition matrix $P$ and a nonnegative cost $c(s)$ per step spent in state $s$, and let $B$ be a target set reached with probability one from every state outside it. The vector $h(s)$ of expected total cost until first entering $B$ satisfies $h=0$ on $B$ and $h(s)=c(s)+\sum_{s'}P(s,s')h(s')$ otherwise, and is the unique solution $h=(I-Q)^{-1}c$, where $Q$ is $P$ restricted to $B^c$. If the target is reached with probability less than one from some state, $h(s)=\infty$ there.
+\end{newresult}
+\assumes{Finite chain.}
+\begin{proof}
+Condition on the first step. When $B$ is reached with probability one from every state outside it, $Q^n\to0$, so $I-Q$ is invertible with inverse $\sum_nQ^n$, which gives uniqueness and the formula; $h=\sum_nQ^nc$ is the expected total cost. The remaining case lies outside the statement but completes it: if $c>0$ outside $B$ and from some state the target is missed with positive probability then the chain is trapped forever outside $B$ with positive probability and, since the cost is positive in every state of the trap, the expected cost is infinite (with costs allowed to vanish in the trap the expectation could be finite).
+\end{proof}
+
+\begin{example}[Returning with an unreliable ascent]\label{ex:unreliable-ascent}
+In the well with $n=2$ suppose the ascent $i\to i+1$ succeeds with probability $q$ and otherwise leaves the system at $i$, each attempt costing $1$. The expected cost of ascending one level is $1/q$ by the geometric law, so from level $0$ to level $2$ it is $2/q$. For $q=1/2$ the expected cost of returning is $4$, against $2$ if the ascent were reliable; with $q=0.1$ it is $20$. The expected cost diverges as $q\to0$, and at $q=0$ the descent is irreversible, which is the sense in which reversibility can be seen as a limit of expected costs.
+\end{example}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute $\rho$ for all pairs of the well of Example~\ref{ex:well} with $n=3$ and $k=2$, and verify the triangle inequality on a triple of your choice.
+\end{exercise}
+
+\begin{exercise}
+Give a graph in which $\rho$ is not a metric on any component because $\rho(x,y)\ne\rho(y,x)$ for all $x\ne y$ in a component of size at least three, and compute $\sigma$.
+\end{exercise}
+
+\begin{exercise}
+Show that the bound of Result~\ref{prop:budget-cap} is attained: give a strongly connected graph on $n$ states with unit costs in which some edge has $\rho(y,x)=n-1$.
+\end{exercise}
+
+\begin{exercise}
+For the relay of Example~\ref{ex:relay}, compute the continuation classes and verify that the bit $y$ together with the last input gives a sufficient description. How many values are required if the input range is $\{0,\dots,m\}$ with thresholds at $0$ and $m$?
+\end{exercise}
+
+\begin{exercise}
+Prove that if a stationary policy induces a graph $G_\pi$ whose bottom components are singletons, then under that policy every state is left forever with probability one unless it is absorbing, and relate this to the ratchet of Result~\ref{prop:ratchet}.
+\end{exercise}
+
+\begin{exercise}
+Compute the reversibility profile of the well with $n=3$, $k=3$ including the waiting edge at $0$, and sketch it.
+\end{exercise}
+
+\begin{exercise}
+Apply Result~\ref{thm:eswaran} to the graph with edges $a\to b$, $a\to c$, $b\to d$, $c\to d$, $e\to f$. Count sources and sinks and give a set of added edges of minimum size that makes the graph strongly connected.
+\end{exercise}
+
+\begin{exercise}
+Show that adding $\max(s,t)$ edges cannot in general be done by adding edges within the sink components, and that the added edges must go from sink components to source components.
+\end{exercise}
+
+\begin{exercise}
+In Example~\ref{ex:unreliable-ascent} compute the probability that the return completes within $m$ attempts for $q=1/2$, and the expected cost of a round trip (descent cost $1$ per level, ascent as above) from level $2$.
+\end{exercise}
+
+\begin{exercise}
+Prove the first half of Result~\ref{thm:absorb} for a chain with a single bottom component: the chain enters it with probability one, using the fact that from every state there is a path to the component and the finite state space.
+\end{exercise}
+

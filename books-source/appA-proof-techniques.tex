@@ -1,0 +1,116 @@
+% appA-proof-techniques.tex
+\chapter{Proof Techniques}\label{app:proof}
+
+The arguments of this volume fall into a small number of patterns. This appendix states each pattern as a result, proves it once, and shows the use that the chapters make of it. A reader who is comfortable with induction and fixed points can skip to the fooling-set method of Section~\ref{sec:fooling}, which is the least familiar.
+
+\section{Induction on histories}
+
+Every history is a finite word, so statements about all histories are proved by induction on length. The shape is always the same: a claim about $\varepsilon$, and a step from a claim about $h$ to claims about $ha$ for the events $a$ with $ha\in\Hist$.
+
+\begin{established}[Induction on prefix-closed sets]\label{pa:induction}
+Let $\Hist$ be a history set and $Q$ a predicate on $\Hist$. If $Q(\varepsilon)$ holds and $Q(h)$ implies $Q(ha)$ for all $h,a$ with $ha\in\Hist$, then $Q(h)$ holds for every $h\in\Hist$.
+\end{established}
+\source{Induction on word length.}
+\begin{proof}
+Let $h\in\Hist$ have length $n$. Its prefix of length $0$ is $\varepsilon$ and each prefix of length $i+1$ is a prefix of length $i$ followed by one event, and all prefixes lie in $\Hist$ by prefix-closure. Applying the hypothesis $n$ times gives $Q(h)$.
+\end{proof}
+
+\begin{example}[An invariant of the account]\label{pa:ex-account}
+An account starts at balance $0$; events are deposits of $d\ge1$ units and withdrawals of $w\ge1$ units, and a withdrawal that exceeds the balance is forbidden. Let $Q(h)$ be ``the balance after $h$ equals the total deposited minus the total withdrawn, and is nonnegative''. $Q(\varepsilon)$ is clear. If $Q(h)$ holds and $ha$ is allowed, then for a deposit the new balance is the old one plus $d$, and for a withdrawal the new balance is the old one minus $w$, nonnegative because the withdrawal was allowed. Hence $Q$ holds on every history, which is the statement that the balance is a function of the history through a sum, the observation behind the quotient of Chapter~\ref{ch:quotients}.
+\end{example}
+
+\section{Fixed points}
+
+Kernels, closures and reachable sets are fixed points of monotone operators. On a finite set the fixed points are computed by iteration, and the characterization as least or greatest is what makes them useful in proofs.
+
+\begin{established}[Knaster--Tarski, finite case]\label{pa:kt}
+Let $X$ be finite and $\Phi:2^X\to2^X$ monotone ($A\subseteq B$ implies $\Phi(A)\subseteq\Phi(B)$). Then the iteration $\varnothing\subseteq\Phi(\varnothing)\subseteq\Phi^2(\varnothing)\subseteq\cdots$ stabilizes after at most $|X|$ steps at the least fixed point of $\Phi$, and $X\supseteq\Phi(X)\supseteq\Phi^2(X)\supseteq\cdots$ stabilizes at the greatest fixed point. The least fixed point is the intersection of all sets $A$ with $\Phi(A)\subseteq A$, and the greatest is the union of all sets $A$ with $A\subseteq\Phi(A)$.
+\end{established}
+\source{Tarski (1955); Knaster (1928).}
+\begin{proof}
+By monotonicity and $\varnothing\subseteq\Phi(\varnothing)$, induction gives $\Phi^k(\varnothing)\subseteq\Phi^{k+1}(\varnothing)$. An increasing chain of subsets of an $|X|$-element set is strictly increasing at most $|X|$ times, so it stabilizes at some $L$ with $\Phi(L)=L$. If $\Phi(A)\subseteq A$ then $\varnothing\subseteq A$ gives $\Phi^k(\varnothing)\subseteq A$ for all $k$ by induction, so $L\subseteq A$; since $L$ itself satisfies $\Phi(L)\subseteq L$ it is the intersection of such sets, and in particular the least fixed point. The dual statements follow by the same argument from $X$ downward, with $A\subseteq\Phi(A)$ giving $A\subseteq\Phi^k(X)$.
+\end{proof}
+
+\begin{example}[Reading a kernel off the characterization]\label{pa:ex-kernel}
+The viability kernel (Appendix~\ref{app:recap}) is the greatest set $S\subseteq C$ with $S\subseteq\Gamma(S)$, where $\Gamma(S)$ is the set of states with an action into $S$. To show that a particular set $S_0$ lies inside the kernel it suffices to show $S_0\subseteq C$ and $S_0\subseteq\Gamma(S_0)$: the greatest-fixed-point characterization turns a membership claim into a one-step check. To show a state is outside the kernel, exhibit its removal in the descending iteration.
+\end{example}
+
+\section{Counting and the pigeonhole principle}\label{sec:fooling}
+
+Lower bounds on the size of a representation follow from exhibiting many histories that no two can share a representation.
+
+\begin{newresult}[Fooling sets]\label{pa:fooling}
+Let $P:\Hist\to B$ be a property of histories and $r:\Hist\to R$ a representation sufficient for $P$ in the sense that $P(hw)$ depends on $h$ only through $r(h)$ for all continuations $w$. Call $h_1,\dots,h_k\in\Hist$ \emph{pairwise separated} if for each $i\ne j$ there is a continuation $w_{ij}$ with $h_iw_{ij},h_jw_{ij}\in\Hist$ and $P(h_iw_{ij})\ne P(h_jw_{ij})$. Then $|R|\ge k$. In particular the number of values of any sufficient representation is at least the size of the largest pairwise separated set, and, by the Myhill--Nerode theorem (Chapter~\ref{ch:histories}), this largest size equals the number of continuation classes.
+\end{newresult}
+\assumes{None beyond the definitions.}
+\begin{proof}
+If $r(h_i)=r(h_j)$ for $i\ne j$ then $P(h_iw)=P(h_jw)$ for the common continuation $w=w_{ij}$ by sufficiency, contradicting separation. So $r$ is injective on $\{h_1,\dots,h_k\}$ and $|R|\ge k$. For the last statement, continuation classes are by definition pairwise separated when taken one representative each, and conversely a separated set has distinct classes.
+\end{proof}
+
+\begin{example}[Counting to $n$]\label{pa:ex-count}
+Let events be a single symbol $a$ and $P(h)=1$ iff $|h|\equiv0 \pmod n$. The histories $a^0,a^1,\dots,a^{n-1}$ are pairwise separated: for $i<j$ the continuation $a^{n-j}$ gives $P=0$ for $a^{i+n-j}$ (since $0<n-j+i<n$) and $P=1$ for $a^{n}$. Hence every sufficient representation has at least $n$ values, and the counter modulo $n$ achieves it.
+\end{example}
+
+\section{Adversary arguments}
+
+A lower bound for an online procedure is often shown by letting an adversary choose each answer after seeing the procedure's questions.
+
+\begin{newresult}[Adversary for membership queries]\label{pa:adversary}
+Let a procedure learn which element of a set $\{1,\dots,m\}$ is the hidden one by asking whether the element lies in a chosen subset. Every deterministic procedure needs at least $\lceil\log_2m\rceil$ queries in the worst case.
+\end{newresult}
+\assumes{Deterministic procedure; yes/no answers.}
+\begin{proof}
+The adversary answers each query so as to keep the larger of the two candidate sets. After $q$ queries at least $m/2^q$ candidates remain, so the procedure cannot stop with a unique candidate before $2^q\ge m$.
+\end{proof}
+
+The pattern recurs in the verification chapters: an auditor who queries a record set receives an adversarially chosen answer subject to consistency, and the number of queries needed is the size of the information that separates the candidates.
+
+\section{Reductions}
+
+A hardness claim is proved by transforming instances of a known hard problem into instances of the new one in polynomial time, so that answers correspond.
+
+\begin{established}[Template for NP-hardness by reduction]\label{pa:reduction}
+To prove a decision problem $\Pi$ NP-hard, choose an NP-hard problem $\Pi_0$ (SET COVER, VERTEX COVER, 3-SAT) and give a polynomial-time map $f$ from instances $I$ of $\Pi_0$ to instances of $\Pi$ with: $I$ is a yes-instance iff $f(I)$ is. To prove membership in NP give a polynomial-size certificate and a polynomial-time verifier.
+\end{established}
+\source{Cook (1971); Karp (1972).}
+
+\begin{example}[Reduction used in Chapter~\ref{ch:degradation}]\label{pa:ex-reduction}
+Given a set-cover instance with universe $\{1,\dots,q\}$, sets $s_1,\dots,s_p$ and bound $k$, build a dependency system in which a required capability depends on one capability per universe element, each of which is supported by any set containing it, with load one per set. A self-supporting set of load at most $k$ exists iff a cover of size at most $k$ exists. The map is linear in the size of the instance and preserves answers, which is the whole proof apart from the check of the two directions.
+\end{example}
+
+\section{Exchange arguments}
+
+\begin{newresult}[Exchange for sequencing]\label{pa:exchange}
+Jobs $1,\dots,n$ have processing times $p_i>0$ and weights $w_i>0$, and are processed one at a time with no idle time. The order minimizing $\sum_iw_iC_i$, where $C_i$ is the completion time of job $i$, sorts jobs by nonincreasing ratio $w_i/p_i$.
+\end{newresult}
+\assumes{Single machine, no precedence constraints.}
+\begin{proof}
+Suppose in an optimal order two adjacent jobs $i$ then $j$ have $w_i/p_i<w_j/p_j$, that is $w_ip_j<w_jp_i$. Let $t$ be the time at which the pair starts. Swapping them changes the contribution of the pair from $w_i(t+p_i)+w_j(t+p_i+p_j)$ to $w_j(t+p_j)+w_i(t+p_j+p_i)$, a change of $w_ip_j-w_jp_i<0$, and the other jobs are unaffected. So the swap improves the order, contradicting optimality. Hence an optimal order has no adjacent pair out of ratio order, and a sequence with no adjacent inversion is sorted.
+\end{proof}
+
+\section{Constructing counterexamples}
+
+To show that a hypothesis cannot be dropped, build the smallest object that satisfies all other hypotheses and violates the conclusion, and then verify each hypothesis by hand. The examples of Chapters~\ref{ch:adequacy} and~\ref{ch:obligations} follow this discipline: two states, two events, a single transition that distinguishes. The test of a counterexample is that deleting any one component restores the theorem.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Prove by induction on histories that in the account of Example~\ref{pa:ex-account} the balance is at most the total deposited.
+\end{exercise}
+
+\begin{exercise}
+Compute, by the iteration of Result~\ref{pa:kt}, the least fixed point of $\Phi(A)=\{1\}\cup\{x+1:x\in A,\ x<5\}$ on $\{1,\dots,6\}$.
+\end{exercise}
+
+\begin{exercise}
+Using Result~\ref{pa:fooling} show that recognizing ``the number of $a$'s is at least $n$'' (with a single event $a$) needs $n+1$ values in any sufficient representation.
+\end{exercise}
+
+\begin{exercise}
+Show that the adversary argument of Result~\ref{pa:adversary} is tight by giving a procedure with $\lceil\log_2m\rceil$ queries.
+\end{exercise}
+
+\begin{exercise}
+Give a direct exchange argument that sorting by processing time (shortest first) minimizes total completion time when all weights are equal, and state which step of the proof of Result~\ref{pa:exchange} it specializes.
+\end{exercise}

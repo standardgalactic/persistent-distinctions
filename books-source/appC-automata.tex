@@ -1,0 +1,77 @@
+% appC-automata.tex
+\chapter{Automata and Temporal Logic}\label{app:automata}
+
+This appendix collects the automata theory and the fragment of temporal logic used in Chapters~\ref{ch:histories}, \ref{ch:obligations}, and~\ref{ch:verification}.
+
+\section{Deterministic automata and minimization}
+
+A \emph{deterministic finite automaton} (DFA) is $A=(Q,q_0,\Events,\delta,F)$ with $Q$ finite, $\delta:Q\times\Events\to Q$ total, and accepting set $F\subseteq Q$. It accepts $w$ if $\delta^*(q_0,w)\in F$. A state is \emph{reachable} if some word leads to it. Two states $p,q$ are \emph{equivalent} ($p\equiv q$) if for every word $w$, $\delta^*(p,w)\in F$ iff $\delta^*(q,w)\in F$.
+
+\begin{newresult}[Moore's algorithm]\label{pc:moore}
+Define $\equiv_0$ by $p\equiv_0q$ iff ($p\in F\Leftrightarrow q\in F$), and $p\equiv_{k+1}q$ iff $p\equiv_kq$ and $\delta(p,a)\equiv_k\delta(q,a)$ for all $a\in\Events$. Then $\equiv_k$ is the relation ``agree on all words of length $\le k$''; the sequence is a decreasing chain of equivalence relations that stabilizes after at most $|Q|-1$ steps at $\equiv$; and the quotient automaton $A/{\equiv}$ (restricted to reachable states) recognizes the same language and has the least number of states among DFAs for it.
+\end{newresult}
+\assumes{Finite automaton.}
+\begin{proof}
+By induction on $k$: $p\equiv_kq$ iff the states agree on all words of length at most $k$ (the case $k=0$ is the definition, and the step splits a word $aw$ into its first event and the rest). The relations decrease, so the number of classes is nondecreasing as $k$ grows; if $\equiv_{k+1}=\equiv_k$ then $\equiv_{k+2}=\equiv_{k+1}$ because the definition of $\equiv_{k+2}$ uses only $\equiv_{k+1}$, so the chain is constant from then on. Each non-final step increases the number of classes by at least one, starting from at least one and ending at most $|Q|$, so it stabilizes within $|Q|-1$ steps, and the limit is $\equiv$ since two states agreeing on all words of length $\le k$ for every $k$ are equivalent. Equivalent states have equivalent successors, so $\delta$ descends to the quotient, which accepts the same language. Minimality: the language determines the Nerode classes (Result~\ref{prop:nerode}), and any DFA for it has at least as many reachable states as classes by Result~\ref{pa:fooling}; the quotient has exactly that many.
+\end{proof}
+
+The code in Appendix~\ref{app:examples} implements this algorithm.
+
+\section{Moore machines and outputs}
+
+When the object of interest is a property with more than two values, the accepting set is replaced by an output map $\lambda:Q\to B$ and the initial partition by $\ker\lambda$. Everything above goes through unchanged, and the minimal machine has as many states as the property has continuation classes (Chapter~\ref{ch:histories}).
+
+\section{Temporal logic on finite traces}
+
+\begin{definition}[LTL on finite traces]\label{pc:ltl}
+Formulas over atomic propositions $\mathrm{AP}$ are built by $\varphi::=p\mid\neg\varphi\mid\varphi\wedge\varphi\mid\mathsf X\varphi\mid\varphi\,\mathsf U\,\varphi$. On a nonempty finite trace $\tau=\tau_0\cdots\tau_{n-1}$ with $\tau_i\subseteq\mathrm{AP}$ the satisfaction relation is: $\tau,i\models p$ iff $p\in\tau_i$; Boolean connectives as usual; $\tau,i\models\mathsf X\varphi$ iff $i+1<n$ and $\tau,i+1\models\varphi$; $\tau,i\models\varphi\,\mathsf U\,\psi$ iff there is $j$ with $i\le j<n$, $\tau,j\models\psi$, and $\tau,l\models\varphi$ for all $i\le l<j$. Derived: $\mathsf F\varphi=\top\,\mathsf U\,\varphi$ (eventually), $\mathsf G\varphi=\neg\mathsf F\neg\varphi$ (always, through the end of the trace), and the bounded forms $\mathsf F^{\le k}\varphi=\varphi\vee\mathsf X\varphi\vee\cdots\vee\mathsf X^k\varphi$.
+\end{definition}
+
+\begin{established}[Translation to automata]\label{pc:ltl-dfa}
+Every finite-trace LTL formula $\varphi$ defines a regular language of finite traces, recognized by a DFA with at most $2^{2^{O(|\varphi|)}}$ states; satisfiability and model checking against a finite transition system are PSPACE-complete.
+\end{established}
+\source{De Giacomo and Vardi (2013), \emph{Linear temporal logic and linear dynamic logic on finite traces}.}
+
+\section{Safety, bounded response, and monitors}
+
+A property $P$ of infinite behaviours is a \emph{safety property} if every violating behaviour has a finite prefix none of whose extensions satisfies $P$ (the violation is detected in finite time); it is a \emph{liveness property} if every finite prefix has an extension satisfying it.
+
+\begin{established}[Alpern--Schneider decomposition]\label{pc:alpern}
+Every property of infinite behaviours is the intersection of a safety property and a liveness property.
+\end{established}
+\source{Alpern and Schneider (1985).}
+
+The obligations of Chapter~\ref{ch:obligations} are bounded-response properties: every request is followed by a response within $k$ steps. Because the bound makes the violation detectable at a finite time, the property is a safety property, and it has a small monitor.
+
+\begin{newresult}[Monitor for bounded response]\label{pc:monitor}
+Let $\Events\supseteq\{\mathsf{req},\mathsf{ack}\}$ and let the property be: after each $\mathsf{req}$, the next $\mathsf{ack}$ occurs within $k$ events, where an $\mathsf{ack}$ discharges all outstanding requests. The deterministic monitor with states $\{0,1,\dots,k\}\cup\{\bot\}$ has $k+2$ states and is minimal. Here state $0$ means no outstanding request, state $i\ge1$ means the oldest outstanding request is $i$ events old, $\bot$ is the violation sink, $\mathsf{ack}$ leads to $0$, and any other event leads from $i\ge1$ to $i+1$ (to $\bot$ if $i=k$), and from $0$ to $1$ on $\mathsf{req}$ and to $0$ otherwise. The monitor accepts a finite trace iff no violation has occurred.
+\end{newresult}
+\assumes{Single outstanding-request counter, as in Chapter~\ref{ch:obligations}.}
+\begin{proof}
+Correctness is by induction on the trace: the state is the age of the oldest unanswered request, and a request of age $k$ followed by a non-$\mathsf{ack}$ event is exactly a violation. For minimality, states $i<j$ in $\{0,\dots,k\}$ are separated: if $i\ge1$, the continuation $(\text{idle})^{k+1-j}$ leads $j$ to $\bot$ (age $k+1$) while it leads $i$ to a state of age $i+k+1-j\le k$ and so not to $\bot$; if $i=0$, idling keeps $0$ at $0$ and sends $j\ge1$ to $\bot$ after $k+1-j$ steps. State $\bot$ is separated from the others by the empty continuation under the accepting set $\{0,\dots,k\}$. So there are $k+2$ distinct classes, and Result~\ref{pc:moore} shows the automaton is minimal.
+\end{proof}
+
+The runnable check in Appendix~\ref{app:examples} confirms $5=k+2$ states for $k=3$. The result is the reason a monitor for $m$ independent obligations with bounds $k_1,\dots,k_m$ has $\prod(k_i+2)$ states in the product, and why Chapter~\ref{ch:obligations} insists on finding the structure that avoids the product.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Run Moore's algorithm by hand on the DFA over $\{a,b\}$ with states $\{1,2,3,4\}$, initial state $1$, accepting $\{4\}$, and transitions $1\xrightarrow{a}2$, $1\xrightarrow{b}3$, $2\xrightarrow{a}4$, $2\xrightarrow{b}3$, $3\xrightarrow{a}2$, $3\xrightarrow{b}4$, and $4$ looping on both. Report the partitions $\equiv_0,\equiv_1,\dots$.
+\end{exercise}
+
+\begin{exercise}
+Write the bounded-response property of Result~\ref{pc:monitor} with $k=2$ in the notation of Definition~\ref{pc:ltl}.
+\end{exercise}
+
+\begin{exercise}
+Show that ``a request is eventually answered'' ($\mathsf G(\mathsf{req}\to\mathsf F\,\mathsf{ack})$) is not detectable by a finite monitor on infinite behaviours, by exhibiting for any finite prefix an extension that satisfies it.
+\end{exercise}
+
+\begin{exercise}
+Compute the number of states of the product monitor for two independent bounded-response obligations with bounds $2$ and $3$, and the number of minimal states if both are triggered by the same request and answered by the same acknowledgement.
+\end{exercise}
+
+\begin{exercise}
+Prove that the complement of a regular language of finite words is regular by swapping accepting and non-accepting states of a complete DFA, and say what this means for violation monitors versus compliance monitors.
+\end{exercise}

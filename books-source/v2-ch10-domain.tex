@@ -1,0 +1,163 @@
+% v2-ch10-domain.tex
+\chapter{Establishing a Domain of Choice}\label{ch:domain}
+\spec{How are choices evaluated when the domain from which one chooses must first be established?}
+{Sequential search with costly inspection (Weitzman's Pandora's box); optimal stopping.}
+{A model of acquisition stages with a non-anticipation condition (Definition~\ref{def:acq}); existence and computation of optimal non-anticipating and budget-admissible acquisition policies by backward induction on a finite sufficient state (Results~\ref{thm:acq-dp} and~\ref{prop:budget-acq}); the value of an oracle that need not search bounds every policy from above and is strictly above the optimum in the stated example (Result~\ref{prop:oracle}); the value of an established domain is submodular in the domain (Result~\ref{prop:submodular}).}
+{None.}
+{Chapter~\ref{ch:endogenous} and Chapter~\ref{ch:history-state}.}
+
+Textbook decision theory evaluates a choice from a menu that is given. In most of the systems of interest the menu is not given but made: options are found, inspected, qualified, or negotiated before they can be chosen, and each of these steps has a cost and an outcome that was not known before it was taken. Establishing the domain is then part of the decision, and a rule that evaluates options as though the whole domain were already established evaluates a different problem. This chapter gives a formal model of acquisition stages in which a choice is made from the options established so far, states the condition under which a policy does not use information it has not yet paid for, and proves what can be said about the existence, computation, and value of such policies.
+
+\section{A model of acquisition stages}
+
+There is a finite set $I=\{1,\dots,n\}$ of candidate options. Option $i$ has a value $X_i\ge0$ that is unknown until option $i$ is \emph{inspected}, and an inspection cost $c_i>0$. The values $X_1,\dots,X_n$ are random variables with finite support, and in the first results independent. Inspecting an option is the acquisition of the capability to choose it, in the sense of Chapter~\ref{ch:endogenous}, with the difference that what is acquired has a value that is revealed only on acquisition. The \emph{established domain} after some inspections is the set $S\subseteq I$ of options inspected so far.
+
+\begin{definition}[Acquisition policy]\label{def:acq}
+An \emph{acquisition policy} $\pi$ specifies, for each finite sequence of inspected options together with their revealed values (an \emph{observed history}), either to stop, or to inspect an option not yet inspected. When it stops it selects an option of the established domain with the greatest observed value, or selects nothing if the domain is empty. The payoff is $\max_{i\in S}X_i-\sum_{i\in S}c_i$, where $S$ is the final domain and the maximum over the empty set is $0$. The policy is \emph{non-anticipating} if its decision at each stage depends only on the observed history, so that it is a function on the finite set of observed histories and uses no value that has not been revealed.
+\end{definition}
+
+Definition~\ref{def:acq} is a restriction on policies, not on the world: a policy that inspects option $i$ only when $X_i$ is large uses $X_i$ before paying for it. Such a policy is feasible as a mathematical function on the underlying probability space and is not available to any agent. Some of the apparent power of decision rules in the literature comes from implicitly using anticipating policies, by evaluating options at their eventual values and charging only for those chosen.
+
+\section{Existence and computation}
+
+For a set $U\subseteq I$ of uninspected options and a current best value $m\ge0$ (equal to $0$ if no option has been inspected) define
+\[
+V(U,m)=\max\Bigl\{m,\ \max_{i\in U}\bigl[-c_i+\mathbb E\,V\bigl(U\setminus\{i\},\max(m,X_i)\bigr)\bigr]\Bigr\},\qquad V(\varnothing,m)=m,
+\]
+where the cost already paid is accounted for outside $V$.
+
+\begin{newresult}[Backward induction for acquisition]\label{thm:acq-dp}
+If $X_1,\dots,X_n$ are independent with finite supports then the pair $(U,m)$ is a sufficient state for non-anticipating policies: the optimal continuation from any observed history depends on the history only through the set $U$ of uninspected options and the current best value $m$. The function $V$ is the optimal value of continuation, and the optimal value of the problem is $V^{*}=V(I,0)$. An optimal non-anticipating policy exists and is the policy that stops at $(U,m)$ when the first term attains the maximum and otherwise inspects an option attaining the second.
+\end{newresult}
+\assumes{Independent $X_i$ with finite supports; $c_i>0$.}
+\begin{proof}
+Induct on $|U|$. For $U=\varnothing$ the only decision is to stop and the value is $m$. For $|U|=k+1$, an observed history ending in state $(U,m)$ determines the conditional law of the uninspected values, which by independence is their unconditional law, whatever the history. The policy must stop, with value $m$, or inspect some $i\in U$, paying $c_i$ and observing $X_i$, after which the state is $(U\setminus\{i\},\max(m,X_i))$ and by the induction hypothesis the best continuation has value $V$ at that state. The best value is the larger of these alternatives, which is the recursion. Finiteness of the supports makes the expectations finite sums and the set of non-anticipating policies finite, so a maximizer exists, and the policy described attains $V$ at every state by construction.
+\end{proof}
+
+Without independence the posterior law of the uninspected values depends on the inspected values, and the sufficient state is the posterior itself, a point in a continuum, as in Chapter~\ref{ch:pomdp}.
+
+\begin{established}[Weitzman's index policy]\label{thm:weitzman}
+Under the assumptions of Result~\ref{thm:acq-dp}, let $z_i$ be the \emph{reservation value} of option $i$, the solution of $\mathbb E\,(X_i-z_i)^{+}=c_i$. An optimal policy inspects the uninspected options in decreasing order of $z_i$ and stops as soon as the current best value $m$ is at least the largest reservation value among the options not yet inspected.
+\end{established}
+\source{Weitzman (1979), \emph{Optimal search for the best alternative}.}
+
+The index policy shows that the dynamic program has a simple solution: each option can be assessed separately by its reservation value, without regard to the others, and the complexity of the problem is the complexity of sorting.
+
+\begin{example}[Two options]\label{ex:two-options}
+Let $n=2$, each $X_i$ equal to $0$ or $10$ with probability $\frac12$, and $c_1=c_2=1$. The reservation value solves $\frac12(10-z)=1$, so $z=8$ for both. By Result~\ref{thm:weitzman} the optimal policy inspects option~1, stops if $X_1=10$, and otherwise inspects option~2. The recursion gives $V(\{2\},10)=\max\{10,-1+10\}=10$ and $V(\{2\},0)=\max\{0,-1+5\}=4$, so $V^{*}=-1+\frac12\cdot10+\frac12\cdot4=6$.
+\end{example}
+
+\section{What an oracle is worth}
+
+An oracle that knows all values in advance can choose the option $i$ maximizing $X_i-c_i$ and pay only $c_i$, or abstain.
+
+\begin{newresult}[Oracle bound]\label{prop:oracle}
+For every acquisition policy, anticipating or not,
+\[
+\mathbb E[\text{payoff}]\ \le\ V^{\mathrm{orc}}:=\mathbb E\Bigl[\max\bigl(0,\max_{i}(X_i-c_i)\bigr)\Bigr].
+\]
+In Example~\ref{ex:two-options} $V^{\mathrm{orc}}=6.75$ and $V^{*}=6$, so the optimal non-anticipating policy falls short of the oracle by $0.75$, a loss attributable to inspection costs that the oracle avoids and that are decomposed in the proof.
+\end{newresult}
+\assumes{None for the bound; Example~\ref{ex:two-options} for the numbers.}
+\begin{proof}
+The payoff of a policy ending with domain $S$ and selected option $j\in S$ is $X_j-\sum_{i\in S}c_i\le X_j-c_j\le\max_i(X_i-c_i)$ because all costs are positive, and if $S=\varnothing$ the payoff is $0$. In both cases the payoff is at most $\max(0,\max_i(X_i-c_i))$ pointwise, and taking expectations gives the bound. In the example the oracle obtains $9$ whenever at least one value equals $10$, which has probability $\frac34$, and $0$ otherwise, so $V^{\mathrm{orc}}=6.75$. The optimal policy of Example~\ref{ex:two-options} attains $9$ with probability $\frac12$ (when $X_1=10$), pays both costs in the remaining half, obtaining $8$ if $X_2=10$ and $-2$ otherwise, so its value is $\frac12\cdot9+\frac14\cdot8+\frac14\cdot(-2)=6$. The difference $0.75$ is the sum of two losses: in the event $X_1=0,X_2=10$ (probability $\frac14$) the policy pays an extra $1$ relative to the oracle, and in the event $X_1=X_2=0$ (probability $\frac14$) it loses $2$ where the oracle abstains and pays nothing, and $\frac14\cdot1+\frac14\cdot2=0.75$.
+\end{proof}
+
+The gap is the price of having to establish the domain by paying for it in ignorance of what it contains. It is a property of the information structure and not of the agent: the bound holds for every policy, and the gap measures how much of the bound a policy is able to reach without using unrevealed values.
+
+\section{Diminishing returns of an established domain}
+
+Let $v(S)=\mathbb E\bigl[\max_{i\in S}X_i\bigr]$ for $S\subseteq I$, with $v(\varnothing)=0$, be the value of choosing from the established domain $S$ when the choice is made at the end and costs are ignored.
+
+\begin{newresult}[Submodularity of domain value]\label{prop:submodular}
+For nonnegative random variables $X_i$, not necessarily independent, $v$ is monotone and submodular: for $S\subseteq T\subseteq I$ and $i\notin T$,
+\[
+0\le v(T\cup\{i\})-v(T)\le v(S\cup\{i\})-v(S)\le v(\{i\})=\mathbb E X_i.
+\]
+\end{newresult}
+\assumes{$X_i\ge0$ with finite expectation.}
+\begin{proof}
+Write $M_S=\max_{j\in S}X_j$, with $M_\varnothing=0$. Then $\max(M_S,X_i)-M_S=(X_i-M_S)^{+}$, so $v(S\cup\{i\})-v(S)=\mathbb E(X_i-M_S)^{+}$. Since $S\subseteq T$ gives $M_S\le M_T$, we have $(X_i-M_T)^{+}\le(X_i-M_S)^{+}\le X_i$ pointwise, which gives the three inequalities after taking expectations, and the first is nonnegativity of $(\cdot)^{+}$.
+\end{proof}
+
+The consequence is that the marginal value of establishing a further option is at most its stand-alone value and shrinks as the domain grows. An option that would have been the best of a small domain may add almost nothing to a large one. Exercise~\ref{ex:marginal} asks for the corresponding statement for the net value with costs.
+
+\section{Admissible acquisition under a budget}
+
+Suppose total inspection cost may not exceed a budget $B$ on any path. The policy is then \emph{admissible} if every observed history has total cost at most $B$. The empty policy, which inspects nothing, is admissible.
+
+\begin{newresult}[Budget-admissible acquisition]\label{prop:budget-acq}
+Under the assumptions of Result~\ref{thm:acq-dp} and a budget $B$, the triple $(U,m,r)$, where $r$ is the remaining budget, is a sufficient state, and the value
+\[
+V_B(U,m,r)=\max\Bigl\{m,\ \max_{i\in U:\,c_i\le r}\bigl[-c_i+\mathbb E\,V_B\bigl(U\setminus\{i\},\max(m,X_i),r-c_i\bigr)\bigr]\Bigr\}
+\]
+is the optimal value of an admissible non-anticipating policy. An optimal admissible policy exists, and $V_B$ is nondecreasing in $r$ with $V_B(I,0,B)\le V^{*}$.
+\end{newresult}
+\assumes{Independent $X_i$ with finite supports; $c_i>0$; $B\ge0$.}
+\begin{proof}
+The proof of Result~\ref{thm:acq-dp} applies with the action set at $(U,m,r)$ restricted to $\{i\in U:c_i\le r\}$ and the remaining budget updated by $r\mapsto r-c_i$; this is the product construction of Result~\ref{prop:hard-budget}. Monotonicity in $r$: the action set at $(U,m,r')$ contains that at $(U,m,r)$ for $r'\ge r$, and the successor states have budgets that are larger, so by induction on $|U|$ the right-hand side does not decrease. The unconstrained value is the value with $r\ge\sum_ic_i$, which is at least $V_B(I,0,B)$ by the same monotonicity.
+\end{proof}
+
+The budget enters as a state variable and so is an augmentation in the sense of Chapter~\ref{ch:history-state}. Without it the state $(U,m)$ would be insufficient: two histories with the same inspected set and the same best value but different amounts spent would have different feasible continuations.
+
+
+\section{A three-option instance}\label{sec:three-options}
+
+Three options differ in kind. Option $A$ is a sure thing: $X_A=6$ at inspection cost $c_A=0.5$. Option $B$ is a long shot: $X_B=20$ with probability $0.2$ and $0$ otherwise, at cost $c_B=1$. Option $C$ is as in Example~\ref{ex:two-options}: $X_C\in\{0,10\}$ with probability one half each, cost $c_C=1$. The reservation values are found by solving $\mathbb E(X-z)^+=c$: for $A$, $6-z=0.5$ gives $z_A=5.5$; for $B$, $0.2(20-z)=1$ gives $z_B=15$; for $C$, $\tfrac12(10-z)=1$ gives $z_C=8$. The order of the means is $A,C,B$ ($6,5,4$), while the order of the indices is $B,C,A$. Weitzman's rule therefore inspects the long shot first, although it has the smallest mean, and stops as soon as the best value found is at least the next index. Direct dynamic programming over the states $(U,m)$ gives the optimal value $V^{*}=8.4$, and the value of the index policy, computed by following its order and stopping rule, is also $8.4$. The oracle bound is $V^{\mathrm{orc}}=9.6$, so the cost of establishing the domain in ignorance is $1.2$. For three identical options of the type of $C$ the values are $V^{*}=7.0$ and $V^{\mathrm{orc}}=7.875$.
+
+The numbers carry the point of the chapter. A rule that ranks options by their mean values, or by their values net of inspection cost, would inspect $A$ first and, stopping at the first value of at least $6$, would end with expected payoff $6-0.5=5.5$ against $8.4$ for the index policy, because it undervalues the information that a high-variance option can supply.
+
+\begin{newresult}[Spread raises the reservation value]\label{prop:spread}
+Let $Y$ be a mean-preserving spread of $X$, in the sense that $\mathbb E\,\phi(X)\le\mathbb E\,\phi(Y)$ for every convex $\phi$ (equivalently, $X\le_{\mathrm{cx}}Y$). Then for every inspection cost $c>0$ the reservation values satisfy $z_X\le z_Y$.
+\end{newresult}
+\assumes{Integrable random variables with $\mathbb E(X-z)^+\to0$ as $z\to\infty$ and continuous in $z$.}
+\begin{proof}
+The function $\phi_z(x)=(x-z)^+$ is convex, so $g_X(z):=\mathbb E(X-z)^+\le\mathbb E(Y-z)^+=g_Y(z)$ for every $z$. Both $g_X$ and $g_Y$ are continuous, nonincreasing, and tend to $0$ at infinity, and $g(z)=c$ has a unique solution wherever $g$ is strictly decreasing at the level $c$; otherwise $z_X$ and $z_Y$ denote the largest solutions. At $z=z_X$ we have $g_Y(z_X)\ge g_X(z_X)=c$. If $z_Y<z_X$, then $g_Y(z_X)<c$ because $z_Y$ is the largest solution and $g_Y$ is nonincreasing, a contradiction. So $z_Y\ge z_X$.
+\end{proof}
+
+The result says that, in a search with recall, risk is attractive: of two options with the same mean and cost, the riskier is inspected first, because the downside is truncated at the value of the best option already in hand while the upside is not. It also explains why institutions that search for candidates, ideas, or sites value diversity of the pool: a more dispersed option has a higher index.
+
+\section{The anatomy of the gap to the oracle}\label{sec:gap}
+
+The gap $V^{\mathrm{orc}}-V^{*}$ has two sources, which the proof of the oracle bound separates. The first is the cost of inspections that turn out not to matter: the oracle pays only for the option it selects, whereas any non-anticipating policy pays for each option it inspects before knowing whether it is the best. The second is the cost of stopping or continuing without knowing the unseen values. For $n$ identical options of type $C$ the oracle value is $9\bigl(1-2^{-n}\bigr)$, since it collects $10-1=9$ unless every value is zero, while the optimal policy inspects sequentially and stops at the first $10$, which gives $V_k=4+\tfrac12V_{k-1}$ with $V_0=0$ and hence $V_n=8\bigl(1-2^{-n}\bigr)$. The gap is therefore $1-2^{-n}$: it equals $0.75$ for $n=2$ and $0.875$ for $n=3$, and tends to $1$. The number has a direct reading. The optimal policy makes $2-2^{1-n}$ inspections in expectation, of which exactly one finds the $10$ with probability $1-2^{-n}$, so the expected number of inspections that did not matter is $1-2^{-n}$ and each costs $1$. No policy can close the gap, because no policy can know in advance which inspection will find the $10$.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute $V^{*}$ and $V^{\mathrm{orc}}$ for four options with the same distribution as in Example~\ref{ex:two-options} and costs $c_i=1$, and confirm that the gap is $1-2^{-4}$.
+\end{exercise}
+
+\begin{exercise}\label{ex:marginal}
+Show that $w(S)=v(S)-\sum_{i\in S}c_i$ is submodular and not necessarily monotone, and give a distribution for which the maximizer of $w$ over subsets of $I$ is a proper nonempty subset.
+\end{exercise}
+
+\begin{exercise}
+Give an example in which the optimal policy of Result~\ref{thm:acq-dp} inspects options in an order that is not decreasing in $\mathbb E X_i$, and confirm that Weitzman's reservation values explain the order.
+\end{exercise}
+
+\begin{exercise}
+Show that if the values are perfectly correlated, $X_i=X$ for all $i$, then inspecting more than one option is never optimal, and compute the sufficient state.
+\end{exercise}
+
+\begin{exercise}
+Construct an anticipating policy that attains $V^{\mathrm{orc}}$ in Example~\ref{ex:two-options} and verify that it is not a function of the observed history.
+\end{exercise}
+
+\begin{exercise}
+Verify by hand the reservation values $z_A=5.5$, $z_B=15$, $z_C=8$ in Section~\ref{sec:three-options}, and compute the expected payoff of the index policy that inspects in the order $B,C,A$ and stops as soon as the best value found is at least the next index. Show that it equals $8.4$, and that the order $A,C,B$ with the same stopping rule gives $5.5$.
+\end{exercise}
+
+\begin{exercise}
+Prove that if $X$ is deterministic with value $v$ and cost $c<v$ then $z=v-c$ and the option is inspected first iff $z$ exceeds the indices of all others. Explain why a deterministic option need never be inspected if its value is known.
+\end{exercise}
+
+\begin{exercise}
+Using Result~\ref{prop:spread}, order the options $X_1\in\{4,6\}$, $X_2\in\{0,10\}$, $X_3=5$ (each equiprobable, cost $0.5$) by reservation value, and compute the three values.
+\end{exercise}
+
+\begin{exercise}
+Derive the gap $V^{\mathrm{orc}}-V^{*}$ for $n$ identical options of type $C$ in closed form by solving the recursion $V_k=-1+\tfrac12\cdot10+\tfrac12V_{k-1}$ with $V_0=0$ (the value with $k$ options left and a best value of $0$), and check $n=2,3$.
+\end{exercise}
+
+

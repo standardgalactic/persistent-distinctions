@@ -1,0 +1,150 @@
+% v2-ch07-history-state.tex
+\chapter{History-Dependent State and Augmentation}\label{ch:history-state}
+\spec{When does a purported state description omit information needed to determine feasible continuation?}
+{State augmentation; Myhill--Nerode.}
+{A state description is sufficient for feasible continuation exactly when its kernel lies inside continuation equivalence (Result~\ref{thm:augment}); the least augmentation has as many values as the largest number of continuation classes in a single state fibre; hard budgets, counters of bounded use, and pending obligations are augmentations of this kind, and unbounded counters admit none (Result~\ref{prop:no-finite}).}
+{None.}
+{Chapter~\ref{ch:common} and Appendix~\ref{app:suff}.}
+
+A state description is a promise. It says that two histories ending in the same state have the same future, so that nothing about how the state was reached need be remembered. The promise is often kept in the model that a designer first writes down and broken in the system that is later built: a charger that may be used a fixed number of times, a permit that was granted once, an upload that is still owed. In each case the nominal state is the same after two histories and the feasible continuations are not. This chapter states precisely what has been omitted, what it costs to put it back, and when it cannot be put back at finite cost.
+
+\section{Continuation classes and the fibre count}
+
+Fix an alphabet $\Events$ of events and a prefix-closed set $\Hist\subseteq\Events^{*}$ of histories, as in Appendix~\ref{app:suff}. For $h\in\Hist$ write $\mathrm{Fut}(h)=\{w:hw\in\Hist\}$ for the set of feasible continuations. Two histories are \emph{continuation equivalent}, $h\approx h'$, if $\mathrm{Fut}(h)=\mathrm{Fut}(h')$. This is the continuation equivalence of Appendix~\ref{app:suff} for the trivial property, and by Result~\ref{a:nerode} it is the coarsest right congruence on $\Hist$ that respects feasibility.
+
+A \emph{state description} is a function $x:\Hist\to X$ that is maintainable: $x(h)=x(h')$ implies $x(he)=x(h'e)$ whenever $he,h'e\in\Hist$. It is \emph{sufficient for feasible continuation} if $\ker x\subseteq{\approx}$, that is, if $x(h)=x(h')$ implies $\mathrm{Fut}(h)=\mathrm{Fut}(h')$. For a value $\xi\in x(\Hist)$ the \emph{fibre} is $x^{-1}(\xi)$, and $\nu(\xi)$ denotes the number of classes of $\approx$ that meet the fibre. The \emph{fibre count} is $N(x)=\sup_\xi\nu(\xi)$.
+
+\begin{newresult}[Augmentation]\label{thm:augment}
+Let $x$ be a state description, $g:\Hist\to G$ a function, and write $(x,g)(h)=(x(h),g(h))$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $x$ is sufficient for feasible continuation if and only if $N(x)=1$.
+  \item If $(x,g)$ is maintainable, it is sufficient if and only if $g$ takes different values on histories of the same fibre that lie in different classes of $\approx$.
+  \item If $N(x)<\infty$ there is a $g$ with $|g(\Hist)|=N(x)$ such that $(x,g)$ is maintainable and sufficient, and every $g$ with $(x,g)$ maintainable and sufficient has $|g(\Hist)|\ge N(x)$. If $N(x)=\infty$ no finite $g$ exists.
+\end{enumerate}
+\end{newresult}
+\assumes{The state description $x$ is maintainable.}
+\begin{proof}
+(a) $N(x)=1$ says that every fibre lies inside one class of $\approx$, which is $\ker x\subseteq{\approx}$. (b) is the definition of sufficiency read fibre by fibre: $(x,g)(h)=(x,g)(h')$ means $x(h)=x(h')$ and $g(h)=g(h')$, and then $h\approx h'$ is required.
+
+(c) For the lower bound let $\xi$ be a fibre value with $\nu(\xi)=N$ classes, and let $h_1,\dots,h_N$ be histories of the fibre in distinct classes. By (b) the values $g(h_1),\dots,g(h_N)$ are pairwise distinct. For the upper bound enumerate, for each value $\xi$, the classes of $\approx$ that meet the fibre $x^{-1}(\xi)$ by indices in $\{1,\dots,\nu(\xi)\}$ and let $g(h)$ be the index of the class of $h$ among those of the fibre of $x(h)$. Then $g$ takes at most $N(x)$ values, and by construction two histories with the same $(x,g)$ lie in the same class, so $(x,g)$ is sufficient. It is maintainable: if $(x,g)(h)=(x,g)(h')$ then $h\approx h'$, so $he\approx h'e$ because $\approx$ is a right congruence, and $x(he)=x(h'e)$ because $x$ is maintainable; the class of $he$ and the value $x(he)$ together fix $g(he)$, and these coincide for $h'e$. If $N(x)=\infty$ the lower-bound argument produces arbitrarily many distinct values of $g$.
+\end{proof}
+
+The fibre count measures the information that the state description omits, and the theorem says that exactly this much, no more and no less, must be added. The augmentation of Appendix~\ref{app:suff} in terms of the whole equivalence uses $|\Hist/{\approx}|$ values in total; the fibre count is smaller because the state description $x$ is kept and already carries part of the distinction. For example if $x$ already separates all classes then $N(x)=1$ and nothing is added.
+
+\section{Three augmentations}
+
+\begin{example}[A charger of bounded use]\label{ex:charger}
+Consider a variant of the rover of Example~\ref{ex:rover} in which one event \texttt{charge}, available only at the dock, restores the battery to $3$, and in which the charger may be used at most $m$ times in the whole life of the rover. The state description $x=(p,b)$ of position and charge is maintainable. For $0\le j\le m$ let $h_j=(\mathrm{right}\ \mathrm{left}\ \mathrm{charge})^{j}$. Each $h_j$ ends in the state $(0,3)$, and $\mathrm{Fut}(h_j)$ contains $(\mathrm{right}\ \mathrm{left}\ \mathrm{charge})^{k}$ exactly when $k\le m-j$. So the $m+1$ histories lie in one fibre and in distinct classes, and $N(x)\ge m+1$. A counter of charges used, capped at $m$, makes the description sufficient, and Result~\ref{thm:augment} shows that no augmentation with fewer than $m+1$ values does.
+\end{example}
+
+\begin{example}[A pending obligation]\label{ex:pending}
+In the rover of Example~\ref{ex:rover}, after \texttt{sample} an upload is owed. The histories \texttt{sample} and \texttt{sample upload} end in the same state, and $\mathrm{Fut}$ differs because only the first permits and requires an upload. The fibre count is $2$, and one bit, whether an upload is pending, is the least augmentation. This is the bit that Chapter~\ref{ch:common} added to remove the representational obstruction.
+\end{example}
+
+\begin{newresult}[Hard budgets]\label{prop:hard-budget}
+Let $(S,A,P)$ be a finite process with integer costs $C(s,a)\in\{0,1,2,\dots\}$ and a budget $d\in\mathbb N$, and call a history \emph{within budget} if its accumulated cost does not exceed $d$. Let $\Hist$ consist of the within-budget histories of $(S,A,P)$ and let $x(h)=s$ be the final state. Then:
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item The remaining budget $r(h)=d-\text{cost}(h)$ makes $(x,r)$ maintainable and sufficient for feasible continuation, so the product process on $S\times\{0,\dots,d\}$ is an exact model of the budgeted process.
+  \item The set $W^{*}$ of Result~\ref{thm:as-kernel} computed in the product process is upward closed in the remaining budget: if $(s,r)\in W^{*}$ and $r'\ge r$ then $(s,r')\in W^{*}$.
+  \item The remaining budget cannot be dropped: for every $d$ there is a process with a single state in which $N(x)=d+1$.
+\end{enumerate}
+\end{newresult}
+\assumes{Finite state and action sets; integer costs; a history is within budget if every prefix is.}
+\begin{proof}
+(a) The remaining budget after $he$ is $r(h)-C$, which depends only on $r(h)$ and the event $e$ taken, and the event is feasible exactly when $r(h)\ge C$. The final state updates as in $P$. So $(x,r)$ is maintainable, and the feasible continuations of $h$ are determined by $(x(h),r(h))$.
+
+(b) Let $W_0=\{(s,r):s\in K,r\ge0\}$ and $W_{n+1}=W_0\cap\operatorname{Pre}_{\forall\exists}(W_n)$. $W_0$ is upward closed in $r$. Suppose $W_n$ is, and let $(s,r)\in W_{n+1}$ with action $a$ such that every $(s',r-C(s,a))$ with $s'\in\operatorname{supp}P(s,a)$ lies in $W_n$. For $r'\ge r$ the same action leads to $(s',r'-C(s,a))$, which has remaining budget at least as large, so lies in $W_n$ by hypothesis, and $r'\ge0$. So $W_{n+1}$ is upward closed, and so is the intersection $W^{*}$ of the decreasing sequence.
+
+(c) Take one state, one action of cost $1$ and the budget $d$. Then $\mathrm{Fut}(h)$ is the set of words of length at most $d-|h|$, and the $d+1$ histories of length $0,\dots,d$ lie in one fibre and in distinct classes.
+\end{proof}
+
+Part (b) is why a hard budget is tractable: for each state there is a threshold remaining budget above which feasibility holds, so the kernel is described by at most one number per state, though the number of the augmented states is larger. The constraint on expected cost of Chapter~\ref{ch:mdp} is the continuous analogue: the remaining budget there is a real number, and the augmented state has a continuum fibre.
+
+\section{When no finite augmentation exists}
+
+\begin{newresult}[Unbounded counters admit no finite augmentation]\label{prop:no-finite}
+Let $\Events=\{a,b\}$ and $\Hist=\{h:\text{every prefix of }h\text{ has at least as many }a\text{'s as }b\text{'s}\}$. For the constant state description $x$ the fibre count is infinite, and no finite state description (maintainable function with finitely many values) is sufficient for feasible continuation.
+\end{newresult}
+\assumes{None.}
+\begin{proof}
+Let $h_n=a^{n}$. Then $\mathrm{Fut}(h_n)$ contains $b^{n}$ but not $b^{n+1}$, so the histories $h_n$ are pairwise in distinct classes of $\approx$ and all lie in the one fibre of the constant description. If $x'$ is a maintainable function with finitely many values that is sufficient, by Result~\ref{a:nerode} it has at least as many values as $\approx$ has classes, and the number of classes is infinite.
+\end{proof}
+
+The system is a counter: each $a$ adds a unit of permission and each $b$ spends one. The result says that a system whose resources are unbounded cannot be described by a finite state, however large, and that the set of histories it allows is not a regular language. In the vocabulary of Chapter~\ref{ch:petri}, the augmenting quantity is the marking of an unbounded place. Finite representations then require either a bound, imposed by a cap on the resource that makes some histories infeasible, or an infinite state space with a finite description, such as that of a Petri net.
+
+
+\section{Checking sufficiency of a given description}\label{sec:check-suff}
+
+A designer who proposes a state description needs a way to test it. For finite histories the test is algorithmic.
+
+\begin{newresult}[Deciding sufficiency]\label{prop:decide-suff}
+Let $\Hist$ be given by a deterministic automaton with $n$ states (all states live) over a finite alphabet of size $\sigma$, and let $x$ be a maintainable description given by a map from the automaton states to $X$ that is compatible with the transitions. Then $N(x)=1$, equivalently sufficiency for feasible continuation, is decided in time $O(n\sigma\log n)$ by computing the minimal automaton, and when $N(x)>1$ the algorithm returns two histories in the same fibre and a shortest continuation that separates them.
+\end{newresult}
+\assumes{Finite automaton with every state reachable and live; $x$ is a function of the automaton state, compatible with the transitions.}
+\begin{proof}
+Minimize the automaton by Hopcroft's algorithm in time $O(n\sigma\log n)$; the classes of states of the minimal automaton are the classes of $\approx$ (Result~\ref{a:nerode}). The description $x$ is sufficient iff each fibre meets exactly one class, which is checked by one pass labelling each state with its class and its $x$-value. If a fibre meets two classes, take two states from it in different classes; breadth-first search in the product of the minimal automaton with itself finds a shortest word on which they disagree on feasibility.
+\end{proof}
+
+The test is cheap compared with the cost of the failure it prevents. A system whose designers could not state the state description precisely enough to run the test has not, in the sense of this chapter, promised anything.
+
+\section{Rate limits}\label{sec:rate}
+
+A rate limit says that at most $k$ uses are allowed in any window of $w$ consecutive steps. It is the augmentation problem for a rule that mixes a budget with a clock. At each step the event is \texttt{use} or \texttt{idle}. The raw state is the set $S\subseteq\{1,\dots,w-1\}$ of ages of the uses still inside the window, with $|S|\le k$; a use is allowed iff $|S|<k$.
+
+\begin{newresult}[Irrelevant ages]\label{prop:rate-normal}
+Write the elements of $S$ as $a_1<\dots<a_j$. The element $a_i$ affects feasible continuation only if $a_i\le w-1-(k-i)$. Removing all elements that violate this inequality (they form the oldest elements of $S$) gives a state with the same set of feasible continuations. The normalized states are the sets with $j\le k$ elements satisfying $a_i\le w-1-k+i$, and there are
+\[
+\sum_{j=0}^{k}\binom{w-1-k+j}{j}=\binom{w}{k}
+\]
+of them for $1\le k<w$. Hence the least maintainable sufficient description has at most $\binom wk$ values.
+\end{newresult}
+\assumes{$1\le k<w$.}
+\begin{proof}
+Consider $a_i$ and a future step at which it is still in the window, that is, after $t$ steps with $a_i+t\le w-1$, so within the next $w-1-a_i$ steps; it is the $i$-th youngest of the old uses and the $i-1$ younger ones outlast it. A use is blocked by $a_i$ at some step only if, at that step, removing $a_i$ would allow it, i.e. the number of alive old uses together with the new uses made since is exactly $k$ with $a_i$ and $k-1$ without. At that step $i$ old uses (at least) are alive, so the number of new uses made earlier is $k-i$, and these need $k-i$ separate steps before the blocked attempt, which must occur while $a_i$ is alive: $k-i+1\le w-a_i$, which is $a_i\le w-1-(k-i)$. If the inequality fails, $a_i$ never blocks a use that would otherwise be allowed, and the same holds for every older element. Dropping them changes no feasibility, and the count is the number of sequences $1\le a_1<\dots<a_j$ with $a_i\le m+i$ for $m=w-1-k$. Setting $d_i=a_i-i$ gives nondecreasing sequences $0\le d_1\le\dots\le d_j\le m$, of which there are $\binom{m+j}{j}$, and $\sum_{j=0}^k\binom{m+j}{j}=\binom{m+k+1}{k}=\binom wk$ by the hockey-stick identity.
+\end{proof}
+
+An exhaustive computation of the fibre count by partition refinement for $w\le6$ and every $k$ with $1\le k\le4$ gives $\binom wk$ exactly (for $k\ge w$ the rule never binds and the count is $1$): for $w=4$ the counts are $4,6,4$ for $k=1,2,3$; for $w=5$ they are $5,10,10,5$; for $w=6$ they are $6,15,20,15$ for $k=1,\dots,4$. The normal form is therefore not only sufficient but, in the cases checked, minimal. The shape of the answer is worth recording: the memory needed to enforce a rate limit of $k$ per $w$ steps is $\log_2\binom wk\approx k\log_2(w/k)+k\log_2e$ bits when $k\ll w$. Recording the times of the last $k$ uses as an ordered list would cost about $k\log_2w$ bits; the difference, about $\log_2k!\approx k\log_2(k/e)$ bits, is the cost of remembering which use was which, and the normal form does not pay it because only the set of ages matters.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+In Example~\ref{ex:charger} give the classes of $\approx$ explicitly for $m=2$, and exhibit a maintainable description of exactly the right size.
+\end{exercise}
+
+\begin{exercise}
+Show that two successive augmentations $(x,g_1)$ and $((x,g_1),g_2)$ can be replaced by a single augmentation of no greater size than the one given by Result~\ref{thm:augment}.
+\end{exercise}
+
+\begin{exercise}
+In the hard-budget setting suppose all costs are multiples of $q>1$ and $d$ is not. Show that the fibre count is smaller than $d+1$ and compute it.
+\end{exercise}
+
+\begin{exercise}
+Describe the sufficient augmentation for a rule that a permit must be renewed within $k$ steps of each use, and compute its size as a function of $k$.
+\end{exercise}
+
+\begin{exercise}
+Prove that if $x$ is a state description and $x'=f\circ x$ is a maintainable coarsening of it, then $N(x')\ge N(x)$, and give an example where the inequality is strict.
+\end{exercise}
+
+\begin{exercise}
+Run the normalization of Result~\ref{prop:rate-normal} by hand for $w=5$, $k=2$ and list the $10$ normalized states. Verify that the raw states $\varnothing$ and $\{4\}$ have the same feasible continuations.
+\end{exercise}
+
+\begin{exercise}
+For $k=1$ prove directly that the least sufficient description for the rate limit ``at most one use in any $w$ consecutive steps'' has exactly $w$ values (the number of steps since the last use, capped at $w$).
+\end{exercise}
+
+\begin{exercise}
+Prove the lower bound of Result~\ref{prop:rate-normal} for $k=w-1$: show that the $w$ normalized states are pairwise separated by continuations.
+\end{exercise}
+
+\begin{exercise}
+Describe the sufficient description for a rule requiring a minimum gap of $g$ steps between any two uses and a lifetime limit of $m$ uses, and count its values. Compare with the product of the two separate descriptions.
+\end{exercise}
+
+\begin{exercise}
+Apply Result~\ref{prop:decide-suff} to the description $x(h)=$ ``number of uses in the last $w$ steps'' for the rate limit, and give a pair of histories in the same fibre that it fails to separate, with a separating continuation, for $w=4$, $k=2$.
+\end{exercise}
+

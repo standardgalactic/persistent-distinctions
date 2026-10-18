@@ -1,0 +1,153 @@
+% v2-ch05-pomdp.tex
+\chapter{Partial Observation and Belief-State Sufficiency}\label{ch:pomdp}
+\spec{When does a belief state serve as a sufficient representation for feasibility and decision?}
+{POMDPs and belief-state sufficiency (\r{A}str\"om; Smallwood and Sondik; Kaelbling, Littman, and Cassandra); predictive state representations (Littman, Sutton, and Singh).}
+{The belief is a maintainable representation; the coarsest representation sufficient for prediction is the quotient by the span of the prediction vectors, so the belief is minimal exactly under a rank condition (Result~\ref{thm:predictive}); almost-sure safety is decided on belief supports (Result~\ref{thm:support-safety}).}
+{Conditions under which the belief is a minimal sufficient representation for a stated policy family beyond prediction.}
+{Chapter~\ref{ch:mdp} and Appendix~\ref{app:suff}.}
+
+When the controller cannot see the state, it acts on what it has seen. The history of its actions and observations is the raw record, and a belief, the posterior distribution over the hidden state, is the standard summary. This chapter asks in what sense the belief is a sufficient representation, using the vocabulary of the first volume, and what is the least representation that does the same work. The answer is a rank condition, and it also delivers the form in which feasibility with certainty can be decided without tracking probabilities at all.
+
+\section{Beliefs and their update}
+
+\begin{definition}[POMDP and belief]\label{def:pomdp}
+A finite \emph{POMDP} consists of finite sets $S,A,O$ of hidden states, actions, and observations, transition probabilities $P(s'\mid s,a)$, observation probabilities $Z(o\mid s')$ (the observation depends on the state reached), an initial distribution $b_0$ on $S$, and rewards as in Chapter~\ref{ch:mdp}. A history is $h=(a_1,o_1,\dots,a_t,o_t)$. The \emph{belief} $b(h)\in\Delta(S)$ is the posterior of the hidden state $s_t$ given $h$, under the prior $b_0$.
+\end{definition}
+
+For an action $a$ and observation $o$ let $T_{a,o}$ be the matrix with entries $T_{a,o}(s,s')=P(s'\mid s,a)Z(o\mid s')$. For a row vector $b$, the probability of $o$ after action $a$ is $\Pr(o\mid b,a)=bT_{a,o}\mathbf 1$.
+
+\begin{established}[Belief update and sufficiency]\label{thm:belief}
+If $\Pr(o\mid b(h),a)>0$ then $b(h\,a\,o)=\tau(b(h),a,o):=\dfrac{b(h)T_{a,o}}{b(h)T_{a,o}\mathbf 1}$. The map $h\mapsto b(h)$ is therefore a maintainable representation of the positive-probability histories in the sense of Appendix~\ref{app:suff}. The conditional law of all future observations given $h$ and any future action sequence is a function of $b(h)$.
+\end{established}
+\source{{\AA}str\"om (1965); Smallwood and Sondik (1973).}
+\begin{proof}
+By Bayes' rule, $\Pr(s_{t+1}=s',o\mid h,a)=\sum_sb(h)(s)P(s'\mid s,a)Z(o\mid s')=(b(h)T_{a,o})(s')$, and dividing by the total over $s'$ gives the update. Since the update depends only on $b(h),a,o$, equal beliefs give equal beliefs after the same event, so $\ker b$ is a right congruence. For future observations, the joint probability of $(o_1,\dots,o_k)$ after actions $(a_1,\dots,a_k)$ is $b(h)T_{a_1,o_1}\cdots T_{a_k,o_k}\mathbf 1$, a function of $b(h)$.
+\end{proof}
+
+\section{The minimal sufficient representation for prediction}
+
+For a word $w=(a_1,o_1,\dots,a_k,o_k)$ let $q_w=T_{a_1,o_1}\cdots T_{a_k,o_k}\mathbf 1\in\mathbb R^{S}$, so that the probability of observing $o_1,\dots,o_k$ after taking $a_1,\dots,a_k$ from belief $b$ is $b\cdot q_w$. Let $Q=\operatorname{span}\{q_w\}$ over all words, including the empty word with $q_\varepsilon=\mathbf 1$.
+
+Call two positive-probability histories \emph{predictively equivalent}, $h\approx h'$, if $b(h)\cdot q_w=b(h')\cdot q_w$ for all words $w$. This is the continuation equivalence of Appendix~\ref{app:suff} for the property that records the distribution of future observations.
+
+\begin{newresult}[Predictive equivalence and the rank condition]\label{thm:predictive}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $h\approx h'$ if and only if $b(h)-b(h')\perp Q$.
+  \item $\approx$ is a right congruence on positive-probability histories, and it is the coarsest maintainable representation of the history that is sufficient for predicting future observations. The belief map is a finer maintainable representation, and its kernel is contained in $\approx$.
+  \item The minimal number of real parameters of such a representation is $\dim Q$, attained by the projection of the belief onto $Q$. In particular the belief is a minimal sufficient representation, for every set $B$ of reachable beliefs, if and only if $(B-B)\cap Q^{\perp}=\{0\}$, and for all beliefs if $Q=\mathbb R^{S}$.
+\end{enumerate}
+\end{newresult}
+\assumes{Finite POMDP; histories of positive probability.}
+\begin{proof}
+(a) is the definition, since $b\cdot q_w=b'\cdot q_w$ for all $w$ means $(b-b')\perp\operatorname{span}\{q_w\}$. (b) Suppose $h\approx h'$ and $\Pr(o\mid b(h),a)>0$. Taking the word $(a,o)$ gives $b(h)\cdot q_{(a,o)}=b(h')\cdot q_{(a,o)}$, so $\Pr(o\mid b(h'),a)=\Pr(o\mid b(h),a)>0$. For any word $w$, $\tau(b,a,o)\cdot q_w=(b\cdot q_{(a,o)w})/\Pr(o\mid b,a)$ where $(a,o)w$ is the concatenated word, and the numerators and denominators agree for $b(h),b(h')$. Hence $h\,a\,o\approx h'\,a\,o$. The relation is by definition the continuation equivalence of the prediction property, so by Result~\ref{a:nerode} it is the coarsest right congruence inside the kernel of prediction, which is the coarsest maintainable sufficient representation. Equal beliefs give equal predictions, so $\ker b\subseteq{\approx}$. (c) The map $b\mapsto(b\cdot q_w)_w$ factors through the orthogonal projection onto $Q$ and is injective on it, so predictive classes correspond to points of the projection, and the minimal dimension is $\dim Q$. The belief is injective modulo $\approx$ on $B$ exactly when two beliefs in $B$ with the same predictions are equal, that is, when $(B-B)\cap Q^{\perp}=\{0\}$.
+\end{proof}
+
+The rank condition is the familiar observability condition of linear systems theory, for a system whose output is a probability. When it fails, the belief carries more than the future depends on, and the excess is the component of the belief in $Q^{\perp}$.
+
+\begin{example}[Observationally identical hidden states]\label{ex:identical}
+Let $S=\{1,2,3\}$ with a single action, $Z(o\mid s')=1$ for the unique observation $o$ in every state (a blind system) and transition probabilities arbitrary. Then $q_w=\mathbf 1$ for every word $w$, $Q=\operatorname{span}\{\mathbf 1\}$ has dimension $1$, and all beliefs are predictively equivalent. The belief carries two parameters of information that no future observation can reveal, and the minimal representation for prediction has one value. If, however, the reward depends on the hidden state, the question that matters is no longer prediction of observations, and the minimal representation is that for the prediction of rewards; Exercise~\ref{ex:reward-pred} asks for this extension.
+\end{example}
+
+\section{Certain safety with partial observation}
+
+Predictive structure matters for what the system can predict. For feasibility with certainty only which states are possible matters, not how probable they are.
+
+For a set $\Sigma\subseteq S$ of states, an action $a$, and an observation $o$ let $\operatorname{Post}(\Sigma,a,o)=\{s':\exists s\in\Sigma,\ P(s'\mid s,a)>0,\ Z(o\mid s')>0\}$. The \emph{support} of the belief after a history is $\Sigma(h)=\operatorname{supp}b(h)$, and $\Sigma(h\,a\,o)=\operatorname{Post}(\Sigma(h),a,o)$ whenever the latter is nonempty. A policy is \emph{observation-based} if it chooses actions as a function of the history of actions and observations. Let $\mathrm{Obs}(\Sigma,a)=\{o:\operatorname{Post}(\Sigma,a,o)\ne\varnothing\}$.
+
+\begin{newresult}[Almost-sure safety is decided on supports]\label{thm:support-safety}
+Let $K\subseteq S$ and let $\Sigma_0=\operatorname{supp}b_0$. There is an observation-based policy under which $\Pr[s_t\in K\text{ for all }t]=1$ if and only if $\Sigma_0$ belongs to the greatest family $\mathcal W$ of subsets of $K$ satisfying: for each $\Sigma\in\mathcal W$ there is an action $a$ such that $\operatorname{Post}(\Sigma,a,o)\in\mathcal W$ for every $o\in\mathrm{Obs}(\Sigma,a)$. The supports form a maintainable representation that is sufficient for this question.
+\end{newresult}
+\assumes{Finite POMDP.}
+\begin{proof}
+A state $s\in\Sigma(h)$ has positive posterior probability at the end of $h$, so it is visited with positive probability. Hence an observation-based policy is almost surely safe if and only if every positive-probability history has $\Sigma(h)\subseteq K$. The support process is a deterministic function of the history, evolving by $\Sigma\mapsto\operatorname{Post}(\Sigma,a,o)$, so the question is a safety condition in the deterministic system whose states are supports and whose transitions are chosen by the controller (the action) and by the environment (the observation). The greatest family $\mathcal W$ is the winning region of this safety game by the argument of Result~\ref{thm:kernel}: if $\Sigma_0\in\mathcal W$ the controller plays the stated actions and the support stays in $\mathcal W\subseteq 2^{K}$; conversely the set of supports visited with positive probability under a safe policy is such a family. Supports update by a function of the previous support, the action, and the observation, so the representation is maintainable; it is sufficient because the winning region is a property of the support.
+\end{proof}
+
+The support construction has up to $2^{|S|}$ states. Lower bounds for safety with imperfect information show that this exponential cannot in general be avoided. The belief itself, by contrast, is a point in a continuum and gives no finite description of the same question.
+
+
+\section{A machine with a hidden fault}\label{sec:hidden-fault}
+
+A machine is either good ($G$) or faulty ($B$). The action $\mathrm{run}$ produces output and moves $G$ to $B$ with probability $0.1$, while a faulty machine stays faulty; the action $\mathrm{inspect}$ leaves the state unchanged and returns the observation $\mathrm{alarm}$ with probability $0.6$ if the machine is faulty and $0.1$ if it is good. The observation after $\mathrm{run}$ is uninformative. From the prior belief $b_0(G)=1$, one run gives $b(G)=0.9$ and a second $0.81$. An inspection with the outcome $\mathrm{alarm}$ updates by Bayes' rule: with $b(G)=0.81$, the unnormalized masses are $0.81\cdot0.1=0.081$ for $G$ and $0.19\cdot0.6=0.114$ for $B$, so $b(G)=0.081/0.195\approx0.415$. With outcome $\mathrm{ok}$ the masses are $0.81\cdot0.9=0.729$ and $0.19\cdot0.4=0.076$, so $b(G)\approx0.906$. The belief is a single number, and in this example it is minimal: the observation vectors $q_{\mathrm{inspect},\mathrm{alarm}}=(0.1,0.6)$ and $q_\varepsilon=(1,1)$ are linearly independent, so $\dim Q=2$ and, with $S=\{G,B\}$, the rank condition of Result~\ref{thm:predictive} holds.
+
+When the rank condition fails, the belief is redundant. Let $S=\{1,2,3\}$ with one action that leaves the state unchanged, and observations $o_1$ in state $1$ and $o_2$ in states $2$ and $3$, each with probability one. Then $T_{o_1}=\operatorname{diag}(1,0,0)$ and $T_{o_2}=\operatorname{diag}(0,1,1)$, so $q_{o_1}=(1,0,0)$, $q_{o_2}=(0,1,1)$, every longer word with both observations gives $0$, and $Q=\operatorname{span}\{(1,0,0),(0,1,1)\}$ has dimension $2$. The beliefs $(0,\tfrac12,\tfrac12)$ and $(0,1,0)$ are predictively equivalent, since $b\cdot q_w$ agrees for all $w$, although they are different beliefs: the representation $(b_1,\,b_2+b_3)$ is minimal, and since the components of a belief sum to one it amounts to the single free number $b_1$, in agreement with $\dim Q=2$ for the unnormalized vectors. If the reward distinguishes states $2$ and $3$, then the equivalence is finer, since a reward that depends on the state adds the reward vector to the span of the predictive vectors, and the vector $(0,1,-1)$-direction then separates the two beliefs.
+
+\section{Value of information in a safety game}\label{sec:voi}
+
+Result~\ref{thm:support-safety} says that almost-sure safety is a game on supports. The game structure makes visible something that the state-based theory of Chapter~\ref{ch:mdp} cannot: an action whose only purpose is to observe can make a hopeless support winning.
+
+\begin{example}[Peeking]\label{ex:peek}
+Let $S=\{a,b,c\}$, $K=\{a,b\}$, and let the actions be $\mathrm{L}$, $\mathrm{R}$ and $\mathrm{peek}$. Action $\mathrm{L}$ keeps $a$ at $a$ and sends $b$ to $c$; action $\mathrm{R}$ keeps $b$ at $b$ and sends $a$ to $c$; $\mathrm{peek}$ keeps both states and returns the observation $o_a$ in $a$ and $o_b$ in $b$. The observation after $\mathrm{L}$ and $\mathrm{R}$ is the same in $a$ and $b$. The prior support is $\Sigma_0=\{a,b\}$. No single action is safe on $\Sigma_0$: $\mathrm{L}$ and $\mathrm{R}$ each have a successor $c\notin K$ in one of the states, and $\mathrm{peek}$ keeps both states. But $\mathrm{peek}$ is safe, and $\operatorname{Post}(\Sigma_0,\mathrm{peek},o_a)=\{a\}$, $\operatorname{Post}(\Sigma_0,\mathrm{peek},o_b)=\{b\}$, each of which is winning by repeating $\mathrm{L}$ or $\mathrm{R}$ respectively. So $\Sigma_0\in\mathcal W$, although $\mathcal W$ computed without the action $\mathrm{peek}$ would contain only $\{a\}$ and $\{b\}$. In the game the safety is obtained by acquiring information, then committing.
+\end{example}
+
+\begin{newresult}[The winning supports form a down-closed family]\label{prop:down-closed}
+If $\Sigma\in\mathcal W$ and $\Sigma'\subseteq\Sigma$ with $\Sigma'\ne\varnothing$ then $\Sigma'\in\mathcal W$. The family $\mathcal W$ need not be closed under union: in Example~\ref{ex:peek} without the action $\mathrm{peek}$, $\{a\}$ and $\{b\}$ are winning and $\{a,b\}$ is not.
+\end{newresult}
+\assumes{Finite POMDP; $\mathcal W$ as in Result~\ref{thm:support-safety}.}
+\begin{proof}
+Let $\mathcal W'=\mathcal W\cup\{\Sigma'\ne\varnothing:\Sigma'\subseteq\Sigma\text{ for some }\Sigma\in\mathcal W\}$. For $\Sigma'\subseteq\Sigma\in\mathcal W$ use the action $a$ that is good for $\Sigma$: for each observation $o$ possible from $\Sigma'$, $\operatorname{Post}(\Sigma',a,o)\subseteq\operatorname{Post}(\Sigma,a,o)\in\mathcal W$, so it belongs to $\mathcal W'$. Thus $\mathcal W'$ satisfies the defining condition and is contained in the greatest such family, which is $\mathcal W$. For the failure of union closure, see the example.
+\end{proof}
+
+The result shows that the winning region is described by its maximal elements, and the value of the observing action is the difference between the maximal elements with and without it. Deciding whether $\Sigma_0\in\mathcal W$ is EXPTIME-complete in general (Chatterjee, Doyen, Henzinger and Raskin, on games with imperfect information); the exponential is in the number of hidden states because supports are subsets.
+
+\section{The value function of the belief MDP}\label{sec:alpha}
+
+Beyond feasibility, the belief supports a value function with a useful shape.
+
+\begin{established}[Piecewise-linear convexity]\label{thm:alpha}
+For a finite-horizon POMDP with rewards $R(s,a)$, the optimal $n$-step value as a function of the belief is $V_n(b)=\max_{\alpha\in\Gamma_n}b\cdot\alpha$ for a finite set $\Gamma_n\subset\mathbb R^S$ of vectors; hence it is convex and piecewise linear.
+\end{established}
+\source{Smallwood and Sondik (1973).}
+\begin{proof}
+For $n=0$ take $\Gamma_0=\{0\}$. Suppose the claim holds for $n-1$. For an action $a$, $r_a(s)=R(s,a)$, and with $V_{n-1}(b')=\max_{\alpha\in\Gamma_{n-1}}b'\cdot\alpha$,
+\[
+V_n(b)=\max_a\Bigl[b\cdot r_a+\gamma\sum_o\Pr(o\mid b,a)V_{n-1}(\tau(b,a,o))\Bigr]
+=\max_a\Bigl[b\cdot r_a+\gamma\sum_o\max_{\alpha\in\Gamma_{n-1}}b\,T_{a,o}\alpha\Bigr],
+\]
+because $\Pr(o\mid b,a)\,\tau(b,a,o)=bT_{a,o}$ is linear in $b$ and $V_{n-1}$ is positively homogeneous in the unnormalized belief. Each inner maximum is a maximum of linear functions of $b$, and a sum of maxima of linear functions is the maximum of the sums over choices of $\alpha$ for each $o$, still a maximum of finitely many linear functions. Adding $b\cdot r_a$ and maximizing over $a$ gives the form with $\Gamma_n$ of size at most $|A||\Gamma_{n-1}|^{|O|}$.
+\end{proof}
+
+The vectors in $\Gamma_n$ grow doubly exponentially in the horizon in the worst case, which is why exact solution of POMDPs is limited to small problems; the representation of the value function is as large as the sufficient statistic is small.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For a two-state sensor with $S=\{L,H\}$, one action, $Z(o_H\mid H)=0.8$, $Z(o_H\mid L)=0.3$, and transitions that leave the state unchanged, compute $Q$ and show that the belief is minimal. Compute the belief after the observations $o_H,o_H,o_L$ from the uniform prior.
+\end{exercise}
+
+\begin{exercise}
+Show that if two hidden states have identical transition rows and identical observation probabilities, then $e_1-e_2\in Q^{\perp}$, and conclude that the belief is not minimal on any set of beliefs containing two that differ only by moving mass between them.
+\end{exercise}
+
+\begin{exercise}\label{ex:reward-pred}
+Extend $q_w$ to include expected rewards by adding vectors $r_w$ whose entry at $s$ is the expected total reward over the word times the probability of its observations, both from $s$, and state and prove the analogue of Result~\ref{thm:predictive} for the joint prediction of observations and rewards.
+\end{exercise}
+
+\begin{exercise}
+Construct a POMDP with $|S|=3$ and a constraint set $K$ for which the family $\mathcal W$ of Result~\ref{thm:support-safety} contains a support $\Sigma$ although no single state of $\Sigma$ would be safe under a policy that does not use observations.
+\end{exercise}
+
+\begin{exercise}
+Prove that the support is a coarsening of the belief, and describe the kernel of the support map in terms of which states carry positive probability. Show that the support is not a sufficient representation for expected reward.
+\end{exercise}
+
+\begin{exercise}
+For the machine of Section~\ref{sec:hidden-fault} compute the belief after $\mathrm{run}$, $\mathrm{inspect}$ with outcome $\mathrm{alarm}$, $\mathrm{run}$, and verify that the update is independent of the order of normalization.
+\end{exercise}
+
+\begin{exercise}
+In Example~\ref{ex:peek} add a fourth action that is a noisy peek whose observation is correct with probability $0.9$. Is $\{a,b\}$ still in $\mathcal W$? What does this say about safety with certainty and imperfect sensors?
+\end{exercise}
+
+\begin{exercise}
+Compute $\Gamma_1$ and $\Gamma_2$ for the machine, with reward $1$ for $\mathrm{run}$ in $G$, $0$ for $\mathrm{run}$ in $B$, and $0$ for $\mathrm{inspect}$, and plot $V_2$ as a function of $b(G)$ (a piecewise-linear convex function).
+\end{exercise}
+
+\begin{exercise}
+Prove that in the three-state example of Section~\ref{sec:hidden-fault} with no action-dependence the representation $(b_1,b_2+b_3)$ is maintainable, by computing its update under the observations $o_1,o_2$.
+\end{exercise}
+
+\begin{exercise}
+Show that Result~\ref{prop:down-closed} fails if $\mathcal W$ is replaced by the family of supports from which a policy achieves safety with probability at least $1/2$ (not almost surely), by giving an example of a union that is winning although a part is not.
+\end{exercise}
+

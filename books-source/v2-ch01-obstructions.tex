@@ -1,0 +1,130 @@
+% v2-ch01-obstructions.tex
+\chapter{Three Obstructions in a Controlled System}\label{ch:common}
+\spec{In how many distinct ways can a proposed continuation become unavailable, and how does a controlled system exhibit each?}
+{Factorization of a function through a quotient.}
+{Conservative gating removes admissible futures (Result~\ref{prop:gating}); each of the three obstructions occurs in a single running example (Section~\ref{sec:obstructions-rover}).}
+{None.}
+{Nothing.}
+
+Most analyses of a controlled system begin with a state space, a menu of actions, and a rule for how actions change the state. The menu is usually written down once. What the system can actually do at a given moment is a smaller set, and what it is entitled to do is smaller again. A fourth set, what a decision procedure can tell from the information it retains, is smaller or larger depending on what was kept. This chapter separates these four and introduces the model used throughout the volume.
+
+\section{States, actions, and feasible sets}\label{sec:systems}
+
+\begin{definition}[Controlled system]\label{def:controlled}
+A \emph{controlled system} consists of a set $\PhysSp$ of states, a set $U$ of actions, a \emph{feasibility correspondence} $F:\PhysSp\to2^{U}$ giving the actions that can be executed in each state, and a transition function $\delta:\{(x,u):u\in F(x)\}\to\PhysSp$. The \emph{nominal menu} is $U$. A \emph{trajectory} from $x_0$ is a sequence $x_0,u_0,x_1,u_1,\dots$ with $u_t\in F(x_t)$ and $x_{t+1}=\delta(x_t,u_t)$.
+\end{definition}
+
+The nominal menu $U$ is what a user interface or a specification lists. The correspondence $F$ is what the physical system allows. The distinction is the first thing to check when someone says that a system ``has'' an option.
+
+\begin{example}[A rover with a battery]\label{ex:rover}
+A rover moves among four positions $0,1,2,3$ on a line, with the dock at position $0$. The state is a pair $(p,b)$ of position and battery level $b\in\{0,1,2,3\}$. The nominal menu is $U=\{\mathrm{left},\mathrm{right},\mathrm{charge},\mathrm{sample},\mathrm{upload}\}$. A move changes $p$ by $\pm1$ and costs one unit of battery; it is feasible only if $b\ge1$ and the target position exists. The action $\mathrm{charge}$ is feasible only at $p=0$ and sets $b=3$. The actions $\mathrm{sample}$ and $\mathrm{upload}$ cost no battery and are feasible only at $p=2$ and $p=0$ respectively, and neither changes the position or the battery. The nominal menu has five elements at every state, while $F(0,3)=\{\mathrm{right},\mathrm{charge},\mathrm{upload}\}$, $F(1,0)=\varnothing$, and $F(2,1)=\{\mathrm{left},\mathrm{right},\mathrm{sample}\}$.
+\end{example}
+
+\begin{example}[An unstable scalar system]\label{ex:scalar}
+The state is a real number $x$ and the action is a real number $u$ with $|u|\le1$, so $F(x)=[-1,1]$ at every state. The transition is $x_{t+1}=2x_t+u_t$. The constraint is $|x_t|\le3$ at every time. The nominal menu is the interval $[-1,1]$ at every state, and the constraint is satisfied at $x=2.5$, but from $x=2.5$ every action leads to $|x_1|\ge4>3$. The state satisfies the constraint and has no feasible action that continues to satisfy it. Chapter~\ref{ch:viability} treats this system in full.
+\end{example}
+
+The second example previews a theme of the volume: that constraints satisfied now do not guarantee that the constraints can be satisfied later. The first example previews another: that the nominal menu and the executable set differ and that the difference depends on retained information.
+
+\input{common-model}
+
+\section{The obstructions in the rover}\label{sec:obstructions-rover}
+
+Take as events the actions of Example~\ref{ex:rover}, so histories are finite sequences of actions and $\phys(h)=(p,b)$ is the state reached. Then $\Reach(\phys(h))$ is determined by $F$.
+
+\paragraph{Physical obstruction.} Let $c=\{\mathrm{right}\,\mathrm{right}\}$ be the proposed continuation ``move two positions to the right''. After the history $h_1=\mathrm{right}\,\mathrm{right}\,\mathrm{left}$ from the state $(0,3)$ the rover is at $(1,0)$, and $\Real(h_1,c)=\varnothing$: neither move can be executed. The obstruction is $\ObsPhys$.
+
+\paragraph{Obligation obstruction.} Suppose a sample taken at position $2$ must be uploaded at the dock before another sample is taken. After the history $h_2=\mathrm{right}\,\mathrm{right}\,\mathrm{sample}$ from $(0,3)$ the rover is at $(2,1)$, and the continuation $c=\{\mathrm{sample}\}$ is physically executable there: $\Real(h_2,c)=c$. The obligation incurred by the sample forbids a second one, so $\Adm(h_2,c)=\varnothing$. The obstruction is $\ObsObl$.
+
+\paragraph{Representational obstruction.} Suppose the rover's controller retains only the pair $\rep(h)=(p,b)$ and no record of pending uploads. Let $h_3=\mathrm{right}\,\mathrm{right}$, which reaches $(2,1)$ without having sampled. Then $\rep(h_3)=\rep(h_2)$, the continuation $c=\{\mathrm{sample}\}$ is admissible after $h_3$ and obstructed after $h_2$, and Result~\ref{prop:gating} shows that every sound gate based on $\rep$ refuses $\mathrm{sample}$ after $h_3$, although neither $\ObsPhys$ nor $\ObsObl$ holds there. The obstruction at $h_3$ is $\ObsRep$, inherited from $\ObsObl$ at $h_2$ as in Example~\ref{ex:masking}. Adding one bit, whether an upload is pending, to $\rep$ removes the obstruction; Chapter~\ref{ch:history-state} shows that the added bit is exactly what is required.
+
+\section{Plan of the volume and conventions}
+
+Part~I treats finite graphs, constraint sets, and viability. Part~II adds stochastic transitions, partial observation, and consumable resources. Part~III treats feasibility that depends on history, irreversible changes, actions that create other actions, and the establishment of a domain of choice. Part~IV introduces measures of possibility and costs of access, and Part~V turns to the preservation of future admissibility under obligations. Part~VI develops adaptive control, interfaces, institutional revision, and proxies. Part~VII treats exploration, the cost of maintaining the distinctions that revision requires, architecture, and four case studies. Appendix~\ref{app:suff} recaps the sufficiency results used from the first volume.
+
+Each chapter begins with a boxed specification listing the question, the established sources, the new results, any proof obligations, and the chapters it depends on. Results are labelled established, new, or proof obligation, and no proof obligation is cited as a theorem. The recurring exercise sequence asks the reader to construct a model, prove what it preserves, produce a counterexample to a stronger claim, and analyze the effect of revising the constraint set.
+
+
+\section{A complete census of the rover}\label{sec:census}
+
+The rover of Example~\ref{ex:rover} is small enough that every set in this chapter can be listed. The nominal menu has $5$ actions at each of $16$ states, $80$ pairs in all. Counting the pairs $(x,u)$ with $u\in F(x)$ gives $30$, so $50$ of the $80$ nominal options are not executable where they are listed. The gap is not uniform. At the dock with a charged battery, $F(0,3)=\{\mathrm{right},\mathrm{charge},\mathrm{upload}\}$ has three of five. At $(1,0)$ and $(3,0)$ the feasible set is empty: the rover has a full menu in the specification and no action in the world. At $(2,0)$ only $\mathrm{sample}$ is feasible, and it changes nothing.
+
+The transition graph has $21$ edges that change the state and nine self-loops (the actions $\mathrm{upload}$ at the dock, $\mathrm{charge}$ at $(0,3)$, and $\mathrm{sample}$ at position $2$). Its strongly connected components, in the sense of Chapter~\ref{ch:reach}, are $14$ in number: one component of three states, $\{(0,1),(0,3),(1,2)\}$, in which the rover can shuttle between the dock and position $1$ while recharging, and thirteen singletons. Of the $21$ non-loop edges, $18$ are irreversible. Starting from $(0,3)$ the rover can reach six states: $(0,3),(1,2),(0,1),(2,1),(1,0),(3,0)$. Three of them, $(1,0)$, $(3,0)$ and the sample site $(2,1)$ with its single remaining unit of battery, are the places where the first-order description (``it can go anywhere on the line'') fails.
+
+Let the constraint be that the rover is never stranded, meaning $b\ge1$ or $p=0$. It holds at $13$ of the $16$ states. Four states leave the viable set: the three stranded states $(1,0),(2,0),(3,0)$ and the state $(3,1)$, which satisfies the constraint and has a feasible action but whose only action, $\mathrm{left}$, leads to $(2,0)$. The viability kernel of Chapter~\ref{ch:viability} has $12$ states. The state $(3,1)$ is the smallest instance of the volume's recurring warning: a constraint can hold at a state and cease to be maintainable from it. (The state $(2,1)$ remains in the kernel because $\mathrm{sample}$ is a self-loop that leaves the rover at $(2,1)$ with the constraint satisfied; a model in which every action consumes battery would remove it.)
+
+\section{Obligations enlarge the state, and gates read it back}\label{sec:rover-obl}
+
+Add to the rover the obligation of Section~\ref{sec:obstructions-rover}: a sample must be uploaded before another is taken. The obligation is carried by a bit $q\in\{0,1\}$ that records that a sample is pending, with $\mathrm{sample}$ feasible only when $q=0$ and setting $q=1$, and $\mathrm{upload}$ setting $q=0$. Starting from $(0,3,0)$, the reachable states of the enlarged system number nine:
+\[
+(0,3,0),\ (1,2,0),\ (0,1,0),\ (2,1,0),\ (2,1,1),\ (1,0,0),\ (1,0,1),\ (3,0,0),\ (3,0,1).
+\]
+Their projections to $(p,b)$ are six, and three of the six projections, $(2,1)$, $(1,0)$ and $(3,0)$, are reached with both values of $q$.
+
+\begin{newresult}[A representation without the bit permits no sample]\label{prop:rover-gate}
+For the rover started at $(0,3)$, let $\rep(h)=(p,b)$ and let $c=\{\mathrm{sample}\}$. Every sound gate for $c$ based on $\rep$ refuses $c$ at every history. The refinement $\rep'(h)=(p,b,q)$ permits $c$ at exactly the histories whose state is $(2,1,0)$, for example $\mathrm{right}\,\mathrm{right}$, and at no others.
+\end{newresult}
+\assumes{The rover of Example~\ref{ex:rover} with the pending-upload obligation; histories are the executable action sequences from $(0,3,0)$.}
+\begin{proof}
+The action $\mathrm{sample}$ is physically feasible only at position $2$. In the reachable set the only $(p,b)$ with $p=2$ is $(2,1)$, which is reached both with $q=0$ (via $\mathrm{right}\,\mathrm{right}$) and with $q=1$ (via $\mathrm{right}\,\mathrm{right}\,\mathrm{sample}$). A gate that reads $(p,b)=(2,1)$ cannot tell the two apart, and by Result~\ref{prop:gating} a sound gate refuses $c$ at the history with $q=0$ too; at every other reachable $(p,b)$ the action is infeasible, so the gate refuses there as well. With $(p,b,q)$ the representation separates the two histories, and permitting $c$ exactly when $(p,b,q)=(2,1,0)$ is sound and permits every history at which $c$ is admissible.
+\end{proof}
+
+The example is not contrived to be extreme. It records an ordinary pattern: the only history at which the action is both possible and allowed is indistinguishable, from the retained state alone, from a history at which it is not allowed, and the sound policy is to forbid it. The cost of the missing bit is not a fraction of the options, it is all of them.
+
+\begin{newresult}[Cost of removing the representational obstruction]\label{prop:min-refine}
+Let $\rep:\Hist\to\RepSp$ be a representation, $c$ a proposed continuation and $P(h)=\ind[\Adm(h,c)\neq\varnothing]$. Call a fibre $\rep^{-1}(s)$ \emph{mixed} if $P$ is not constant on it. Then the least number of values of a representation $\rep'$ that refines $\rep$ and is sufficient for $P$ is $|\rep(\Hist)|+m$, where $m$ is the number of mixed fibres. The refinement that splits each mixed fibre into its two $P$-classes attains it.
+\end{newresult}
+\assumes{$\Dec=\{0,1\}$; $\rep(\Hist)$ finite.}
+\begin{proof}
+A refinement $\rep'$ of $\rep$ has $\ker\rep'\subseteq\ker\rep$, so each fibre of $\rep$ is a union of fibres of $\rep'$. If $\rep'$ is sufficient for $P$ then $\ker\rep'\subseteq\ker P$, so a mixed fibre contains at least two fibres of $\rep'$ (one for each value of $P$), and every fibre contains at least one. This gives the lower bound $|\rep(\Hist)|+m$. The representation $\rep'(h)=(\rep(h),P(h))$ has exactly one value on each pure fibre and two on each mixed one, is sufficient for $P$ by construction, and refines $\rep$.
+\end{proof}
+
+For the rover and the continuation $c=\{\mathrm{sample}\}$ the representation $(p,b)$ takes $6$ values on the reachable histories, and only the fibre $(2,1)$ is mixed: at the other five values either $\mathrm{sample}$ is infeasible whatever the pending bit is ($p\ne2$) or the question never arises. So $m=1$ and the least sufficient refinement has $7$ values, one fewer than the nine reachable states of the enlarged system. The two surplus states are $(1,0,1)$ and $(3,0,1)$: at the stranded positions no action is feasible, so the pending bit can never matter there, and the enlarged system records a distinction that no continuation can use. The bit at $(2,1)$ is the whole of what is needed, and nothing more.
+
+\section{Four sets and how to compare them}\label{sec:four-sets}
+
+For a fixed history $h$ the chapter has distinguished four sets of continuations: the nominal set (everything the specification lists), the realizable set $\Real(h,c)$ (what the world permits), the admissible set $\Adm(h,c)$ (what the commitments permit), and the set that a given gate permits, which depends on $\rep(h)$ only. The first three are nested, nominal $\supseteq$ realizable $\supseteq$ admissible. The gate's set is nested inside the admissible set only if the gate is sound, and then it can be strictly smaller. A gate that is not required to be sound can permit continuations outside the admissible set; Result~\ref{prop:gating} says that soundness plus a coarse representation forces strict inclusion on the other side. Almost every question in the two volumes asks which of these inclusions are strict, by how much, and what it would cost to close the gap: Chapters~\ref{ch:reach} to~\ref{ch:viability} for the first, the cost chapters of Part~IV for the second, and the first volume for the third.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+In Example~\ref{ex:rover} list $F(p,b)$ for all sixteen states and count the pairs $(x,u)$ with $u$ nominal and $u\notin F(x)$. Describe which states have the largest gap between the nominal menu and the executable set.
+\end{exercise}
+
+\begin{exercise}
+Show that for Example~\ref{ex:scalar} the set of states at which the constraint is satisfied and some feasible action satisfies it at the next step is $[-2,2]$. Find the set of states from which the constraint can be maintained for two further steps.
+\end{exercise}
+
+\begin{exercise}
+Construct a proposed continuation in the rover example that is subject to $\ObsPhys$ at one history and to $\ObsObl$ at another, and a third history where it is subject to no obstruction.
+\end{exercise}
+
+\begin{exercise}
+Show that adding the pending-upload bit to $\rep(h)=(p,b)$ removes the representational obstruction of this chapter for the continuation $\{\mathrm{sample}\}$, and determine whether it is sufficient for the continuation $\{\mathrm{right}\,\mathrm{sample}\}$.
+\end{exercise}
+
+\begin{exercise}
+Show that the representational obstruction is a property of the class of histories sharing a representation: if $\ObsRep(h,c)$ holds and $\rep(h'')=\rep(h)$ then $\ObsRep(h'',c)$ holds.
+\end{exercise}
+
+\begin{exercise}
+Verify the census of Section~\ref{sec:census} by listing $F(p,b)$ for all sixteen states: confirm that there are $30$ feasible pairs, nine self-loops, $14$ components, and that the viability kernel of the constraint ``$b\ge1$ or $p=0$'' has $12$ states.
+\end{exercise}
+
+\begin{exercise}
+Modify the rover so that every action, including $\mathrm{sample}$ and $\mathrm{upload}$, costs one unit of battery away from the dock. Recompute the kernel of the never-stranded constraint and decide whether $(2,1)$ remains in it.
+\end{exercise}
+
+\begin{exercise}
+Show that Result~\ref{prop:min-refine} gives $|\rep(\Hist)|+m$ and not $2|\rep(\Hist)|$ by exhibiting a representation for which pure fibres are the majority. Why is the bound $2|\rep(\Hist)|$ attained only if every fibre is mixed?
+\end{exercise}
+
+\begin{exercise}
+In the enlarged rover, let the obligation instead be that every sample must be uploaded within three moves. Find a sufficient representation for the admissibility of $\{\mathrm{sample}\}$ and count its values on the reachable histories. Compare with the single bit used above.
+\end{exercise}
+
+\begin{exercise}
+Give an example of a gate that is complete (it permits every continuation that is admissible) and not sound, and one that is sound and not complete, for the rover without the pending bit. Which of the two do the stranded states $(1,0)$ and $(3,0)$ show to be unavoidable if $c$ is the continuation ``return to the dock''?
+\end{exercise}
+

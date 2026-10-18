@@ -1,0 +1,123 @@
+% ch11-provenance.tex
+\chapter{Provenance and Revision Lineage}\label{ch:provenance}
+\spec{What fixes the identity of a revised object?}
+{Content addressing and hash-linked records (Merkle); the happens-before relation and vector clocks (Lamport; Fidge; Mattern); provenance semirings (Green, Karvounarakis, and Tannen).}
+{Identity relative to a family of audit questions (Definition~\ref{def:lineage-identity}); minimal lineage records for last-author audits and their cost (Result~\ref{thm:last-author}); content identity does not determine lineage (Result~\ref{prop:content-not-lineage}).}
+{None.}
+{Chapters~\ref{ch:histories} and~\ref{ch:fixed}.}
+
+An object that has been revised carries a history. Whether two revised objects are the same object, and whether the history a system keeps is adequate, are questions about what the history has to answer. This chapter states the standard machinery for recording lineage, content-addressed chains, partial orders of events, and annotated query results, and then applies the kernel analysis of Part~I to ask how much of the lineage a given family of audit questions requires.
+
+\section{Standard machinery}
+
+\begin{established}[Hash-linked records determine the chain]\label{prop:hash-chain}
+Let $H$ be a function that is injective on the set of pairs $(p,u)$ of a payload and an identifier, with $\bot$ not in its range. Define for a sequence $c=(p_1,\dots,p_n)$ of payloads the identifiers $u_0=\bot$ and $u_i=H(p_i,u_{i-1})$. Then the head $u_n$ determines the whole sequence: if two sequences of the same or different length have the same head then they are equal.
+\end{established}
+\source{Merkle (1980) for hash trees; hash-linked records as used in version control and ledgers. The statement is the idealization in which collisions do not occur; for a collision-resistant function it holds except with negligible probability.}
+\begin{proof}
+Suppose $u_n=u'_m$. By injectivity $(p_n,u_{n-1})=(p'_m,u'_{m-1})$. Applying the argument to $u_{n-1}=u'_{m-1}$ and descending, the sequences agree entry by entry; the process stops at $\bot$ on both sides at once, because $\bot$ is not in the range of $H$, so $n=m$.
+\end{proof}
+
+In the terminology of Chapter~\ref{ch:fixed} the head is an injective representation of the chain. It is therefore sufficient for every question about the chain and, by Result~\ref{prop:no-free-compression}, it is the only kind of representation that is sufficient for all of them.
+
+\begin{established}[Happens-before and vector clocks]\label{prop:vector-clocks}
+In a message-passing system of $n$ processes, let $e\to e'$ denote Lamport's happens-before relation. Vector timestamps $V(e)\in\NN^{n}$, in which each process increments its own coordinate at each event and takes componentwise maxima on receipt of a message, satisfy $e\to e'$ if and only if $V(e)<V(e')$ in the componentwise order with $V(e)\ne V(e')$.
+\end{established}
+\source{Lamport, ``Time, clocks, and the ordering of events in a distributed system'' (1978); Fidge (1988); Mattern (1989).}
+
+\begin{established}[Provenance semirings]\label{prop:semirings}
+Positive relational algebra queries evaluated on relations whose tuples are annotated by elements of a commutative semiring $K$, with union and projection interpreted by addition and join by multiplication, give annotated results. The semiring $\NN[X]$ of polynomials over the tuple identifiers is universal: for every commutative semiring $K$ and valuation of the identifiers in $K$, evaluating in $\NN[X]$ and then applying the induced homomorphism equals evaluating directly in $K$.
+\end{established}
+\source{Green, Karvounarakis, and Tannen, ``Provenance semirings,'' PODS 2007.}
+
+The semiring result is a statement that a single detailed record (the polynomial) is sufficient for a whole family of coarser audit questions (set provenance, multiplicity, access levels), each obtained by a homomorphism. It is an instance of the principle of Chapter~\ref{ch:quotients} that coarser answers are functions of finer ones.
+
+\section{Identity relative to audit questions}
+
+\begin{definition}[Lineage and identity relative to a family of audit questions]\label{def:lineage-identity}
+A \emph{lineage} is a finite sequence of revision events from a set $\Events$, that is, a history in the sense of Chapter~\ref{ch:histories}. An \emph{audit question} is a function $q$ on lineages. For a family $\mathcal Q$ of audit questions, two lineages are \emph{indistinguishable by $\mathcal Q$} if $q(h)=q(h')$ for all $q\in\mathcal Q$. A \emph{record} is adequate for $\mathcal Q$ if it is sufficient in the sense of Definition~\ref{def:family}.
+\end{definition}
+
+By Result~\ref{thm:joint-sufficiency} the least adequate record is the quotient of the lineages by indistinguishability. Two lineages that are indistinguishable receive the same record, so the notion of when two revision histories describe the same object for the purposes of audit is determined entirely by the family. Chapter~\ref{ch:identity} takes up the use of this relation as an identity criterion.
+
+\section{A last-author audit}
+
+Consider a document with $K$ sections edited by a finite set $U$ of authors. The events are pairs $(u,i)$ with $u\in U$ and $i\in\{1,\dots,K\}$, read as author $u$ revises section $i$. Let $\lambda_i(h)\in U\cup\{\bot\}$ be the author of the last revision to section $i$ in the lineage $h$, and $\bot$ if the section has never been revised. Write $\Lambda(h)=(\lambda_1(h),\dots,\lambda_K(h))$.
+
+\begin{newresult}[Minimal records for last-author audits]\label{thm:last-author}
+Let $\mathcal Q=\{\lambda_1,\dots,\lambda_K\}$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\Lambda$ is a maintainable representation that is adequate for $\mathcal Q$, and $\ker\Lambda$ is the joint kernel of $\mathcal Q$.
+  \item Every representation adequate for $\mathcal Q$ takes at least $(|U|+1)^{K}$ values, and $\Lambda$ takes exactly this many.
+  \item Let $\mathcal Q^{+}=\mathcal Q\cup\{S_1,\dots,S_K\}$ where $S_i(h)\subseteq U$ is the set of authors who have revised section $i$ in $h$. Then the least adequate record for $\mathcal Q^{+}$ has $\bigl(1+|U|\,2^{|U|-1}\bigr)^{K}$ values.
+\end{enumerate}
+\end{newresult}
+\assumes{$U$ and $K$ are finite. Lineages are all finite sequences of events.}
+\begin{proof}
+(a) Appending $(u,i)$ replaces the $i$th coordinate of $\Lambda$ by $u$ and leaves the others unchanged, so the value of $\Lambda$ after an event depends only on its value before, and $\ker\Lambda$ is a right congruence. The joint kernel of $\mathcal Q$ is by definition the kernel of $\Lambda$. (b) Every vector in $(U\cup\{\bot\})^{K}$ occurs: for the target $(a_1,\dots,a_K)$ perform the event $(a_i,i)$ for each $i$ with $a_i\ne\bot$ in turn. Two different vectors differ in some coordinate $i$, where the corresponding $\lambda_i$ separates them. So the joint kernel has $(|U|+1)^{K}$ classes and, by Result~\ref{prop:least-adequate}, every adequate representation has at least that many values. (c) Fix a section $i$. The pair $(\lambda_i,S_i)$ takes the value $(\bot,\varnothing)$, or a value $(a,S)$ with $S$ nonempty and $a\in S$. Every such value occurs, by revising section $i$ successively by the members of $S$ with $a$ last. The number of pairs $(a,S)$ is $\sum_{S\ne\varnothing}|S|=|U|2^{|U|-1}$, so each section has $1+|U|2^{|U|-1}$ possible values. Words acting on different sections can be concatenated in any order without changing the pair values of other sections, so all combinations occur, and the joint kernel has the stated number of classes.
+\end{proof}
+
+The count in (c) makes the cost of enlarging an audit family concrete. For two authors and one section the record grows from three values to five, and with $K$ sections the multiplicative effect of Result~\ref{thm:independence} appears: every section pays the same factor.
+
+\begin{newresult}[Content identity does not determine lineage]\label{prop:content-not-lineage}
+Let $c$ be the function that maps a lineage to the current text of the document, and let $\mathcal Q$ be any family containing a question that depends on the author of a revision. If two authors can produce the same text by a revision, then $c$ is not adequate for $\mathcal Q$.
+\end{newresult}
+\assumes{There is a text $t$, two authors $a\ne b$, and a section $i$ such that the revisions $(a,i)$ and $(b,i)$ applied to some lineage produce the same text $t$. The question $\lambda_i\in\mathcal Q$ is the last-author question.}
+\begin{proof}
+Let $h_a$ and $h_b$ be the lineages obtained by applying the two revisions. They have the same text, so $c(h_a)=c(h_b)$, and $\lambda_i(h_a)=a\ne b=\lambda_i(h_b)$. Thus $\ker c\not\subseteq\ker\lambda_i$, and Result~\ref{thm:factorization} shows $c$ is not adequate.
+\end{proof}
+
+The result separates two things that are often both called identity. A content address identifies the text. Whether the text is the product of a given sequence of revisions is a different question, and whether a system can answer it depends on whether the lineage record is fine enough for the audit questions asked of it.
+
+
+\section{Recency lists and a hierarchy of audit records}\label{sec:recency}
+
+The last-author audit has a natural refinement that records not only who revised a section most recently but the order in which the authors last touched it. This is the information a reviewer needs to ask who edited the section before the last editor, and it gives a third level in a hierarchy of records of increasing cost.
+
+For a section $i$ and a lineage $h$, the \emph{recency list} $R_i(h)$ is the sequence of the distinct authors who have revised $i$, ordered by the time of their most recent revision, newest first. Appending $(u,i)$ moves $u$ to the front of $R_i$, inserting it if absent; the other lists are unchanged.
+
+\begin{newresult}[Recency lists]\label{prop:recency}
+Let $|U|=n$. The recency list is maintainable, determines $\lambda_i$ (its first element, or $\bot$ if empty) and $S_i$ (its set of entries), and takes exactly $\sum_{j=0}^{n}n!/(n-j)!$ values on one section, namely the number of sequences of distinct authors of length $0,1,\dots,n$. This equals the $1+n2^{\,n-1}$ values of the pair $(\lambda_i,S_i)$ if and only if $n\le2$; for $n=3$ it has $16$ values against $13$, for $n=4$ it has $65$ against $33$, and it is the least record adequate for the question family that asks for every pair of authors of $i$ which of them revised $i$ most recently.
+\end{newresult}
+\assumes{Lineages are all finite sequences of events $(u,i)$; $U$ finite.}
+\begin{proof}
+Maintainability is the move-to-front rule above, which defines the new list from the old list and the event. The first element and the set of entries are read off the list. Every sequence of distinct authors is realized by applying the events in the reverse of the list order, so all $\sum_j n!/(n-j)!$ sequences occur, and they are pairwise separated by the questions ``which of $u$ and $u'$ revised $i$ more recently'' together with membership. For the comparison, the pair $(\lambda_i,S_i)$ has $1+n2^{n-1}$ values by Result~\ref{thm:last-author}(c). The two counts agree at $n=1$ ($2$ and $2$) and $n=2$ ($5$ and $5$), and differ from $n=3$ onward because $S=\{a,b,c\}$ with last author $a$ leaves two possible orders of $b$ and $c$ in the list, which the pair does not separate. Minimality for the stated family holds because separating every ordered pair of authors determines the list.
+\end{proof}
+
+The hierarchy has three levels. The last-author record costs $(n+1)^{K}$ values, the last author with the set of contributors costs $(1+n2^{n-1})^{K}$, and the recency list costs $\bigl(\sum_j n!/(n-j)!\bigr)^{K}$, which for three authors and a ten-section document is $16^{10}\approx 1.1\times10^{12}$ against $13^{10}\approx1.4\times10^{11}$ and $4^{10}\approx10^{6}$. The factor of roughly $10^{6}$ between the cheapest and the most informative level, for a small team and a short document, is the price of the ability to answer questions about the second author from the end. Whether that ability is worth the price depends on whether such questions are ever asked, and the family of audit questions, not the document, is what settles it.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For the document of this chapter with $|U|=2$ and $K=2$, list the values of $\Lambda$ and count them. List the additional distinctions required to also answer the question ``has more than one author revised section $1$?'' and compute the number of values of the least adequate record.
+\end{exercise}
+
+\begin{exercise}
+Show that the representation $\Lambda$ remains adequate for the question ``which sections have been revised?'', and find a coarsening of $\Lambda$ that answers it with $2^{K}$ values. Prove that the coarsening is maintainable.
+\end{exercise}
+
+\begin{exercise}
+Hash-linked records are injective and therefore adequate for every audit family. Explain why this does not make them minimal, and compute the ratio between the number of lineages of length at most $n$ and the number of values of $\Lambda$ for $|U|=2$ and $K=2$ as $n$ grows.
+\end{exercise}
+
+\begin{exercise}
+Two replicas apply revisions concurrently. Using vector clocks, define the lineage as the set of events together with the happens-before order and state which last-author questions are well defined for concurrent revisions to the same section. Propose a representation that records the set of maximal concurrent revisions and compute its size in terms of $|U|$.
+\end{exercise}
+
+\begin{exercise}
+In the semiring of Result~\ref{prop:semirings}, give a homomorphism from $\NN[X]$ to the Boolean semiring and one to $(\NN,+,\times)$, and state the audit question that each answers. Show that the first is a coarsening of the second.
+\end{exercise}
+
+
+\begin{exercise}
+For $|U|=3$ list the $16$ recency lists of a single section and the map to the values of $(\lambda,S)$. Show that exactly three values of $(\lambda,S)$ have two preimages each and the rest have one, and deduce the counts $13$ and $16$.\end{exercise}
+
+\begin{exercise}
+Add the first-author question $\phi_i$ (who made the first revision of section $i$) to the family $\{\lambda_i\}$ and compute the number of values of the least adequate record for one section. Show that it is $|U|^{2}+1$, and that the record is maintainable. Explain why the same count does not hold for the family consisting of $\phi_i$ and $S_i$.
+\end{exercise}
+
+\begin{exercise}
+Show that the recency list of Result~\ref{prop:recency} is not adequate for the question ``how many times has the section been revised?''. Give the smallest family of additional distinctions that makes the record adequate for it, and show that the augmented record is infinite.
+\end{exercise}
+

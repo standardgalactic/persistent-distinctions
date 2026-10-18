@@ -1,0 +1,159 @@
+% v2-ch03-viability.tex
+\chapter{Constraints, Convexity, and Viability}\label{ch:viability}
+\spec{When does continued satisfaction of constraints remain possible?}
+{Convex sets, projections, tangent cones (Rockafellar); viability kernels and the Aubin viability theorem; the discrete-time viability kernel as a greatest fixed point.}
+{The viability kernel is the greatest fixed point of the one-step predecessor operator and the set of states with infinite constrained trajectories (Result~\ref{thm:kernel}); viable histories are the histories that end in the kernel (Result~\ref{prop:viable-kernel}); for linear systems with convex constraints the kernel is convex (Result~\ref{thm:convex-kernel}); the unstable scalar system has kernel $[-1,1]$ inside the constraint set $[-3,3]$ (Example~\ref{ex:scalar-kernel}).}
+{None.}
+{Chapter~\ref{ch:reach} and Appendix~\ref{app:suff}.}
+
+Chapter~\ref{ch:common} observed that a state can satisfy a constraint and have no way to keep satisfying it. This chapter defines the set of states from which continued satisfaction is possible, the viability kernel, shows how to compute it, and treats the case in which constraints and dynamics are convex, where the kernel inherits convexity. The continuous-time statement, the viability theorem of Aubin, is recorded with a worked example.
+
+\section{The viability kernel}
+
+Work with a set-valued dynamics $\Phi:\PhysSp\to2^{\PhysSp}$, where $\Phi(x)=\{\delta(x,u):u\in F(x)\}$ is the set of states reachable in one step, and a \emph{constraint set} $K\subseteq\PhysSp$. A \emph{$K$-trajectory} is an infinite sequence $x_0,x_1,\dots$ with $x_t\in K$ and $x_{t+1}\in\Phi(x_t)$ for all $t$. Let $\operatorname{Pre}(W)=\{x:\Phi(x)\cap W\ne\varnothing\}$.
+
+\begin{definition}[Viability domain and kernel]\label{def:viability}
+A set $D\subseteq K$ is a \emph{viability domain} if $D\subseteq\operatorname{Pre}(D)$: from every state of $D$ some one-step successor lies in $D$. The \emph{viability kernel} is $\Viab(K)=\bigcup\{D\subseteq K: D\text{ a viability domain}\}$.
+\end{definition}
+
+\begin{established}[The viability kernel]\label{thm:kernel}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\Viab(K)$ is a viability domain and is the greatest fixed point of the operator $W\mapsto K\cap\operatorname{Pre}(W)$.
+  \item $x\in\Viab(K)$ if and only if there is a $K$-trajectory starting at $x$.
+  \item If $\PhysSp$ is finite, define $V_0=K$ and $V_{n+1}=K\cap\operatorname{Pre}(V_n)$. Then $V_0\supseteq V_1\supseteq\cdots$ stabilizes after at most $|K|$ steps, at $\Viab(K)$.
+\end{enumerate}
+\end{established}
+\source{Aubin, \emph{Viability Theory} (1991); Saint-Pierre (1994) for the discrete algorithm.}
+\begin{proof}
+(a) The union of viability domains is a viability domain: if $x$ lies in a domain $D$ then some successor lies in $D$ and so in the union. Any fixed point $W=K\cap\operatorname{Pre}(W)$ satisfies $W\subseteq K$ and $W\subseteq\operatorname{Pre}(W)$, so is a viability domain contained in $\Viab(K)$; and $\Viab(K)=K\cap\operatorname{Pre}(\Viab(K))$ because $\Viab(K)\subseteq K\cap\operatorname{Pre}(\Viab(K))$ and the right side is a viability domain (call it $R$; it is contained in $K$, it contains $\Viab(K)$, and so by monotonicity of $\operatorname{Pre}$ we get $R\subseteq\operatorname{Pre}(\Viab(K))\subseteq\operatorname{Pre}(R)$), hence contained in $\Viab(K)$. So $\Viab(K)$ is the greatest fixed point.
+(b) If $x\in\Viab(K)$, choose successively $x_{t+1}\in\Phi(x_t)\cap\Viab(K)$, which is possible by (a); this is a $K$-trajectory. Conversely the set of all states appearing on $K$-trajectories is a viability domain.
+(c) By induction $V_{n+1}\subseteq V_n$, using monotonicity of $\operatorname{Pre}$. A decreasing sequence of subsets of a finite set stabilizes after at most $|K|$ strict decreases, at a fixed point $V$; $V$ is a viability domain, so $V\subseteq\Viab(K)$. Conversely $\Viab(K)\subseteq V_n$ for every $n$ by induction, since $\Viab(K)\subseteq K$ and $\Viab(K)\subseteq\operatorname{Pre}(\Viab(K))\subseteq\operatorname{Pre}(V_n)$.
+\end{proof}
+
+The iteration in (c) is the discrete-time algorithm: remove from $K$ the states with no successor in $K$, then those with no successor in what remains, and so on. For a finite system with $m$ transitions it runs in time $O(|K|\,m)$ naively and in time $O(m)$ with predecessor counters.
+
+\section{Viable histories and the kernel}
+
+Appendix~\ref{app:suff} defines the viable histories of a safety condition. The following result identifies them in a controlled system.
+
+\begin{newresult}[Viable histories are histories that end in the kernel]\label{prop:viable-kernel}
+Let histories be the finite sequences of actions executable from an initial state $x_0$, let $\mathcal S$ be the set of histories all of whose visited states lie in $K$, and let $x(h)$ be the state reached by $h$. Then $\Viable(\mathcal S)=\{h\in\mathcal S: x(h)\in\Viab(K)\}$.
+\end{newresult}
+\assumes{Finite action sets (finite branching).}
+\begin{proof}
+If $h\in\mathcal S$ and $x(h)\in\Viab(K)$ then by Result~\ref{thm:kernel}(b) there is a $K$-trajectory from $x(h)$, so $h$ has extensions in $\mathcal S$ of every length. Conversely if $h$ is viable then it has extensions in $\mathcal S$ of every length, and by finite branching and a compactness argument there is an infinite sequence of actions all of whose finite prefixes extend $h$ within $\mathcal S$; the states visited form a $K$-trajectory from $x(h)$, so $x(h)\in\Viab(K)$ by Result~\ref{thm:kernel}(b).
+\end{proof}
+
+This connects the two languages. In terms of histories, viability is a property of the prefix tree; in terms of states, it is membership in a set computed by a fixed point. The state $x(h)$ is a sufficient representation of $h$ for viability, and the indicator of $\Viab(K)$ composed with $x$ is the viability question. The indicator alone, however, is not maintainable: the next value is not determined by the current indicator and the action, since leaving the kernel depends on where in the kernel the state is. Appendix~\ref{app:suff} gives the representation that is: the continuation quotient of the viability property, whose number of classes is the least size of a maintainable representation sufficient for viability.
+
+\section{Convexity}
+
+\begin{established}[Convex linear systems have convex kernels]\label{thm:convex-kernel}
+Let $\PhysSp=\mathbb R^{d}$ and $\Phi(x)=\{Ax+Bu:u\in U\}$ with $A,B$ matrices, $U\subset\mathbb R^{k}$ convex and compact, and $K\subset\mathbb R^{d}$ convex and compact. Then each $V_n$ in the iteration $V_0=K$, $V_{n+1}=K\cap\operatorname{Pre}(V_n)$ is convex and compact, and $\Viab(K)=\bigcap_nV_n$ is convex and compact.
+\end{established}
+\source{Bertsekas and Rhodes (1971); Blanchini, ``Set invariance in control'' (1999).}
+\begin{proof}
+If $W$ is convex and compact then $\operatorname{Pre}(W)=\{x:\exists u\in U,\ Ax+Bu\in W\}$ is the projection onto the $x$ coordinates of $\{(x,u):u\in U,\ Ax+Bu\in W\}$, which is convex and compact, so $\operatorname{Pre}(W)$ is convex and compact. Intersections of convex compact sets are convex and compact, so every $V_n$ is. The $V_n$ decrease, so $\bigcap_nV_n$ is convex and compact. It contains $\Viab(K)$ by Result~\ref{thm:kernel}. To show the reverse inclusion, let $x\in\bigcap V_n$. For each $n$ choose $u_n\in U$ with $Ax+Bu_n\in V_n$. By compactness a subsequence of $(u_n)$ converges to some $u\in U$. For each fixed $m$, $Ax+Bu_n\in V_m$ for all $n\ge m$ and $V_m$ is closed, so $Ax+Bu\in V_m$. Hence $Ax+Bu\in\bigcap V_m$, which shows $\bigcap V_n\subseteq\operatorname{Pre}(\bigcap V_n)$. So $\bigcap V_n$ is a viability domain contained in $K$ and therefore in $\Viab(K)$.
+\end{proof}
+
+\begin{example}[The unstable scalar system]\label{ex:scalar-kernel}
+In Example~\ref{ex:scalar}, $\Phi(x)=[2x-1,2x+1]$ and $K=[-3,3]$. If $V_n=[-a_n,a_n]$ then $\operatorname{Pre}(V_n)=\{x:[2x-1,2x+1]\cap[-a_n,a_n]\ne\varnothing\}=[-(a_n+1)/2,(a_n+1)/2]$, so $a_{n+1}=\min\{3,(a_n+1)/2\}$ with $a_0=3$. This gives $a_1=2$, $a_2=1.5$, $a_3=1.25$, and $a_n\to1$, the fixed point of $a=(a+1)/2$. Hence $\Viab(K)=[-1,1]$. The constraint set $[-3,3]$ is three times as large as the set of states from which the constraint can be maintained, and every state in $(1,3]$ satisfies the constraint but eventually leaves $K$ whatever the controller does.
+\end{example}
+
+The example illustrates the usual direction of the error: the constraint set is read as the set of safe states, but only the kernel is. A controller designed to respect the constraint at each step, with no look-ahead, will drive the system out of the kernel and then out of $K$.
+
+\section{Continuous time}
+
+In continuous time the one-step operator is replaced by a tangency condition. Let $\dot x\in G(x)$ be a differential inclusion with $G$ set-valued, and let $T_K(x)$ be the tangent cone to a closed set $K$ at $x$.
+
+\begin{established}[Viability theorem]\label{thm:aubin}
+Let $K\subseteq\mathbb R^{d}$ be closed and let $G$ be upper semicontinuous with nonempty compact convex values and linear growth. Then for every $x\in K$ there is a solution of $\dot x\in G(x)$ starting at $x$ and remaining in $K$ for all time if and only if $G(x)\cap T_K(x)\ne\varnothing$ for every $x\in K$.
+\end{established}
+\source{Aubin, \emph{Viability Theory} (1991); the condition is due to Nagumo (1942) and Haddad (1981).}
+
+\begin{example}[Continuous-time version of the scalar system]
+Let $\dot x=x+u$ with $|u|\le1$, so $G(x)=[x-1,x+1]$, and $K=[-3,3]$. At $x=3$ the tangent cone is $(-\infty,0]$ and $G(3)=[2,4]$, so $G(3)\cap T_K(3)=\varnothing$ and $K$ is not viable. For $K'=[-1,1]$ the tangent cone at $1$ is $(-\infty,0]$ and $G(1)=[0,2]\ni0$, and at $-1$ the cone is $[0,\infty)$ and $G(-1)=[-2,0]\ni0$, while interior points have the full line as cone; so $K'$ satisfies the condition and is viable. The viability kernel of $K$ is $[-1,1]$, as in discrete time.
+\end{example}
+
+
+\section{Kernels and their algebra}\label{sec:kernel-algebra}
+
+The kernel is a function of the constraint set and of the dynamics, and the way it depends on each is regular enough to state.
+
+\begin{newresult}[Monotonicity and the intersection inequality]\label{prop:kernel-algebra}
+(a) If $K\subseteq K'$ then $\Viab(K)\subseteq\Viab(K')$. (b) If $\Phi(x)\subseteq\Phi'(x)$ for all $x$ then $\Viab_\Phi(K)\subseteq\Viab_{\Phi'}(K)$: more freedom enlarges the kernel. (c) $\Viab(K_1\cap K_2)\subseteq\Viab(K_1)\cap\Viab(K_2)$, and the inclusion can be strict. (d) $\Viab(K_1)\cup\Viab(K_2)\subseteq\Viab(K_1\cup K_2)$, and this can be strict as well.
+\end{newresult}
+\assumes{Set-valued dynamics $\Phi$ on an arbitrary state set.}
+\begin{proof}
+(a) A viability domain inside $K$ is a viability domain inside $K'$. (b) A domain for $\Phi$ is a domain for $\Phi'$ since its successors persist. (c) By (a) applied to $K_1\cap K_2\subseteq K_i$. For strictness take $X=\{x,y,z\}$ with $\Phi(x)=\{y,z\}$, $\Phi(y)=\{y\}$, $\Phi(z)=\{z\}$, and $K_1=\{x,y\}$, $K_2=\{x,z\}$. Then $\Viab(K_1)=K_1$ (the trajectory $x,y,y,\dots$), $\Viab(K_2)=K_2$ (the trajectory $x,z,z,\dots$), so $x$ lies in both kernels; but $K_1\cap K_2=\{x\}$ and $x$ has no successor in it, so $\Viab(K_1\cap K_2)=\varnothing$. (d) By (a) applied to $K_i\subseteq K_1\cup K_2$. Strictness: a state alternating between two constraint sets, $\Phi(a)=\{b\}$, $\Phi(b)=\{a\}$, $K_1=\{a\}$, $K_2=\{b\}$: each kernel is empty, the kernel of the union is $\{a,b\}$.
+\end{proof}
+
+Part (c) is the formal reason that satisfying two requirements at once is harder than satisfying each separately, and part (d) is the reason that alternating among constraint sets, as a schedule does, can be viable when no single constraint is.
+
+\section{The stopping-distance kernel}\label{sec:stopping}
+
+The unstable scalar system has a kernel that is a rescaling of the constraint. A two-dimensional example shows a kernel whose boundary is curved, and it is the standard picture of why constraints on position imply constraints on speed.
+
+Let the state be $(x,v)$ with position $x\in\{0,\dots,N\}$ and velocity $v\in\{-V,\dots,V\}$, the dynamics $x_{t+1}=x_t+v_t$, $v_{t+1}=v_t+u_t$ with $u_t\in\{-1,0,1\}$ subject to $|v_{t+1}|\le V$, and the constraint $0\le x_t\le N$ at every time.
+
+\begin{newresult}[Viability kernel of the speed-limited line]\label{prop:stopping}
+The viability kernel is
+\[
+\Viab(K)=\Bigl\{(x,v):\ v\ge0,\ x+\tfrac{v(v+1)}2\le N\Bigr\}\ \cup\ \Bigl\{(x,v):\ v\le0,\ x-\tfrac{|v|(|v|+1)}2\ge0\Bigr\},
+\]
+intersected with $0\le x\le N$. In words, the state is viable iff the vehicle can brake to rest within the interval, the least stopping displacement from speed $|v|$ being $|v|(|v|+1)/2$.
+\end{newresult}
+\assumes{Integer positions and velocities; the velocity bound $V$ does not restrict braking.}
+\begin{proof}
+\emph{Sufficiency.} Let $v\ge0$ and $x+v(v+1)/2\le N$. Brake with $u=-1$ until $v=0$: the positions visited are $x,\ x+v,\ x+v+(v-1),\dots,\ x+v(v+1)/2$, each at most $N$ and at least $x\ge0$. At rest, take $u=0$ forever. The case $v\le0$ is symmetric. \emph{Necessity.} Suppose $v\ge1$ and the trajectory stays in $[0,N]$ forever. A trajectory with unbounded rightward drift leaves, so the velocity must become $\le 0$ at some first time $j$. For $0\le k<j$ we have $v_k\ge v-k$ since the velocity falls by at most one per step, and $v_k>0$ for $k<j$, so $j\ge v$ and the position at time $v$ is $x_v=x+\sum_{k<v}v_k\ge x+\sum_{k<v}(v-k)=x+v(v+1)/2$. This must be at most $N$. The case $v\le-1$ is symmetric and $v=0$ is covered by both.
+\end{proof}
+
+A script that runs the iteration of Result~\ref{thm:kernel}(c) on $N=10$, $V=6$ confirms this: the sizes of $V_0,V_1,\dots$ are $143,101,71,61,59,59$, so the kernel has $59$ of the $143$ states and the iteration stabilizes after four steps. The states removed first are those one step from leaving, and the removal propagates backward along the braking curve. The boundary $x=N-v(v+1)/2$ is the discrete form of the continuous-time stopping curve $x=N-v^2/2$; the difference is the linear term, which accounts for the velocity applied before the first braking step.
+
+\section{Reading the kernel as a design tool}\label{sec:design-kernel}
+
+A kernel is useful to a designer in three ways, each used again in later chapters. First, it is a \emph{certificate}: membership in a viability domain is checked by a one-step condition, and a domain inside $K$ proves viability without iteration. Second, it is a \emph{filter} on actions: at $x\in\Viab(K)$ an action is \emph{safe} if it has a successor in $\Viab(K)$, and the set of safe actions is nonempty; a controller that chooses safe actions never leaves $K$ (this is Result~\ref{thm:kernel}(b) read as a recipe). Third, it is a \emph{measure of the slack} in the specification: the ratio of the size of the kernel to that of the constraint set (here $59/143\approx0.41$ for the speed-limited line, $1/3$ for the unstable scalar system) says how much of what the specification calls acceptable is acceptable in fact. The constructions of Chapters~\ref{ch:vobl} to~\ref{ch:fallback} are refinements of these three uses.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute $\Viab(K)$ for the rover of Example~\ref{ex:rover} with $K=\{(p,b):b\ge1\}$, with and without the charge action.
+\end{exercise}
+
+\begin{exercise}
+For $\Phi(x)=[2x-1,2x+1]$ show that $[-1,1]$ is a viability domain and that $(1,3]$ contains no viability domain contained in $K=[-3,3]$.
+\end{exercise}
+
+\begin{exercise}
+Give an example with $K$ convex and $\Phi$ with nonconvex values (for instance a control set of two points) for which $\Viab(K)$ is not convex.
+\end{exercise}
+
+\begin{exercise}
+Prove that for a finite system the predecessor-counter algorithm computes $\Viab(K)$ in time linear in the number of transitions: maintain for each state in $K$ the number of successors still in the candidate set, and remove states whose count reaches zero.
+\end{exercise}
+
+\begin{exercise}
+For the discrete system $x_{t+1}=x_t+u_t$ with $u_t\in\{-1,0,1\}$ and $K=\{0,1,2\}$, compute the iteration $V_n$ and $\Viab(K)$. Then change the dynamics to $x_{t+1}=2x_t+u_t$ on the integers and recompute.
+\end{exercise}
+
+\begin{exercise}
+In the example for Result~\ref{prop:kernel-algebra}(c), change $\Phi(x)$ to $\{y\}$ and recompute the three kernels. Which part of the inequality becomes an equality, and what does this say about the role of the choice at $x$?
+\end{exercise}
+
+\begin{exercise}
+Compute the kernel of the speed-limited line for $N=4$, $V=3$ directly from the iteration and check Result~\ref{prop:stopping}. How many states does the kernel have?
+\end{exercise}
+
+\begin{exercise}
+Replace the control set $\{-1,0,1\}$ by $\{-2,-1,0,1,2\}$ in the speed-limited line. Find the new stopping displacement from speed $v$ and state the kernel.
+\end{exercise}
+
+\begin{exercise}
+Let the line be circular (positions modulo $N+1$). Without a constraint on position what is the kernel of the constraint $|v|\le V$, and what is the kernel if a forbidden zone $\{x=3\}$ is added?
+\end{exercise}
+
+\begin{exercise}
+Show that a state $x\in K\setminus\Viab(K)$ is removed at stage $n$ of the iteration iff the shortest forced exit has length $n$, and relate $n$ to the number of braking steps in Result~\ref{prop:stopping}.
+\end{exercise}
+

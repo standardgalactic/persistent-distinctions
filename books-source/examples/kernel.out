@@ -1,0 +1,3 @@
+states: 77, kernel: 28
+kernel equals {b >= x}: True
+positions reachable inside the kernel from (0,6): [0, 1, 2, 3]

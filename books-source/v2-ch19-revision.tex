@@ -1,0 +1,135 @@
+% v2-ch19-revision.tex
+\chapter{Institutional Revision as Augmented Control}\label{ch:revision}
+\spec{How is permissible revision of rules distinguished from revision that is technically available to a powerful actor?}
+{Control systems with parameters; robust viability (Chapter~\ref{ch:robust}); return cost (Chapter~\ref{ch:irreversibility}).}
+{An augmented system whose state includes the governing rule; its kernel is the greatest family of per-rule sections each of which is a viability domain relative to the intersection of the sections of the rule's amendments (Result~\ref{thm:rule-kernel}); a constraint is preserved against every amender with fewer amendments than the amendment depth, and the depth is a shortest path in the revision graph (Result~\ref{thm:depth}); with unrestricted revision the depth is one (Result~\ref{cor:total}); amending the amendment procedure is a path in the same graph (Example~\ref{ex:entrench}).}
+{None.}
+{Chapters~\ref{ch:viability}, \ref{ch:robust}, and~\ref{ch:endogenous}.}
+
+Rules govern what actors may do, and rules can be changed. Whether a constraint that the rules protect will survive depends on who can change the rules, and how. A powerful actor that can rewrite any rule at any time makes every protection provisional; a procedure that permits only certain amendments, each costing something, makes some protections durable. The difference between revision that is permitted and revision that is merely possible is the difference between two revision relations on the set of rules, and the consequences of the difference can be stated and computed once the rule is made part of the state.
+
+\section{The augmented system}
+
+\begin{definition}[Rule system]\label{def:rule-system}
+A \emph{rule system} consists of a finite state set $X$, a finite action set $U$, a transition $\delta:X\times U\to X$, a finite set $\mathcal R$ of rules, and for each rule $r$ a feasibility set $F_r(x)\subseteq U$ for every state $x$ and a set $\mathrm{Rev}(r)\subseteq\mathcal R$ of rules to which $r$ may be amended in one step, with $r\in\mathrm{Rev}(r)$. A \emph{constitutional constraint} is a set $C\subseteq X$. The \emph{augmented system} has states $(x,r)$. In each step the controller chooses $u\in F_r(x)$, the \emph{amender} chooses $r'\in\mathrm{Rev}(r)$, and the next state is $(\delta(x,u),r')$.
+\end{definition}
+
+The rule $r$ governs which actions are feasible; it also carries its own revision set. Hence the procedure of revision is part of the rule, and amending the procedure is a step in the revision graph, a case treated below.
+
+A set $S\subseteq X$ is \emph{admitted} by a rule $r$ if every $x\in S$ has a feasible action $u\in F_r(x)$ with $\delta(x,u)\in S$ (that is, $S$ is a viability domain for the system governed by $r$ alone). The \emph{revision graph} has vertex set $\mathcal R$ and an edge $r\to r'$ for $r'\in\mathrm{Rev}(r)$, $r'\ne r$. Let $\mathrm{Rev}^{\le k}(r)$ be the rules reachable from $r$ by at most $k$ amendments and $\mathrm{Rev}^{*}(r)$ those reachable by any number.
+
+\begin{newresult}[The kernel of the augmented system]\label{thm:rule-kernel}
+A state $(x,r)$ is \emph{robustly viable} if the controller has a strategy that keeps $x_t\in C$ for all $t$ against every amender. The set of robustly viable states is $\mathcal V=\{(x,r):x\in Z_r\}$ where $(Z_r)_{r\in\mathcal R}$ is the greatest family of subsets of $C$ such that
+\[
+\forall r\ \forall x\in Z_r\ \exists u\in F_r(x):\ \delta(x,u)\in\bigcap_{r'\in\mathrm{Rev}(r)}Z_{r'}.
+\]
+If $\mathrm{Rev}\subseteq\mathrm{Rev}'$ (pointwise) then every section for $\mathrm{Rev}'$ is contained in the corresponding section for $\mathrm{Rev}$: permitting more revisions can only shrink what is protected.
+\end{newresult}
+\assumes{Finite $X$ and $\mathcal R$; the amender chooses after seeing the controller's action.}
+\begin{proof}
+The augmented system is a system of the form of Chapter~\ref{ch:robust} with state $(x,r)$, control $u\in F_r(x)$, disturbance $r'\in\mathrm{Rev}(r)$, and constraint $C\times\mathcal R$. By Result~\ref{thm:robust-kernel} the robustly viable set is the greatest set $\mathcal Z\subseteq C\times\mathcal R$ such that every $(x,r)\in\mathcal Z$ has $u\in F_r(x)$ with $(\delta(x,u),r')\in\mathcal Z$ for all $r'\in\mathrm{Rev}(r)$. Writing $\mathcal Z$ by its sections $Z_r$ gives the displayed condition. Monotonicity is Result~\ref{prop:robust-monotone}.
+\end{proof}
+
+The displayed condition is the content of the theorem. The section for a rule $r$ is not a viability domain for $r$ alone but for $r$ relative to the intersection of the sections of its amendments: a state is safe under $r$ only if the controller can move to a state that is safe under every rule to which $r$ can be amended. Protection flows backward along the revision graph.
+
+\section{The amendment depth}
+
+\begin{newresult}[Protection against bounded amendment]\label{thm:depth}
+Let $S\subseteq C$ and $r_0\in\mathcal R$. Define the \emph{amendment depth}
+\[
+\mathrm{dep}_S(r_0)=\min\{k:\mathrm{Rev}^{\le k}(r_0)\text{ contains a rule that does not admit }S\}\in\mathbb N\cup\{\infty\},
+\]
+which is the length of a shortest path in the revision graph from $r_0$ to the set of rules not admitting $S$, and is computed by breadth-first search in time linear in the size of the graph after checking the admission of $S$ for each rule. Then for every $x_0\in S$ there is a controller strategy that keeps $x_t\in S$ for all $t$ against every amender who makes fewer than $\mathrm{dep}_S(r_0)$ amendments, where an amendment is a step with $r_{t+1}\ne r_t$. If amendments carry costs $w(r,r')\ge0$, the same holds against every amender whose total cost is less than the weighted distance from $r_0$ to the rules not admitting $S$.
+\end{newresult}
+\assumes{Finite system; the amender may amend only along the revision graph.}
+\begin{proof}
+Write $a_t$ for the number of amendments made before time $t$. We claim $x_t\in S$ and $r_t\in\mathrm{Rev}^{\le a_t}(r_0)$ for all $t$, and that $r_t$ admits $S$. Initially $a_0=0$ and $r_0\in\mathrm{Rev}^{\le0}(r_0)$ admits $S$ since $\mathrm{dep}_S(r_0)\ge1$. Inductively, as $a_t<\mathrm{dep}_S(r_0)$ the rule $r_t\in\mathrm{Rev}^{\le a_t}(r_0)$ admits $S$, so the controller chooses $u_t\in F_{r_t}(x_t)$ with $\delta(x_t,u_t)\in S$. The next rule $r_{t+1}$ equals $r_t$ or is an amendment of $r_t$, lying in $\mathrm{Rev}^{\le a_t+1}(r_0)$ when an amendment is made; in both cases $a_{t+1}\le\mathrm{dep}_S(r_0)-1$ keeps $r_{t+1}$ inside the set of rules that admit $S$, by the definition of depth. For weighted costs replace the number of amendments by the accumulated cost and $\mathrm{Rev}^{\le k}$ by the set of rules within weighted distance less than the budget; the same induction applies, with the weighted distance computed by Dijkstra's algorithm as in Chapter~\ref{ch:irreversibility}.
+\end{proof}
+
+The depth is the number of amendments that an actor must be able to make before the protection of $S$ may fail. It is a property of the rule system and not of the actor, and it turns the contrast of the outline into a number: a revision relation is more entrenching than another, with respect to a constraint, if the depth of the former is larger.
+
+\begin{newresult}[Unrestricted revision gives depth one]\label{cor:total}
+If $\mathrm{Rev}(r)=\mathcal R$ for every $r$ (every rule can be amended into every rule at once), then $\mathrm{dep}_S(r_0)=1$ unless every rule admits $S$, in which case $\mathrm{dep}_S(r_0)=\infty$. Moreover, if some rule $r_{\bot}$ is such that $F_{r_\bot}(x)\cap\{u:\delta(x,u)\in S\}=\varnothing$ for some $x\in S$, a single amendment to $r_\bot$ at a time when the state is $x$ forces the state out of $S$, so that $S$ is not preserved against an amender with the power of one amendment who can choose the time.
+\end{newresult}
+\assumes{As stated.}
+\begin{proof}
+With total revision every rule is within one amendment of $r_0$, so the first claim is the definition. For the second, if the state is $x\in S$ and the amender changes the rule to $r_\bot$ at time $t$, then at time $t+1$ every feasible action leaves $S$.
+\end{proof}
+
+The corollary is the sense in which revision that is merely technically available makes every protection provisional: when anything may become anything, only a constraint that every conceivable rule respects is safe, which is no protection at all against rules designed to violate it.
+
+\section{Entrenchment}
+
+\begin{example}[Layers of entrenchment]\label{ex:entrench}
+Let $X=\{s_1,s_2,b\}$, $C=\{s_1,s_2\}$, $U=\{\texttt{stay},\texttt{swap},\texttt{force}\}$ with $\delta$: \texttt{stay} fixes every state, \texttt{swap} exchanges $s_1,s_2$ and fixes $b$, and \texttt{force} sends $s_1,s_2$ to $b$. Let $\mathcal R=\{r_0,r_1,r_2\}$ with $F_{r_0}=F_{r_1}=\{\texttt{stay},\texttt{swap}\}$ and $F_{r_2}=\{\texttt{force}\}$. The rules $r_0,r_1$ admit $C$, and $r_2$ does not.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item Revision graph $r_0\to r_1\to r_2$. The depth is $2$. Against one amendment $C$ is preserved. Against two, the amender changes $r_0$ to $r_1$ and then to $r_2$; from $s_1$ the controller can only \texttt{stay} or \texttt{swap} while the rules are $r_0,r_1$, and under $r_2$ the action \texttt{force} sends the state to $b\notin C$.
+  \item Entrenching $r_1$: let $\mathrm{Rev}(r_1)=\{r_1\}$. Now $\mathrm{Rev}^{*}(r_0)=\{r_0,r_1\}$, every rule in it admits $C$, and $C$ is preserved against any number of amendments (Result~\ref{thm:depth}, depth $\infty$).
+  \item Entrenching the amendment procedure: introduce a rule $r_1'$ with the same feasibility as $r_1$ and $\mathrm{Rev}(r_1')=\{r_1',r_2\}$, and let $\mathrm{Rev}(r_1)=\{r_1,r_1'\}$. The depth of $C$ at $r_0$ is $3$: the amender must first amend the amendment procedure of $r_1$ (to $r_1'$) before the amendment to $r_2$ becomes possible.
+\end{enumerate}
+\end{example}
+
+Part (c) is the point of the clause of the outline concerning constraints on revising the revision constraints: no new machinery is needed. A rule carries its revision set, and amending the revision set is an edge of the revision graph, so every layer of entrenchment appears as an extra edge on the shortest path to the unsafe rules. The depth thus counts the layers.
+
+\begin{newresult}[Depth can be made arbitrary]\label{prop:arbitrary-depth}
+For every $k\ge1$ there is a rule system with $\mathrm{dep}_C(r_0)=k$. Conversely the depth is at most the number of rules.
+\end{newresult}
+\assumes{Constructed.}
+\begin{proof}
+Take rules $r_0,\dots,r_k$ with $\mathrm{Rev}(r_i)=\{r_i,r_{i+1}\}$ for $i<k$, $\mathrm{Rev}(r_k)=\{r_k\}$, the feasibility of Example~\ref{ex:entrench} for $r_0,\dots,r_{k-1}$ and $F_{r_k}=\{\texttt{force}\}$. The shortest path from $r_0$ to the non-admitting rule $r_k$ has length $k$. A shortest path in a graph with $|\mathcal R|$ vertices has fewer than $|\mathcal R|$ edges.
+\end{proof}
+
+
+\section{Capture of a quorum}\label{sec:quorum}
+
+Many amendment procedures require the consent of a number of independent parties, so the rule that governs at a given time depends on which parties have been captured. Take $n$ parties and let the rules be $r_S$ for $S\subseteq\{1,\dots,n\}$, the set of captured parties, with $r_S$ admitting the protected set $C$ if and only if $|S|<q$ (the \emph{quorum} $q$ is the number of captured parties that is enough to rewrite the protection). The revision set is $\mathrm{Rev}(r_S)=\{r_S\}\cup\{r_{S\cup\{i\}}:i\notin S\}$, and capturing party $i$ costs $c_i>0$.
+
+\begin{newresult}[Depth of a quorum rule]\label{prop:quorum}
+For the quorum system above, $\mathrm{dep}_C(r_\varnothing)=q$ in steps, and the weighted depth is the sum of the $q$ smallest capture costs. The protection of $C$ holds against every amender with total capture cost below $c_{(1)}+\dots+c_{(q)}$, where $c_{(1)}\le c_{(2)}\le\cdots$ are the costs in increasing order, and there are $\binom{n}{q}$ capture sets of size $q$, each of which reaches a nonadmitting rule when its parties are captured in any order.
+\end{newresult}
+\assumes{Capture costs additive and incurred once per party.}
+\begin{proof}
+A path from $r_\varnothing$ to a nonadmitting rule ends at some $r_S$ with $|S|\ge q$ and adds one party at each edge, so it has at least $q$ edges, and $q$ edges suffice. Its cost is $\sum_{i\in S}c_i$ at least the sum of the $q$ smallest costs, and capturing exactly the $q$ cheapest parties attains the minimum. The statement on protection is Result~\ref{thm:depth} with weights. The sets of size $q$ number $\binom{n}{q}$.
+\end{proof}
+
+The numbers show what the depth measures. With $n=5$ parties, $q=3$ and costs $(1,2,4,8,16)$, a Dijkstra computation over the $32$ nodes of the revision graph gives a weighted depth of $7$ (the three cheapest parties), whereas the average cost of a party is $6.2$ and the naive estimate $3\times6.2=18.6$ more than doubles the true figure. With equal costs of $1$ the depth is $3$ and with equal costs of $3$ it is $9$. The protection is as strong as the cheapest quorum, not the typical one: a procedure whose parties are expensive on average and cheap in a few cases is as weak as those few cases. Strengthening it means raising the cost of the cheapest $q$ parties, for example by making them independent of one another, and not raising the quorum alone; a quorum of three among parties of cost $(1,1,1,100,100)$ has depth $3$, the same as one with all costs $1$.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute the sections $Z_r$ of Result~\ref{thm:rule-kernel} for Example~\ref{ex:entrench}(a), and verify that $Z_{r_1}$ is a proper subset of $C$ or equal to it, as the case may be.
+\end{exercise}
+
+\begin{exercise}
+In Example~\ref{ex:entrench}(a) give amendment costs $w(r_0,r_1)=1$ and $w(r_1,r_2)=3$ and compute the weighted depth. What budget lets an amender capture the constraint?
+\end{exercise}
+
+\begin{exercise}
+Show that the amendment depth is not monotone along the revision graph, and give a system with $\mathrm{dep}_S(r_0)<\mathrm{dep}_S(r_1)$ for $r_1\in\mathrm{Rev}(r_0)$.
+\end{exercise}
+
+\begin{exercise}
+Allow the amender to act only when the state lies in a set $Q\subseteq X$ (a procedural condition on when amendments may be proposed), and modify Result~\ref{thm:rule-kernel}. Show that the protection can improve even when the revision graph is unchanged.
+\end{exercise}
+
+\begin{exercise}
+Connect Result~\ref{thm:depth} to the return cost of Chapter~\ref{ch:irreversibility}: show that if every amendment is irreversible, the maximum number of amendments any amender can make is at most the number of components of the condensation of the revision graph minus one.
+\end{exercise}
+
+\begin{exercise}
+Compute the weighted depth for $n=6$, $q=4$ and costs $(1,1,2,3,5,8)$, and list the capture sets that attain it.
+\end{exercise}
+
+\begin{exercise}
+Suppose a single veto player, party $1$, must consent to every amendment, so that nonadmitting rules are the $r_S$ with $1\in S$ and $|S|\ge q$. Find the weighted depth and show that it exceeds the quorum depth of Result~\ref{prop:quorum} exactly when $c_1$ is not among the $q$ smallest.
+\end{exercise}
+
+\begin{exercise}
+Let capturing a party also reveals it, so that the second capture of a pair of related parties costs only $c_i/2$. Explain why the revision graph is no longer a shortest-path problem over subsets with additive weights, and what is needed to restore the algorithm.
+\end{exercise}
+
+\begin{exercise}
+Compute the sections $Z_{r_0},Z_{r_1},Z_{r_2}$ of Result~\ref{thm:rule-kernel} for part~(a) of Example~\ref{ex:entrench} and show that all three are empty, although $C$ is preserved against a single amendment. Then compute them for part~(b) and show that $Z_{r_0}=Z_{r_1}=\{s_1,s_2\}$ and $Z_{r_2}=\varnothing$. Explain why the unbounded amender of the theorem is stronger than the bounded amender of the depth results.
+\end{exercise}
+

@@ -1,54 +1,91 @@
+# Python bytecode and extensions
 __pycache__/
 *.py[cod]
 *.so
 *.egg-info/
+*.egg
 
+# Environments
 .venv/
 venv/
 env/
+.env
+.env.local
+.env.*
+!.env.example
 
+# Notebooks
 .ipynb_checkpoints/
 
+# OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
+# Windows download markers (e.g. "Room for Another Way.mp3:Zone.Identifier")
+*:Zone.Identifier
+*.Zone.Identifier
+
+# Logs and scratch files
 *.log
 *.tmp
+*.bak
 *.swp
+*.swo
 *~
-
 results/*.tmp
 
-# Build artifacts
+# Build and packaging artifacts
 build/
 dist/
-*.egg
+.eggs/
+pip-wheel-metadata/
 
-# Test coverage
+# Tests and coverage
 .pytest_cache/
+.tox/
+.hypothesis/
 .coverage
+.coverage.*
 htmlcov/
+coverage.xml
+
+# Type checkers and linters
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# Docs
+docs/_build/
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
 .project
 .pydevproject
 .settings/
 *.sublime-project
 *.sublime-workspace
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Sphinx
-docs/_build/
-
-# Environment files
-.env
-.env.local
+# LaTeX build files for the books (the PDFs themselves stay tracked)
+*.aux
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.nav
+*.snm
+*.vrb
+*.idx
+*.ilg
+*.ind
+# hyperref writes .out files, but the example scripts store theirs on purpose
+*.out
+!books-source/examples/*.out

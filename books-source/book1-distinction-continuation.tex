@@ -1,0 +1,97 @@
+\documentclass[11pt,twoside]{book}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{flyxion-books}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single,numbers=none,columns=fullflexible,keepspaces=true}
+
+\title{Distinction and Continuation\\[0.4em]\large Admissibility, Memory, and the Structure of Change}
+\author{Flyxion\\Independent Researcher}
+\date{Working skeleton, October 2026}
+
+\begin{document}
+\frontmatter
+\maketitle
+\tableofcontents
+
+\input{division-of-labour}
+
+\chapter*{Preface}
+\addcontentsline{toc}{chapter}{Preface}
+This volume asks what a system must distinguish and retain for its subsequent operations to remain well defined and admissible. It proceeds from equivalence relations and quotient constructions, through automata and sufficient representations, to obligations, degradation, and distributed continuation. Established results are attributed to their mathematical sources. Results arising from the frameworks developed here are labelled as new and proved under stated assumptions, and statements whose proofs are not yet secured are labelled as proof obligations and are not cited as theorems. A recurring exercise sequence asks the reader to construct a representation, prove what it preserves, produce a counterexample to a stronger claim, and analyze what happens when the family of policies is revised.
+
+\mainmatter
+
+% =====================================================================
+\part{Mathematical foundations of distinction}
+
+\input{ch01-histories}
+
+\input{ch02-quotients}
+
+\input{ch03-adequacy}
+
+\input{ch04-histories}
+
+% =====================================================================
+\part{Sufficient representations}
+
+\input{ch05-fixed-policy}
+
+\input{ch06-families}
+
+\input{ch07-incremental}
+
+\input{ch08-products}
+
+\part{Memory, compression, and verification}
+
+\input{ch09-approx}
+
+\input{ch10-verification}
+
+\input{ch11-provenance}
+
+\input{ch12-retrieval}
+
+% =====================================================================
+\part{Admissibility and obligations}
+
+\input{ch13-admissible}
+
+\input{ch14-obligations}
+
+\input{ch15-identity}
+
+\input{ch16-disposition}
+
+% =====================================================================
+\part{Degradation and distributed systems}
+
+\input{ch17-degradation}
+
+\input{ch18-compensation}
+
+\input{ch19-distributed}
+
+\input{ch20-interfaces}
+
+% =====================================================================
+\part{Revision and synthesis}
+
+\input{ch21-revision}
+
+\input{ch22-cost}
+
+\input{ch23-worked}
+
+\input{ch24-open}
+
+\appendix
+\input{appA-proof-techniques}
+\input{appB-category}
+\input{appC-automata}
+\input{appD-information}
+\input{appE-examples}
+\input{appF-recap}
+
+\end{document}

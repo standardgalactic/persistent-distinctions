@@ -1,0 +1,129 @@
+% ch18-compensation.tex
+\chapter{Compensation and Recovery}\label{ch:compensation}
+\spec{When does compensation restore the relevant obligations, and when does it only create a different acceptable continuation?}
+{Sagas (Garcia-Molina and Salem); reversible computation.}
+{Restoration and replacement are defined relative to an identity criterion (Definition~\ref{def:restore}); no compensation restores a step that has crossed a bad prefix (Result~\ref{prop:irreversible}); aborted sagas are restored exactly when the criterion is a congruence for the compensations, with a counterexample otherwise (Result~\ref{thm:saga}).}
+{None.}
+{Chapters~\ref{ch:obligations}, \ref{ch:identity}, and~\ref{ch:degradation}.}
+
+When something goes wrong after part of a task has been done, the system can try to undo the part. A booking is cancelled, a payment is refunded, a reservation is released. The word compensation covers two quite different outcomes. In one the world returns to a state indistinguishable, for every purpose that matters, from the one before. In the other the world arrives somewhere different but acceptable. The difference is not a property of the compensating action alone; it depends on which distinctions matter. This chapter makes that dependence exact using the identity criteria of Chapter~\ref{ch:identity}.
+
+\section{Restoration and replacement}
+
+Histories are as in Chapter~\ref{ch:histories}. A promise $(\mathcal Q,F)$ is as in Chapter~\ref{ch:identity}, and $\approx^{F}_{\mathcal Q}$ is the coarsest criterion preserving it.
+
+\begin{definition}[Compensation, restoration, replacement]\label{def:restore}
+A \emph{step} is a word $T\in\Events^{*}$ and a \emph{compensation} for it is a word $C$. At a history $h$ with $hTC\in\Hist$, the compensation \emph{restores} $T$ relative to the promise $(\mathcal Q,F)$ if $hTC\approx^{F}_{\mathcal Q}h$. It is a \emph{replacement} relative to $(\mathcal Q,F)$ and a set $\mathcal A\subseteq\Hist$ of acceptable histories if $hTC\in\mathcal A$ and $hTC\not\approx^{F}_{\mathcal Q}h$.
+\end{definition}
+
+The history $hTC$ is never equal to $h$, since it is longer, so restoration is always restoration up to a criterion. This is not a defect: the criterion is exactly the statement of what must be the same afterward.
+
+\begin{newresult}[Restoration depends on the promise, and is monotone in it]\label{prop:restore-monotone}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item If $C$ restores $T$ at $h$ relative to $(\mathcal Q',F')$ and $\mathcal Q\subseteq\mathcal Q'$, $F\subseteq F'$, then $C$ restores $T$ at $h$ relative to $(\mathcal Q,F)$.
+  \item For any $T$ and $C$ with $hTC\ne h$ in the sense that some $q$ has $q(hTC)\ne q(h)$, there is a promise relative to which $C$ is not a restoration and, if $hTC\in\mathcal A$, is a replacement: take $\mathcal Q=\{q\}$.
+\end{enumerate}
+\end{newresult}
+\assumes{Observations $q$ are functions on histories.}
+\begin{proof}
+(a) Result~\ref{prop:promise-refine}(a). (b) The criterion for $(\{q\},\{\varepsilon\})$ is $\ker q$, which separates $hTC$ from $h$.
+\end{proof}
+
+\begin{example}[Rebooking]
+A traveller holds a booking on flight $f_1$. The step $T$ cancels it and books $f_2$. Relative to the promise ``report whether the traveller arrives at the destination by the deadline'', the new history is equivalent to the original, so $T$ and its eventual compensation are a restoration. Relative to the promise ``report the flight number'' the new history differs, and the action is a replacement. Both descriptions are correct; which one governs depends on which promise the system has made to the traveller.
+\end{example}
+
+\section{Irreversible steps}
+
+\begin{newresult}[No compensation after a bad prefix]\label{prop:irreversible}
+Let $\mathcal O\subseteq\Hist$ be prefix closed and let $\mathbf 1_{\mathcal O}$ be a promised observation. If $h\in\mathcal O$ and $hT\notin\mathcal O$, then for every word $C$ the history $hTC$ is not in $\mathcal O$, and $C$ does not restore $T$ at $h$ relative to any promise that includes $\mathbf 1_{\mathcal O}$. More generally if $q$ is a promised observation that is monotone ($q(u)=1$ implies $q(uw)=1$) and $q(h)=0$, $q(hT)=1$, then no compensation restores $T$.
+\end{newresult}
+\assumes{Prefix closure of $\mathcal O$, which holds for the set of non-violating histories of a safety property.}
+\begin{proof}
+If $hTC\in\mathcal O$ then $hT\in\mathcal O$ by prefix closure, contrary to hypothesis. Then $\mathbf 1_{\mathcal O}(hTC)=0\ne1=\mathbf 1_{\mathcal O}(h)$, so $hTC\not\approx h$. The monotone case is the same with $q(hTC)=1\ne0=q(h)$.
+\end{proof}
+
+The result is the compensation form of the safety/liveness distinction of Chapter~\ref{ch:histories}: a violation detected on a finite history cannot be repaired by any continuation, so an obligation of that kind can only be restored by not crossing the bad prefix in the first place. In the account of Example~\ref{ex:bank} a withdrawal that overdraws is followed by a deposit that restores the balance and leaves $q_{\mathrm{neg}}=1$ forever, so the deposit is a restoration relative to the promise $\{\beta\}$ and a replacement relative to $\{\beta,q_{\mathrm{neg}}\}$.
+
+\section{Sagas}
+
+A \emph{saga} is a sequence of steps $T_1,\dots,T_n$ with compensations $C_1,\dots,C_n$, executed so that either all $T_i$ occur or, after $T_1\cdots T_j$, the compensations $C_j,\dots,C_1$ are executed in that order.
+
+\begin{newresult}[Correctness of aborted sagas]\label{thm:saga}
+Let $\sim$ be an identity criterion on $\Hist$ and $h_0\in\Hist$, $h_i=h_{i-1}T_i$. Suppose
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item (per-step restoration) $h_iC_i\sim h_{i-1}$ for each $i$, and
+  \item (congruence for compensations) $x\sim y$ implies $xC_i\sim yC_i$ for each $i$ whenever both are histories.
+\end{enumerate}
+Then for every $j\le n$, $h_jC_jC_{j-1}\cdots C_1\sim h_0$. Without (ii) the conclusion can fail.
+\end{newresult}
+\assumes{Histories $h_iC_iC_{i-1}\cdots C_1$ lie in $\Hist$.}
+\begin{proof}
+Induction on $j$. For $j=1$ this is (i). For $j>1$, $h_jC_j\sim h_{j-1}$ by (i). Applying (ii) successively with $C_{j-1},\dots,C_1$ gives $h_jC_jC_{j-1}\cdots C_1\sim h_{j-1}C_{j-1}\cdots C_1$, and the right side is $\sim h_0$ by the induction hypothesis.
+
+For the failure without (ii), let the histories (in a deterministic system with states identified with histories) be given by states $s_0,s_1,s_1',s_2,x$ with $T_1:s_0\mapsto s_1$, $T_2:s_1\mapsto s_2$, $C_2:s_2\mapsto s_1'$, $C_1:s_1\mapsto s_0$, $C_1:s_1'\mapsto x$, and the criterion identifying only $s_1$ with $s_1'$. Then $C_2T_2s_1=s_1'\sim s_1$ and $C_1T_1s_0=s_0$, so (i) holds, but $C_1C_2T_2T_1s_0=x\not\sim s_0$.
+\end{proof}
+
+Condition (ii) is the content of Chapter~\ref{ch:identity}: the criterion must be a congruence for the updates it is used with. A coarse criterion adopted for convenience, such as ``same booking status'', fails it as soon as a later compensation depends on the particular flight that was booked.
+
+
+\section{When the criterion is a congruence for free}\label{sec:congruence-free}
+
+Condition (ii) of Result~\ref{thm:saga} is the delicate hypothesis. It holds automatically in the most important case, and the case explains why sagas are correct whenever the promise made to the user already includes the compensating operations among its promised updates.
+
+\begin{newresult}[Sagas under a promise that includes the compensations]\label{cor:saga-free}
+Let $\sim\,=\,\approx^{F}_{\mathcal Q}$ be the coarsest criterion preserving a promise $(\mathcal Q,F)$, and suppose every compensation $C_i$ belongs to $F$. Then condition (ii) of Result~\ref{thm:saga} holds, and the saga is correct, $h_jC_j\cdots C_1\sim h_0$ for every $j$, as soon as each step is restored individually, $h_iC_i\sim h_{i-1}$.
+\end{newresult}
+\assumes{$F$ is a submonoid containing every $C_i$; histories $h_iC_i\cdots C_1$ lie in $\Hist$.}
+\begin{proof}
+By Result~\ref{thm:identity}(c) the relation $\approx^{F}_{\mathcal Q}$ preserves the promise, so $x\approx^{F}_{\mathcal Q}y$ implies $xw\approx^{F}_{\mathcal Q}yw$ for every $w\in F$ with $xw\in\Hist$. Taking $w=C_i$ is condition (ii). The conclusion follows from Result~\ref{thm:saga}.
+\end{proof}
+
+The failure mode of the theorem is accordingly the use of a criterion adopted for convenience that is not the continuation equivalence of any promise containing the compensations. The account supplies exact restoration conditions for the individual steps.
+
+\begin{newresult}[Restoration of a withdrawal by a deposit]\label{prop:withdrawal-restored}
+In the account, with $F=\Events^{*}$ and $\mathcal Q=\{\beta,q_{\mathrm{neg}}\}$, the deposit $\mathrm{d}(x)$ restores the withdrawal $\mathrm{w}(x)$ at a history $h$ if and only if $q_{\mathrm{neg}}(h)=1$ or $x\le\beta(h)$. Relative to $\mathcal Q=\{\beta\}$ it restores at every history. In particular, if $q_{\mathrm{neg}}(h)=0$ and $x>\beta(h)$, the deposit is a replacement and not a restoration.
+\end{newresult}
+\assumes{Events and balances as in Example~\ref{ex:bank}; amounts are positive integers.}
+\begin{proof}
+The history $h\,\mathrm{w}(x)\,\mathrm{d}(x)$ has balance $\beta(h)$ and overdraft flag $q_{\mathrm{neg}}(h)\vee[\beta(h)-x<0]$. By Result~\ref{prop:account} two histories are continuation equivalent for $q_{\mathrm{neg}}$ if both have flag $1$, or both have flag $0$ and equal balance, and they are equivalent for the pair $(\beta,q_{\mathrm{neg}})$ if the balances agree and the flags agree, because the balance determines the continuation equivalence of $\beta$. If $q_{\mathrm{neg}}(h)=1$ both histories have flag $1$ and equal balance. If $q_{\mathrm{neg}}(h)=0$ the flags agree if and only if $\beta(h)-x\ge0$. For $\mathcal Q=\{\beta\}$ the criterion is $\ker\beta$, and the balances agree.
+\end{proof}
+
+The refund of an overdrawing withdrawal is the textbook replacement. The money is back, the balance is what it was, and the account is not the account it was, since the overdraft occurred and remains in its record. A saga that moves money between two accounts is therefore correct for the promise of balances alone at every history, and for the promise that includes the no-overdraft flag only on the histories where each withdrawal is covered by the balance at its moment, a condition that a system can check before it begins and that it cannot restore afterwards.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For the account with $F=\Events^{*}$, show that a deposit is restored by the withdrawal of the same amount relative to $\{\beta,q_{\mathrm{neg}}\}$, and that a withdrawal is restored by the deposit of the same amount relative to $\{\beta\}$ but not in general relative to $\{\beta,q_{\mathrm{neg}}\}$. Identify the histories at which the second restoration fails.
+\end{exercise}
+
+\begin{exercise}
+Prove that restoration relative to $(\mathcal Q,F)$ at $h$ is equivalent to the statement that $hTC$ and $h$ agree on every observation in $\mathcal Q$ after every sequence in $F$. Use it to decide whether a refund is a restoration relative to the promise ``report the customer's balance and the list of charges''.
+\end{exercise}
+
+\begin{exercise}
+Show that a replacement relative to $(\mathcal Q,F)$ and $\mathcal A$ at $h$ is a restoration relative to some coarser promise, and give the coarsest promise relative to which a given replacement is a restoration.
+\end{exercise}
+
+\begin{exercise}
+In Result~\ref{thm:saga}, replace the order of compensations by $C_1,\dots,C_j$ and show with a two-step example that the conclusion fails even with (i) and (ii).
+\end{exercise}
+
+\begin{exercise}
+A saga includes a step that sends an email. Argue using Result~\ref{prop:irreversible} why no compensation restores it relative to a promise that includes ``the recipient has not been told'', and describe what the compensating message achieves instead.
+\end{exercise}
+
+
+\begin{exercise}
+For the two-account transfer saga with steps $T_1=\mathrm{w}_A(x)$ and $T_2=\mathrm{d}_B(x)$ and compensations $C_2=\mathrm{w}_B(x)$, $C_1=\mathrm{d}_A(x)$, state exactly the initial histories for which the saga aborted after $T_2$ is correct relative to the promise $\{\beta_A,\beta_B,q_{\mathrm{neg},A},q_{\mathrm{neg},B}\}$, using Result~\ref{prop:withdrawal-restored} for each step.
+\end{exercise}
+
+\begin{exercise}
+Prove the converse of Result~\ref{cor:saga-free} in the following form: if $\sim$ is an equivalence relation that preserves the observations $\mathcal Q$ and satisfies condition (ii) for every $C_i$ in a submonoid $F$, then $\sim\,\subseteq\,\approx^{F}_{\mathcal Q}$. Conclude that the continuation equivalence is the coarsest criterion for which sagas over $F$ are correct.
+\end{exercise}
+
+\begin{exercise}
+Give an example of a criterion that is a congruence for the compensation $C_1$ and not for $C_2$ in a two-step saga, and show that the saga's conclusion fails for a particular abort point $j$ but holds for another.
+\end{exercise}
+

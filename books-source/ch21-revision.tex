@@ -1,0 +1,135 @@
+% ch21-revision.tex
+\chapter{The Revision Horizon and Revision Sufficiency}\label{ch:revision}
+\spec{Which policies remain implementable from a retained representation, and what does forgetting remove?}
+{The data-processing inequality; Bayes decision rules.}
+{The set of policies implementable from a representation determines its kernel and shrinks geometrically under coarsening (Result~\ref{thm:horizon}); the cases whose revised decision is lost are exactly those in classes on which the revised policy is not constant (Result~\ref{prop:affected}); under the uniform distribution a representation with $k$ values has a binary revision of error at least $(n-k)/2n$, while a structured family of revisions can be served with far fewer values (Result~\ref{thm:worst-revision}).}
+{Approximate revision sufficiency for classes of revisions other than the two studied here is open (Chapter~\ref{ch:open}).}
+{Chapters~\ref{ch:fixed} to~\ref{ch:incremental} and~\ref{ch:approx}.}
+
+Policies change. A regulation is amended, a threshold is retuned, a new audit question is asked. The representation that was sufficient for yesterday's policy is a bet about which policies will be asked for tomorrow, and forgetting is the loss of the bet. This chapter makes the set of policies that a representation keeps available into an object of study, the revision horizon, shows that it determines the representation, and measures what coarsening removes from it.
+
+\section{The horizon of a representation}
+
+Throughout, $X$ is a finite set of cases, $A$ is a set of actions with $|A|\ge2$, and $\sigma:X\to R$ is a representation.
+
+\begin{definition}[Revision horizon]\label{def:horizon}
+The \emph{revision horizon} of $\sigma$ is the set $\Pol_A(\sigma)=\{d\circ\sigma: d:\sigma(X)\to A\}$ of policies $X\to A$ that are sufficiently served by $\sigma$ in the sense of Definition~\ref{def:policy}. A \emph{revision} to a policy $\pi'$ is \emph{supported} by $\sigma$ if $\pi'\in\Pol_A(\sigma)$.
+\end{definition}
+
+\begin{newresult}[The horizon determines the representation]\label{thm:horizon}
+Let $\sigma:X\to R$ and $\sigma':X\to R'$ be representations.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\Pol_A(\sigma')\subseteq\Pol_A(\sigma)$ if and only if $\ker\sigma\subseteq\ker\sigma'$, that is, if and only if $\sigma'$ is a function of $\sigma$.
+  \item $\Pol_A(\sigma)=\Pol_A(\sigma')$ if and only if $\ker\sigma=\ker\sigma'$.
+  \item $|\Pol_A(\sigma)|=|A|^{|\sigma(X)|}$. In particular if $\sigma'=f\circ\sigma$ merges $k$ values into $k'$ values, then $|\Pol_A(\sigma')|=|A|^{k'-k}\,|\Pol_A(\sigma)|$ and the fraction of the horizon that survives is $|A|^{-(k-k')}$.
+\end{enumerate}
+\end{newresult}
+\assumes{$X$ finite, $|A|\ge2$.}
+\begin{proof}
+(a) If $\ker\sigma\subseteq\ker\sigma'$ then $\sigma'=g\circ\sigma$ for some $g$ by Result~\ref{thm:factorization}, and any $d\circ\sigma'=(d\circ g)\circ\sigma\in\Pol_A(\sigma)$. Conversely suppose $\sigma(x)=\sigma(x')$ but $\sigma'(x)\ne\sigma'(x')$. Fix distinct $a,b\in A$ and let $d:\sigma'(X)\to A$ send $\sigma'(x)$ to $a$ and every other value to $b$. Then $\pi=d\circ\sigma'$ lies in $\Pol_A(\sigma')$ and has $\pi(x)=a\ne b=\pi(x')$. Every policy in $\Pol_A(\sigma)$ is constant on the class of $x$, so $\pi\notin\Pol_A(\sigma)$. (b) follows from (a) applied in both directions. (c) The map $d\mapsto d\circ\sigma$ from functions $\sigma(X)\to A$ to policies is injective because $\sigma$ maps onto $\sigma(X)$, so the count is the number of such functions.
+\end{proof}
+
+Part (b) says that the horizon is a complete invariant of the representation up to relabelling. Part (c) says that each distinction discarded divides the horizon by $|A|$.
+
+\section{Which cases lose their revised decision}
+
+For a revision to $\pi'$, forgetting does not damage every case. A case is damaged only if the representation cannot tell it apart from a case that the new policy treats differently.
+
+\begin{definition}[Affected cases]
+For a representation $\sigma$ and a policy $\pi'$, the set of \emph{affected cases} is $\mathrm{Aff}(\sigma,\pi')=\{x\in X:\exists x'\ \text{with}\ \sigma(x')=\sigma(x)\text{ and }\pi'(x')\ne\pi'(x)\}$.
+\end{definition}
+
+\begin{newresult}[Affected cases are the non-constant classes]\label{prop:affected}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\mathrm{Aff}(\sigma,\pi')$ is the union of the classes of $\ker\sigma$ on which $\pi'$ is not constant.
+  \item $\mathrm{Aff}(\sigma,\pi')=\varnothing$ if and only if $\pi'\in\Pol_A(\sigma)$.
+  \item If $\sigma'=f\circ\sigma$ then $\mathrm{Aff}(\sigma,\pi')\subseteq\mathrm{Aff}(\sigma',\pi')$ for every $\pi'$.
+  \item Every decision rule applied to $\sigma$ disagrees with $\pi'$ on at least one case of each class on which $\pi'$ is not constant, and on at least one case of $\mathrm{Aff}(\sigma,\pi')$ whenever it is nonempty.
+\end{enumerate}
+\end{newresult}
+\assumes{$X$ finite.}
+\begin{proof}
+(a) By definition $x$ is affected exactly when its class contains a case with a different value of $\pi'$. (b) $\pi'$ is constant on every class if and only if $\ker\sigma\subseteq\ker\pi'$, which is membership in $\Pol_A(\sigma)$ by Result~\ref{thm:sufficiency}. (c) Classes of $\sigma'$ are unions of classes of $\sigma$, so a class on which $\pi'$ is non-constant is contained in a class of $\sigma'$ on which it is non-constant. (d) A decision rule takes one value on a class; if $\pi'$ takes two values there, the rule disagrees with $\pi'$ at some case of that class.
+\end{proof}
+
+\section{Approximate revision sufficiency}
+
+Chapter~\ref{ch:approx} replaced exact sufficiency by small error under a distribution. For revisions the relevant quantity is the worst error over a class $\mathcal R$ of revisions. Write $\operatorname{err}_\mu(\sigma,\pi')$ for the Bayes error of Definition~\ref{def:bayes-error}.
+
+\begin{definition}[Approximate revision sufficiency]
+The representation $\sigma$ is \emph{$(\varepsilon,\mathcal R,\mu)$-revision sufficient} if $\operatorname{err}_\mu(\sigma,\pi')\le\varepsilon$ for every $\pi'\in\mathcal R$.
+\end{definition}
+
+The first result shows that no compression can be revision sufficient for the class of all binary revisions.
+
+\begin{newresult}[Worst-case binary revision under the uniform distribution]\label{thm:worst-revision}
+Let $|X|=n$, let $\mu$ be uniform, and let $\sigma$ have classes of sizes $n_1,\dots,n_k$. Let $\mathcal R_2$ be the class of all policies $X\to\{0,1\}$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\displaystyle\max_{\pi'\in\mathcal R_2}\operatorname{err}_\mu(\sigma,\pi')=\frac1n\sum_{y=1}^{k}\Bigl\lfloor\frac{n_y}{2}\Bigr\rfloor\;\ge\;\frac{n-k}{2n}$.
+  \item Consequently $\sigma$ is $(\varepsilon,\mathcal R_2,\mu)$-revision sufficient only if $k\ge n(1-2\varepsilon)$.
+  \item Let $X=\{1,\dots,n\}$ with the usual order, let $\mathcal R_{\le}$ be the threshold policies $\pi_t(x)=\mathbf 1[x\ge t]$, and let $\sigma$ partition $X$ into $k$ consecutive intervals of sizes $n_1,\dots,n_k$. Then $\max_{\pi'\in\mathcal R_\le}\operatorname{err}_\mu(\sigma,\pi')=\frac1n\max_y\lfloor n_y/2\rfloor$, which is at most $\lceil n/k\rceil/(2n)$ for equal intervals. In particular $k\approx1/(2\varepsilon)$ values suffice for error $\varepsilon$.
+\end{enumerate}
+\end{newresult}
+\assumes{(a) and (b) concern binary revisions under the uniform distribution. (c) the threshold family on a line.}
+\begin{proof}
+(a) By Definition~\ref{def:bayes-error} the Bayes error is the sum over classes $y$ of $\min(a_y,n_y-a_y)/n$, where $a_y$ is the number of cases of class $y$ on which $\pi'$ takes the value $1$. Each $a_y\in\{0,\dots,n_y\}$ may be chosen independently, and $\min(a_y,n_y-a_y)$ is maximized at $\lfloor n_y/2\rfloor$. Then $\sum_y\lfloor n_y/2\rfloor\ge\sum_y(n_y-1)/2=(n-k)/2$. (b) is (a) rearranged. (c) A threshold policy is constant on every interval not containing the threshold, and on the interval containing it $a_y$ can be any integer in $\{0,\dots,n_y\}$ by moving $t$, so the maximum over $t$ is $\max_y\lfloor n_y/2\rfloor/n$. For equal intervals $n_y\le\lceil n/k\rceil$.
+\end{proof}
+
+The contrast between (b) and (c) is the content of the chapter. If the revisions that might be asked for are arbitrary, a representation must keep nearly everything. If they have structure, such as a threshold on a quantity, a representation that keeps a quantized version of the quantity is nearly sufficient with a number of values independent of $n$. The problem of characterizing the minimum size for a given class of revisions, in terms of a combinatorial parameter of the class, is stated as a research problem in Chapter~\ref{ch:open}.
+
+
+\section{How many values a threshold family requires}\label{sec:threshold-k}
+
+Result~\ref{thm:worst-revision}(c) bounds the error of an interval partition for threshold revisions. The bound can be inverted to give the number of values needed for a stated error, and the same family supplies a count of the revisions that are served with no error at all.
+
+\begin{newresult}[Exact and approximate service of thresholds]\label{prop:threshold-k}
+Let $X=\{1,\dots,n\}$, let $\mu$ be uniform, and let $\sigma$ partition $X$ into $k$ consecutive intervals. The threshold family has $n+1$ members $\pi_t$, $t=1,\dots,n+1$, where $\pi_1$ is constant $1$ and $\pi_{n+1}$ is constant $0$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item Exactly $k+1$ of the $n+1$ members lie in $\Pol_{\{0,1\}}(\sigma)$, namely those whose threshold falls on an interval boundary or at an end.
+  \item The worst error over the family is at most $\varepsilon$ if and only if every interval has at most $2\lfloor\varepsilon n\rfloor+1$ elements.
+  \item Consequently the least number of intervals achieving worst error at most $\varepsilon$ is $\lceil n/(2\lfloor\varepsilon n\rfloor+1)\rceil$.
+\end{enumerate}
+\end{newresult}
+\assumes{$X$ finite and linearly ordered; $\mu$ uniform; $\sigma$ an interval partition.}
+\begin{proof}
+(a) By Result~\ref{prop:affected}(b) a threshold policy is served exactly when it is constant on every interval. The policy $\pi_t$ is non-constant on an interval exactly when $t-1$ and $t$ both lie in it, so it is served exactly when $t=1$, $t=n+1$ or $t-1$ and $t$ are in different intervals; there are $k-1$ interior boundaries and two ends. (b) By Result~\ref{thm:worst-revision}(c) the worst error is $\max_y\lfloor n_y/2\rfloor/n$, and $\lfloor n_y/2\rfloor\le\lfloor\varepsilon n\rfloor$ holds if and only if $n_y\le2\lfloor\varepsilon n\rfloor+1$. (c) With $s=2\lfloor\varepsilon n\rfloor+1$, $k$ intervals of size at most $s$ cover $X$ if and only if $ks\ge n$, and intervals of sizes differing by at most one attain this.
+\end{proof}
+
+For $n=100$ and $\varepsilon=0.05$ the bound allows intervals of at most $11$ elements, so ten intervals suffice and nine do not. The exactly served fraction is $11/101$, about one in nine, while the worst error is $0.05$. The gap between these two numbers is the practical content of approximate revision sufficiency: a representation that supports almost no revision exactly can support all of a structured family to within a small error.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For the monitor of Example~\ref{ex:monitor}, compute $|\Pol_A(\sigma)|$ for $\sigma$ the count capped at $3$ and for $\sigma$ the count capped at $2$, with $|A|=2$, and the fraction of the horizon lost by the lower cap.
+\end{exercise}
+
+\begin{exercise}
+Prove that $\mathrm{Aff}(\sigma,\pi')\cap\mathrm{Aff}(\sigma,\pi'')$ need not equal $\mathrm{Aff}(\sigma,\pi'\wedge\pi'')$, and that $\mathrm{Aff}(\sigma,(\pi',\pi''))=\mathrm{Aff}(\sigma,\pi')\cup\mathrm{Aff}(\sigma,\pi'')$.
+\end{exercise}
+
+\begin{exercise}
+Show that Result~\ref{thm:worst-revision}(a) is attained by a policy that splits each class as evenly as possible, and compute the worst-case error for $n=12$ and classes of sizes $5,4,3$.
+\end{exercise}
+
+\begin{exercise}
+In the account, let $X$ be the histories of length at most $2$ and let $\sigma=\beta$. Compute the classes, the affected cases for the revision $q_{\mathrm{neg}}$, and the Bayes error of $\sigma$ for $q_{\mathrm{neg}}$ under the uniform distribution on those histories.
+\end{exercise}
+
+\begin{exercise}
+Generalize Result~\ref{thm:worst-revision}(a) to $|A|=m$ actions. Show that the worst-case Bayes error under the uniform distribution is $\frac1n\sum_y(n_y-\lceil n_y/m\rceil)$.
+\end{exercise}
+
+
+\begin{exercise}
+Verify Result~\ref{prop:threshold-k}(a) directly for $n=6$ and intervals $\{1,2\},\{3,4,5\},\{6\}$, listing the four exactly served thresholds and the worst error among the remaining three.
+\end{exercise}
+
+\begin{exercise}
+Show that part (c) of Result~\ref{prop:threshold-k} can fail to be attained by an interval partition when $\mu$ is not uniform, by giving a weighted example in which unequal intervals give a smaller worst error with the same $k$.
+\end{exercise}
+
+\begin{exercise}
+Extend Result~\ref{prop:threshold-k}(a) to two-sided interval revisions $\mathbf 1[s\le x<t]$ and count the exactly served members for an interval partition into $k$ intervals.
+\end{exercise}
+

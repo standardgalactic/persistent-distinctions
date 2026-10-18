@@ -1,0 +1,160 @@
+% v2-ch11-counting.tex
+\chapter[Counting Options and Comparing Futures]{Counting Options, Reachability, and Comparing Futures}\label{ch:counting}
+\spec{Why does a larger nominal option set not imply greater practical freedom, and how are futures compared without forcing a scalar ranking?}
+{Simulation preorders (Milner); Perron--Frobenius theory; set inclusion and dominance.}
+{Cardinality, volume, and graph distance of reachable sets each misrank resource-bounded freedom (Result~\ref{prop:separations}); the budgeted dominance order is a preorder with incomparable pairs, and weighted scalar scores can reverse any incomparable pair (Result~\ref{prop:dominance}); simulation preserves coverage of outcomes (Result~\ref{prop:sim}); the growth rate of feasible histories is the largest spectral radius among reachable components (Result~\ref{thm:growth}).}
+{None.}
+{Chapters~\ref{ch:reach} and~\ref{ch:petri}.}
+
+A designer asked whether one situation leaves more freedom than another is tempted to count: the actions on the menu, the states that can be reached, the volume of the reachable region, the number of steps to a goal. Each count answers a real question and none answers the question asked. This chapter separates the counts by explicit constructions, replaces the single number by an order that admits incomparable situations, relates the order to simulation, and isolates the one count, the growth rate of feasible histories, that has a clean structural characterization.
+
+\section{Four counts that do not agree}
+
+Let the transition graph of Chapter~\ref{ch:reach} carry nonnegative edge costs and let $\rho$ be the return cost of Chapter~\ref{ch:irreversibility}. For a budget $\beta\ge0$ the \emph{budgeted reach} of $x$ is $R_\beta(x)=\{y:\rho(x,y)\le\beta\}$, and $R(x)=\bigcup_\beta R_\beta(x)$ is the reach of Chapter~\ref{ch:reach}. For continuous systems $R^{(k)}(x)$ denotes the set reachable in exactly $k$ steps.
+
+\begin{newresult}[The counts disagree with budgeted freedom]\label{prop:separations}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item \emph{Cardinality.} For every $n$ there are states $x,y$ with $|R(x)|>n\,|R(y)|$ and a budget $\beta$ with $|R_\beta(x)|<|R_\beta(y)|$.
+  \item \emph{Volume.} There are systems $A,B$ on $\mathbb R^2$ with the same initial state such that the reachable set of $A$ in $k$ steps has positive area, that of $B$ has area zero, and $B$ reaches points at a distance from the origin that $A$ cannot reach in $k$ steps.
+  \item \emph{Graph distance.} There are states $x,y$ and a target $g$ with the same graph distance from both and a budget $\beta$ such that $g\in R_\beta(y)$ and $g\notin R_\beta(x)$.
+\end{enumerate}
+\end{newresult}
+\assumes{Constructions as stated.}
+\begin{proof}
+(a) Let $x$ have edges of cost $10$ to $3n$ distinct new states, and $y$ have one edge of cost $1$ to a state $y_1$ which has one edge of cost $1$ to $y_2$. Then $|R(x)|=3n+1>3n=n|R(y)|$ since $|R(y)|=3$, while $|R_5(x)|=1<3=|R_5(y)|$.
+
+(b) Let $A$ be $z^{+}=z+u$ with $u\in[-1,1]^2$ and let $B$ be $z^{+}=z+u\,e_1$ with $u\in[-M,M]$ and $e_1=(1,0)$, both from $z_0=0$. After $k$ steps the reachable set of $A$ is $[-k,k]^2$ of area $4k^2$, and that of $B$ is the segment $[-Mk,Mk]\times\{0\}$, of area zero. For $M>2$ the point $(Mk,0)$ lies outside $[-k,k]^2$ and $B$ reaches it, while $A$ reaches $(k,k)$ and $B$ does not.
+
+(c) Let $y\to m\to g$ with costs $1,1$ and $x\to m'\to g$ with costs $1,100$. Both have graph distance $2$ to $g$, and for $\beta=10$ we have $g\in R_{10}(y)$ and $g\notin R_{10}(x)$.
+\end{proof}
+
+The point of the three parts is that a count that is fixed by the structure of the graph or the region ignores the resources needed to exercise the options. Which count is appropriate depends on what resource is scarce, and the budget $\beta$ is the means of stating it.
+
+\section{An order that admits incomparability}
+
+To compare states by what they can bring about, fix a set $O\subseteq X$ of outcomes of interest. For states $x,y$ write $x\preceq y$ if $R_\beta(x)\cap O\subseteq R_\beta(y)\cap O$ for every budget $\beta$ (the \emph{dominance} order).
+
+\begin{newresult}[Dominance is a preorder with incomparable pairs]\label{prop:dominance}
+The relation $\preceq$ is reflexive and transitive. It need not be total: there are states $x,y$ with neither $x\preceq y$ nor $y\preceq x$. For such a pair, and any nonnegative weights $w(\beta)$ on a finite set of budgets, the score $s_w(x)=\sum_\beta w(\beta)\,|R_\beta(x)\cap O|$ can rank $x$ above $y$ for some weights and $y$ above $x$ for others.
+\end{newresult}
+\assumes{None beyond the definitions.}
+\begin{proof}
+Reflexivity and transitivity are those of inclusion, budget by budget. For incomparability let $O=\{a,b_1,\dots,b_{10}\}$, let $x$ have one edge of cost $1$ to $a$ and let $y$ have edges of cost $5$ to each $b_j$. Then $R_1(x)\cap O=\{a\}\not\subseteq R_1(y)\cap O=\varnothing$ and $R_5(y)\cap O=\{b_1,\dots,b_{10}\}\not\subseteq R_5(x)\cap O=\{a\}$. With budgets $\{1,5\}$ the scores are $s_w(x)=w(1)+w(5)$ and $s_w(y)=10\,w(5)$, so $s_w(x)>s_w(y)$ for $w=(1,0)$ and $s_w(x)<s_w(y)$ for $w=(0,1)$.
+\end{proof}
+
+Every finite preorder can be extended to a total preorder, so a scalar ranking consistent with dominance exists. The result says that the extension is not determined by the system. It depends on a weighting of budgets, that is, on which resource levels the user cares about, and two analysts who use different weights can disagree on incomparable pairs without either making a mistake.
+
+\section{Simulation and coverage}
+
+Let the transition graph have labelled edges $x\xrightarrow{u}x'$. A relation $\mathcal S\subseteq X\times X$ is a \emph{simulation} if whenever $x\,\mathcal S\,y$ and $x\xrightarrow{u}x'$ there is $y'$ with $y\xrightarrow{u}y'$ and $x'\,\mathcal S\,y'$. Write $x\sqsubseteq y$ if some simulation relates them.
+
+\begin{established}[Simulation preorder]\label{thm:simulation}
+The relation $\sqsubseteq$ is the largest simulation, is a preorder, and implies inclusion of the sets of label sequences feasible from the two states.
+\end{established}
+\source{Milner, \emph{Communication and Concurrency} (1989).}
+
+\begin{newresult}[Simulation preserves coverage]\label{prop:sim}
+If $x\sqsubseteq y$ then for every $x'\in R(x)$ there is $y'\in R(y)$ with $x'\sqsubseteq y'$. If simulation is moreover required to respect a labelling $\lambda:X\to\Lambda$ of outcomes ($x\,\mathcal S\,y\Rightarrow\lambda(x)=\lambda(y)$), then every outcome label reachable from $x$ is reachable from $y$. Inclusion $R(x)\subseteq R(y)$ is neither implied by nor implies $x\sqsubseteq y$.
+\end{newresult}
+\assumes{Labelled graph.}
+\begin{proof}
+Induct on the length of a path from $x$ to $x'$: the step from $x$ is matched by a step from $y$, the successors stay related, and the induction hypothesis applies. The labelled version follows because related states have equal labels. For the last claim, in a graph with two disjoint components $x\xrightarrow{a}x_1$ and $y\xrightarrow{a}y_1$ with $x_1,y_1$ having no moves, $x\sqsubseteq y$ but $R(x)\not\subseteq R(y)$; and in a graph with $x\xrightarrow{a}x$ and $y\xrightarrow{b}x$ we have $R(x)=\{x\}\subseteq R(y)=\{y,x\}$ while $x\not\sqsubseteq y$ because $y$ has no $a$-move.
+\end{proof}
+
+Simulation is the right comparison when futures are to be compared as processes: it says that whatever $x$ can do, $y$ can do while remaining ahead in the same sense. Inclusion of reachable sets compares only which states appear, not which sequences of actions get there.
+
+\section{Growth of feasible histories}
+
+Let $A$ be the matrix with $A_{xy}$ the number of actions leading from $x$ to $y$. The number of feasible action sequences of length $k$ from $x$ is $N_k(x)=e_x^{\mathsf T}A^k\mathbf 1$. Define the \emph{growth rate} $g(x)=\limsup_k N_k(x)^{1/k}$.
+
+\begin{established}[Perron--Frobenius]\label{thm:pf}
+For an irreducible nonnegative matrix $B$ the spectral radius $\lambda(B)$ is an eigenvalue with a strictly positive eigenvector, and $\lambda(B)\ge1$ when $B$ is a nonzero integer matrix.
+\end{established}
+\source{Horn and Johnson, \emph{Matrix Analysis}, Chapter 8.}
+
+\begin{newresult}[Growth rate and components]\label{thm:growth}
+Let $\mathcal C(x)$ be the set of strongly connected components reachable from $x$, and for a component $C$ let $A_C$ be the restriction of $A$ to $C$. Then
+\[
+g(x)=\max_{C\in\mathcal C(x)}\lambda(A_C),
+\]
+with the convention that the maximum is $0$ when every reachable component is a single state without a self-loop. Consequently $g(x)\le d_{\max}$, the maximum number of feasible actions at a state, $g(x)\ge1$ if and only if a cycle is reachable from $x$, and a state has finitely many feasible histories if and only if $g(x)=0$.
+\end{newresult}
+\assumes{Finite state and action sets.}
+\begin{proof}
+Restrict $A$ to $R(x)$ and order the components topologically; the restriction is block upper triangular with diagonal blocks $A_C$, so its eigenvalues are those of the blocks, and its spectral radius $\lambda$ is $\max_C\lambda(A_C)$. By the Jordan form there is a polynomial $p$ with $\|A^k\|\le p(k)\lambda^k$ on $R(x)$, hence $g(x)\le\lambda$. For the reverse inequality let $C$ attain the maximum and let $v>0$ be a Perron vector of $A_C$ (Result~\ref{thm:pf}, when $|C|>1$ or $A_C\ne0$). From a state $y\in C$ reachable from $x$ in $m$ steps, walks of length $k$ staying in $C$ number at least $e_y^{\mathsf T}A_C^k\mathbf 1\ge e_y^{\mathsf T}A_C^kv/\max v=\lambda^kv_y/\max v$, and $N_{m+k}(x)\ge$ this, so $g(x)\ge\lambda$. Row sums of $A$ are at most $d_{\max}$, so $\lambda\le\|A\|_\infty\le d_{\max}$. A cycle makes some $A_C$ nonzero integer-valued, so $\lambda(A_C)\ge1$ by Result~\ref{thm:pf}; if no cycle is reachable then every reachable $A_C$ is nilpotent, $g(x)=0$, and the number of feasible histories is finite because $A^k=0$ on $R(x)$ for $k\ge|R(x)|$.
+\end{proof}
+
+The growth rate is a structural count, and it is the one that respects the decomposition of Chapter~\ref{ch:reach}: it is determined by the strongly connected components that can be reached, not by the menu at $x$. The menu size bounds it from above and is attained only when every reachable state has the full menu and the transitions are as mixing as the menu allows. Exercise~\ref{ex:growth} gives two systems with the same menu size and different growth rates.
+
+
+\section{Dominance as a comparison of cost vectors}\label{sec:cost-vectors}
+
+The dominance order has a concrete form. For an outcome $o\in O$ write $\rho_x(o)=\rho(x,o)\in[0,\infty]$ for the least budget at which $o$ is reachable from $x$, and collect these into the cost vector $\rho_x=(\rho_x(o))_{o\in O}$.
+
+\begin{newresult}[Dominance is the componentwise order on cost vectors]\label{prop:cost-vector}
+For states $x,y$ we have $x\preceq y$ if and only if $\rho_y(o)\le\rho_x(o)$ for every $o\in O$. Consequently the maximal elements of $\preceq$ among a finite set of states are the Pareto-minimal cost vectors, and two states are incomparable exactly when each is strictly cheaper than the other for some outcome.
+\end{newresult}
+\assumes{Finite graph with nonnegative costs.}
+\begin{proof}
+Suppose $x\preceq y$ and $o\in O$. If $\rho_x(o)=\infty$ there is nothing to prove. Otherwise $o\in R_\beta(x)$ for $\beta=\rho_x(o)$, hence $o\in R_\beta(y)$, which says $\rho_y(o)\le\rho_x(o)$. Conversely, if the cost inequalities hold and $o\in R_\beta(x)\cap O$, then $\rho_y(o)\le\rho_x(o)\le\beta$, so $o\in R_\beta(y)$.
+\end{proof}
+
+A three-state illustration fixes ideas. Let $A$, $B$, $C$ be states and $a,b$ be two outcomes, with cost vectors $\rho_A=(1,9)$, $\rho_B=(9,1)$ and $\rho_C=(4,4)$. No state dominates another: $A$ is cheapest for $a$, $B$ for $b$, and $C$ is intermediate in both, so all three are Pareto-minimal. A scalar score $w_a\rho(\cdot,a)+w_b\rho(\cdot,b)$, with lower better, orders the states as follows, writing $t=w_b/w_a$. State $C$ is best exactly when $3/5<t<5/3$, because $C$ beats $A$ iff $4+4t<1+9t$ iff $t>3/5$ and beats $B$ iff $4+4t<9+t$ iff $t<5/3$; for smaller $t$ state $A$ is best and for larger $t$ state $B$ is best. A direct evaluation confirms it: at $t=1$ the scores are $10,10,8$, at $t=0.5$ they are $5.5,9.5,6$, and at $t=3$ they are $28,12,16$. The middle state, which would be chosen by almost no one who cares about one outcome only, is the unique optimum for every analyst whose weights are within a factor of $5/3$ of equal. This is the usual pattern of a Pareto frontier: the structure supplies the frontier, and the weights select a point on it.
+
+\begin{newresult}[Simulation is monotone for label growth]\label{prop:sim-growth}
+Let $L_k(x)$ be the number of distinct label sequences of length $k$ feasible from $x$ and $g_L(x)=\limsup_kL_k(x)^{1/k}$. If $x\sqsubseteq y$ then $L_k(x)\le L_k(y)$ for all $k$, hence $g_L(x)\le g_L(y)$. For deterministic graphs $L_k=N_k$ and $g_L=g$.
+\end{newresult}
+\assumes{Finite labelled graph.}
+\begin{proof}
+By Result~\ref{thm:simulation} every label sequence feasible from $x$ is feasible from $y$, so the set counted by $L_k(x)$ is contained in that counted by $L_k(y)$. Taking $k$th roots and the limit superior preserves the inequality. In a deterministic graph a label sequence determines the path, so $L_k=N_k$.
+\end{proof}
+
+The result has a design reading. If a redesigned system simulates the original (every action sequence the old system allowed remains available), the growth of its futures cannot fall, and a lower growth rate certifies that simulation fails. It does not give a converse: two systems can have the same growth rate without either simulating the other.
+
+\section{A rate limit as a growth rate}\label{sec:rate-growth}
+
+The growth rate quantifies what the rate limits of Chapter~\ref{ch:history-state} cost in options per step. Take two actions, $a$ (always available) and $b$ (available only when not used at the previous step). The state is whether $b$ was just used: from \emph{free}, $a$ leads to \emph{free} and $b$ to \emph{cool}; from \emph{cool}, $a$ leads to \emph{free}. The matrix is $A=\begin{pmatrix}1&1\\1&0\end{pmatrix}$, and direct multiplication gives $N_k(\mathrm{free})=2,3,5,8,13,21,34,55,89,144$ for $k=1,\dots,10$ (the Fibonacci numbers) and $N_k(\mathrm{cool})=1,2,3,5,8,13,21,34,55,89$. The spectral radius is $\varphi=(1+\sqrt5)/2\approx1.618$, against $d_{\max}=2$ for an unrestricted pair of actions, so the restriction costs $\log_2 2-\log_2\varphi\approx0.306$ bits of freedom per step. If a cooling period of two steps is required after each use of $b$, the characteristic equation becomes $\lambda^3=\lambda^2+1$ and the growth rate falls to $1.4656$. The numbers are small but the structural point is general: a local restriction on the menu, repeated at every step, compounds into a multiplicative reduction of the number of futures, and the reduction is read from the spectrum of the restricted transition matrix.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Construct, for $n=2$, the graphs of Result~\ref{prop:separations}(a) with explicit numbers, and check each inequality.
+\end{exercise}
+
+\begin{exercise}
+Give two distinct states that dominate each other, $x\preceq y$ and $y\preceq x$, and conclude that dominance is a preorder and not a partial order on states.
+\end{exercise}
+
+\begin{exercise}
+Prove that $\sqsubseteq$ is a preorder by showing that the identity relation is a simulation and that the composition of two simulations is a simulation.
+\end{exercise}
+
+\begin{exercise}\label{ex:growth}
+Compute the growth rate of the graph on two states with two parallel actions $a,b$ from each state to itself and compare it with the graph on two states where each action goes to the other state and the other state has a single self-loop. Both have maximum menu $2$.
+\end{exercise}
+
+\begin{exercise}
+Show that for a deterministic labelled graph the number of distinct reachable states within $k$ steps is at most $N_k(x)$ summed over lengths, and give a graph in which the ratio of the two grows without bound.
+\end{exercise}
+
+\begin{exercise}
+Verify the cost-vector comparison of Section~\ref{sec:cost-vectors}: compute the scores of $A,B,C$ at $t=0.6$ and $t=5/3$, and show that at the two endpoints $C$ ties with $A$ and with $B$ respectively.
+\end{exercise}
+
+\begin{exercise}
+Prove that if $\rho_x$ and $\rho_y$ are cost vectors and $x\preceq y$, then $\max_o\rho_y(o)\le\max_o\rho_x(o)$ and $\sum_o\rho_y(o)\le\sum_o\rho_x(o)$, so that any monotone aggregation of costs respects dominance. Explain why this does not determine a total order.
+\end{exercise}
+
+\begin{exercise}
+Derive the Fibonacci recurrence $N_{k+2}(\mathrm{free})=N_{k+1}(\mathrm{free})+N_k(\mathrm{free})$ from the transition graph of Section~\ref{sec:rate-growth}, and show that $N_k(\mathrm{free})=F_{k+2}$.
+\end{exercise}
+
+\begin{exercise}
+Show that the three-state cooling construction in which $b$ requires two idle steps has growth rate the real root of $\lambda^3=\lambda^2+1$, and bound it between $1.46$ and $1.47$ by evaluating the polynomial.
+\end{exercise}
+
+\begin{exercise}
+Give two deterministic systems with equal growth rates such that neither simulates the other, so that equality of $g$ does not imply mutual simulation.
+\end{exercise}
+

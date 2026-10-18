@@ -1,0 +1,174 @@
+% ch08-products.tex
+\chapter{Bisimulation, Products, and State Complexity}\label{ch:products}
+\spec{When do separate summaries compose efficiently, and when does their interaction produce a large state space?}
+{Bisimulation (Park, Milner); the product construction; the state complexity of intersection (Yu, Zhuang, and Salomaa).}
+{Compositional sufficiency under separability: the minimal memory for independent properties is the product (Result~\ref{thm:independence}); sufficiency composes through functions but minimality does not (Result~\ref{thm:composition}).}
+{None.}
+{Chapters~\ref{ch:histories} and~\ref{ch:incremental}.}
+
+The theory of the previous chapter computes the least memory that maintains a single property. A system is rarely asked to maintain one property. It maintains several, each with its own summary, and the combined requirement can be either the sum of the parts or something very different. This chapter gives the tools for deciding which. It begins with the notion of behavioural equivalence that underlies minimization, in the stronger form called bisimulation that remains meaningful when a representation is not deterministic. It then treats the product of summaries, states a separability condition under which the product is exactly the minimal combined memory, and shows by example how both the product bound and the lower bound can be attained and how interaction between properties destroys the efficiency of composing summaries.
+
+\section{Behavioural equivalence and bisimulation}
+
+\begin{definition}[Bisimulation of Moore machines]\label{def:bisim}
+Let $M_1=(S_1,s_1,\Events,\delta_1,\mathrm{out}_1)$ and $M_2=(S_2,s_2,\Events,\delta_2,\mathrm{out}_2)$ be Moore machines with the same output set. A relation $B\subseteq S_1\times S_2$ is a \emph{bisimulation} if $(s,t)\in B$ implies $\mathrm{out}_1(s)=\mathrm{out}_2(t)$ and $(\delta_1(s,a),\delta_2(t,a))\in B$ for every $a\in\Events$. States $s$ and $t$ are \emph{bisimilar} if some bisimulation contains $(s,t)$.
+\end{definition}
+
+\begin{established}[For deterministic machines, bisimilarity is behavioural equivalence]\label{thm:bisim}
+States $s\in S_1$ and $t\in S_2$ are bisimilar if and only if $b_s=b_t$.
+\end{established}
+\source{Park, ``Concurrency and automata on infinite sequences'' (1981); Milner, \emph{Communication and Concurrency} (1989).}
+\begin{proof}
+If $(s,t)\in B$ for a bisimulation $B$, then by induction on $|w|$ we have $(\delta_1^{*}(s,w),\delta_2^{*}(t,w))\in B$, so the outputs after $w$ agree and $b_s(w)=b_t(w)$. Conversely the relation $B=\{(s,t):b_s=b_t\}$ is a bisimulation. If $b_s=b_t$ then $\mathrm{out}_1(s)=b_s(\varepsilon)=b_t(\varepsilon)=\mathrm{out}_2(t)$, and $b_{\delta_1(s,a)}(w)=b_s(aw)=b_t(aw)=b_{\delta_2(t,a)}(w)$ for all $w$. It contains $(s,t)$.
+\end{proof}
+
+Together with Result~\ref{thm:moore} this shows that the stable partition computed by Moore's algorithm is the greatest bisimulation of the machine with itself, and that the minimal machine for a property is the quotient of any machine computing it by bisimilarity. For deterministic representations nothing finer than the continuation equivalence of Chapter~\ref{ch:histories} is available.
+
+The distinction between behavioural equivalence and bisimulation appears when a representation does not determine the next state. A \emph{labelled transition system} is a triple $(S,\Events,{\to})$ with ${\to}\subseteq S\times\Events\times S$. A relation $B$ on its states is a bisimulation if whenever $(s,t)\in B$ and $s\xrightarrow{a}s'$ there is $t'$ with $t\xrightarrow{a}t'$ and $(s',t')\in B$, and symmetrically for moves of $t$. The \emph{traces} of a state are the words the system can perform from it.
+
+\begin{example}[Same traces, different commitments]\label{ex:bisim-nondet}
+Let $p_0\xrightarrow{a}p_1$, $p_1\xrightarrow{b}p_2$, $p_1\xrightarrow{c}p_3$, and let $q_0\xrightarrow{a}q_1$, $q_0\xrightarrow{a}q_2$, $q_1\xrightarrow{b}q_3$, $q_2\xrightarrow{c}q_4$. Both $p_0$ and $q_0$ have the traces $\varepsilon$, $a$, $ab$, and $ac$. They are not bisimilar: the move $q_0\xrightarrow{a}q_1$ must be matched by $p_0\xrightarrow{a}p_1$ with $p_1$ bisimilar to $q_1$, but $p_1$ can perform $c$ and $q_1$ cannot. The first system defers the choice between $b$ and $c$ until after $a$, and the second has committed to one of them when $a$ occurs.
+\end{example}
+
+The example matters for representation because a retained representation that does not determine the future behaviour of a system is in the position of the second system: it has resolved something that the first has not. Two representations can agree on every sequence of observations and still differ in whether they permit the same later choices. Chapter~\ref{ch:distributed} takes this up for distributed systems. In the deterministic setting of the rest of this chapter the issue does not arise.
+
+\section{Products of summaries}
+
+\begin{definition}[Product machine]\label{def:product}
+For Moore machines $M_1$ and $M_2$ over the same alphabet, the \emph{product} is $M_1\times M_2=(S_1\times S_2,(s_1,s_2),\Events,\delta,\mathrm{out})$ with $\delta((s,t),a)=(\delta_1(s,a),\delta_2(t,a))$ and $\mathrm{out}(s,t)=(\mathrm{out}_1(s),\mathrm{out}_2(t))$.
+\end{definition}
+
+\begin{established}[The product computes the pair]\label{prop:product}
+The product computes the property $h\mapsto(P_{M_1}(h),P_{M_2}(h))$. If the minimal machines for $P_{M_1}$ and $P_{M_2}$ have $m$ and $n$ states, then the minimal machine for the pair has at least $\max(m,n)$ and at most $mn$ states. The same bound $mn$ applies to the minimal machine for any property of the form $g(P_{M_1},P_{M_2})$.
+\end{established}
+\source{Standard product construction; Yu, Zhuang, and Salomaa, ``The state complexities of some basic operations on regular languages,'' \emph{Theoretical Computer Science} 125 (1994), on the operation of intersection.}
+\begin{proof}
+By induction on length the product reaches $(\delta_1^{*}(s_1,h),\delta_2^{*}(s_2,h))$ after $h$, so it computes the pair. The bounds on the minimal machine follow from Results~\ref{prop:family-nerode} and~\ref{prop:family-bounds}, applied to the minimal machines. For $g(P_1,P_2)$, the continuation equivalence of the pair is contained in that of $g(P_1,P_2)$, as shown in Result~\ref{prop:post-processing} below, and the pair has at most $mn$ classes.
+\end{proof}
+
+\begin{established}[Post-processing never increases memory]\label{prop:post-processing}
+For any property $P$ and function $g$, ${\approx_P}\subseteq{\approx_{g\circ P}}$. Consequently $s_{\mathrm{inc}}(g\circ P)\le s_{\mathrm{inc}}(P)$, and a maintainable representation sufficient for $P$ is sufficient for $g\circ P$.
+\end{established}
+\source{Elementary.}
+\begin{proof}
+If $P(hw)=P(h'w)$ for all $w$ then $g(P(hw))=g(P(h'w))$ for all $w$. The consequence follows from Result~\ref{thm:nerode-family}, together with Result~\ref{prop:coarsening}.
+\end{proof}
+
+A lower bound for the number of classes of $\approx_P$ is obtained by exhibiting histories that the future separates.
+
+\begin{established}[Distinguishing sets]\label{lem:distinguishing}
+A set $\{h_1,\dots,h_k\}$ of histories is \emph{pairwise distinguishable} for $P$ if for all $i\ne j$ there is a word $w$ with $P(h_iw)\ne P(h_jw)$. Then $|\Events^{*}/{\approx_P}|\ge k$, and $|\Events^{*}/{\approx_P}|$ is the supremum of the sizes of pairwise distinguishable sets.
+\end{established}
+\source{Elementary; the Myhill--Nerode lower bound technique.}
+\begin{proof}
+Two histories in the same class of $\approx_P$ cannot be distinguished by any word, so the elements of a pairwise distinguishable set lie in distinct classes. A set containing one history from each class is pairwise distinguishable.
+\end{proof}
+
+\section{When summaries compose, and when they do not}
+
+\begin{example}[Independent counters: the product is necessary]\label{ex:independent-counters}
+Let $\Events=\{a,b\}$, let $P_1(h)=\mathbf 1[\#_a(h)\equiv0\bmod m]$, and let $P_2(h)=\mathbf 1[\#_b(h)\equiv0\bmod n]$, with $\#_a$ and $\#_b$ the numbers of occurrences. Each has $m$ and $n$ classes respectively. The conjunction $P=P_1\wedge P_2$ is a single bit, yet $|\Events^{*}/{\approx_P}|=mn$. Indeed let $h=a^{x}b^{y}$ and $h'=a^{x'}b^{y'}$ with $(x,y)\ne(x',y')$ modulo $(m,n)$, and let $w=a^{(-x)\bmod m}b^{(-y)\bmod n}$. Then $hw$ satisfies $P$, and $h'w$ satisfies $P$ only if $x'\equiv x$ and $y'\equiv y$. So the $mn$ histories $a^xb^y$ are pairwise distinguishable and Result~\ref{lem:distinguishing} gives the lower bound; the product construction gives the matching upper bound. The one-bit answer costs $mn$ states to maintain.
+\end{example}
+
+\begin{example}[Nested properties: no growth]
+If $P_2=g\circ P_1$ then by Result~\ref{prop:post-processing} the pair $(P_1,P_2)$ has the same continuation equivalence as $P_1$, so the combined memory equals that of $P_1$ alone. Escalation at $2$ and at $3$ outstanding alarms in the monitor of Example~\ref{ex:monitor} are not of this form, but both are functions of the capped count $\min(c,3)$, and the pair needs the four values of that quantity, not the twelve of the product of the two separate machines.
+\end{example}
+
+\begin{example}[Interaction: the combined question is cheaper than separate summaries]\label{ex:interaction}
+Let $\Events=\{a,b\}$ and $P(h)=\mathbf 1[\#_a(h)\equiv\#_b(h)\bmod m]$. The class of $h$ is determined by $(\#_a(h)-\#_b(h))\bmod m$: if $\delta=(\#_a-\#_b)\bmod m$ and $\delta'$ are different, the word $a^{(-\delta)\bmod m}$ separates $h$ from $h'$, so there are exactly $m$ classes. The separate summaries of the two counts, $\#_a\bmod m$ and $\#_b\bmod m$, each have $m$ values, and their pair has $m^{2}$. Of those $m^{2}$ values the question uses only the difference.
+\end{example}
+
+The three examples display the range. Composition is free when one property is a function of another, multiplicative when the properties depend on unrelated parts of the history, and wasteful when the combined question depends on only part of what the separate summaries record. A designer who builds one summary per property and combines them pays the product regardless; the true requirement is the continuation equivalence of the combined question.
+
+\subsection{Separability}
+
+The multiplicative case can be characterized exactly.
+
+\begin{newresult}[Independent properties: the product is exactly the minimal memory]\label{thm:independence}
+Let $\Events=\Events_1\sqcup\Events_2$ be a partition of the alphabet and let $\mathrm{proj}_i:\Events^{*}\to\Events_i^{*}$ be the map that erases the events outside $\Events_i$. Suppose $P_i=Q_i\circ\mathrm{proj}_i$ for properties $Q_i$ of $\Events_i^{*}$. Then
+\[
+\bigl|\Events^{*}/{\approx_{(P_1,P_2)}}\bigr|=\bigl|\Events_1^{*}/{\approx_{Q_1}}\bigr|\cdot\bigl|\Events_2^{*}/{\approx_{Q_2}}\bigr|,
+\]
+and the map $h\mapsto([\mathrm{proj}_1h],[\mathrm{proj}_2h])$ is a minimal maintainable representation of the pair.
+\end{newresult}
+\assumes{The alphabet is split into two parts and each property depends only on the subsequence of events from its own part. The cardinalities may be infinite.}
+\begin{proof}
+Since $\mathrm{proj}_1$ is a monoid homomorphism, $P_1(hw)=Q_1(\mathrm{proj}_1(h)\,\mathrm{proj}_1(w))$, and as $w$ ranges over $\Events^{*}$ the word $\mathrm{proj}_1(w)$ ranges over all of $\Events_1^{*}$. Hence $h\approx_{P_1}h'$ if and only if $\mathrm{proj}_1(h)\approx_{Q_1}\mathrm{proj}_1(h')$, and likewise for the second property. By Result~\ref{prop:family-nerode}, $h\approx_{(P_1,P_2)}h'$ if and only if both conditions hold. The map $\Theta:[h]\mapsto([\mathrm{proj}_1h],[\mathrm{proj}_2h])$ is therefore well defined and injective. It is surjective: given classes $c_1$ and $c_2$ choose $v_1\in c_1$ and $v_2\in c_2$, and the concatenation $h=v_1v_2$ satisfies $\mathrm{proj}_1(h)=v_1$ and $\mathrm{proj}_2(h)=v_2$ because $v_2$ contains no event of $\Events_1$ and $v_1$ none of $\Events_2$. Hence $\Theta$ is a bijection and the cardinalities multiply. The map is a maintainable representation by Result~\ref{prop:family-nerode}, and minimal by the count.
+\end{proof}
+
+Example~\ref{ex:independent-counters} is the case $\Events_1=\{a\}$, $\Events_2=\{b\}$. Example~\ref{ex:interaction} violates the hypothesis, since $P$ depends on both counts jointly, and the multiplicative formula would give the wrong answer $m^{2}$. The hypothesis is sufficient and not necessary: the product formula can hold for properties that are not separable, but without separability it is no longer guaranteed, and in general only the bounds of Result~\ref{prop:product} are available.
+
+\subsection{Composition of maintained answers}
+
+\begin{newresult}[Sufficiency composes through functions; minimality does not]\label{thm:composition}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item If $r_1$ and $r_2$ are maintainable representations sufficient for $P_1$ and $P_2$, then the pair $\langle r_1,r_2\rangle$ is maintainable and sufficient for $g(P_1,P_2)$, for every function $g$, with at most $|r_1(\Events^{*})|\cdot|r_2(\Events^{*})|$ values.
+  \item For every $m\ge2$ there are properties $P_1,P_2$ and a function $g$ such that $P_1$ and $P_2$ each have exactly $m$ continuation classes, the pair of their minimal maintainable representations has $m^{2}$ values, and the minimal maintainable representation of $g(P_1,P_2)$ has $m$ values.
+\end{enumerate}
+\end{newresult}
+\assumes{(a) concerns arbitrary properties of $\Events^{*}$. (b) is over $\Events=\{a,b\}$.}
+\begin{proof}
+(a) The kernel of the pair is $\ker r_1\cap\ker r_2$, an intersection of right congruences and hence a right congruence, so the pair is maintainable by Result~\ref{prop:maintainable}. It is contained in $\ker P_1\cap\ker P_2$, so it is sufficient for the pair $(P_1,P_2)$ and therefore for $g(P_1,P_2)$. The bound on values is the cardinality of a product. (b) Let $P_1(h)=\#_a(h)\bmod m$, $P_2(h)=\#_b(h)\bmod m$, and $g(x,y)=\mathbf 1[x=y]$. Then $\approx_{P_1}$ has the $m$ classes of $\#_a\bmod m$, separated by words $a^{i}$, and likewise for $P_2$. By Example~\ref{ex:independent-counters} and Result~\ref{thm:independence}, the pair has $m^{2}$ classes. The property $g(P_1,P_2)$ is the property of Example~\ref{ex:interaction}, which has $m$ classes.
+\end{proof}
+
+Part (b) is the formal statement that maintaining a combined question by maintaining its parts is, in general, strictly more expensive than maintaining the combined question directly. It is the first instance of a theme that recurs in Part~IV: the representation required for an obligation is the continuation quotient of the obligation, which in general is not recoverable from the quotients of its constituents.
+
+
+\section{Shared events and the limits of independence}\label{sec:shared-events}
+
+Result~\ref{thm:independence} requires that each property read only its own part of the alphabet. Real systems share events: a single reset, a single clock tick, a single audit touches several counters at once. The product formula survives such sharing under a condition on reachability, and the condition separates the architectures that look alike on paper.
+
+\begin{newresult}[Products with shared events]\label{prop:shared-events}
+Let $\Events=\Events_1\sqcup\Events_2\sqcup R$ and let $M_1$, $M_2$ be minimal Moore machines for properties $P_1$, $P_2$, where $M_i$ reads the letters of $\Events_i\cup R$ and ignores (acts as the identity on) the letters of the other part. Suppose that every state of $M_i$ is reached from its initial state by a word over $\Events_i$ alone. Then the pair $(P_1,P_2)$ has exactly $|S_1|\cdot|S_2|$ continuation classes, where $S_i$ is the state set of $M_i$.
+\end{newresult}
+\assumes{The two machines are minimal; letters of $\Events_{3-i}$ act as the identity on $M_i$; every state of each machine is reachable by letters of its own part.}
+\begin{proof}
+The product machine reaches the pair $(s,t)$ after the history $uv$, where $u\in\Events_1^{*}$ reaches $s$ in $M_1$ and $v\in\Events_2^{*}$ reaches $t$ in $M_2$: the word $u$ leaves $M_2$ at its initial state and $v$ leaves $M_1$ where $u$ put it. So all $|S_1||S_2|$ pairs are reachable. Two different pairs are separated: if $s\ne s'$ there is a word $w$ over $\Events_1\cup R$ on which the outputs of $s$ and $s'$ in $M_1$ differ, because $M_1$ is minimal; the outputs of the pair machine on $w$ differ in the first coordinate. The same holds in the second coordinate. By Result~\ref{prop:family-nerode} the number of classes of the pair is the number of pairwise distinguishable reachable pairs, which is $|S_1||S_2|$.
+\end{proof}
+
+The shared set $R$ may include resets, and a reset that clears both components does not reduce the count, because the pairs are reached before the reset occurs. What the result does not permit is a shared letter in the reachability words. The monitor shows the contrast with exact numbers. Let $P_1=[c_a\ge2]$ and $P_2=[c_b\ge3]$, where $c_a$ and $c_b$ count alarms of two kinds since the last reset. With separate alarm events $a$ and $b$ and no reset, with a reset that clears both counters, and with a reset that clears only $c_a$, the pair has $3\cdot4=12$ classes in each case, as the result predicts; the values have been confirmed by exhaustive comparison of futures of length up to seven. If instead the same alarm event feeds both counters, so that $P_1=[c\ge2]$ and $P_2=[c\ge3]$ with $c$ a single count, then the pair has only $4$ classes, since both are thresholds of one capped count in the sense of Result~\ref{prop:chain}. The architecture, which letters feed which counters, determines the memory, and the properties alone do not.
+
+\begin{example}[Reachability can fail]\label{ex:reach-fail}
+Let a single letter $\mathrm{step}$ advance both of two modular counters modulo $2$ and modulo $4$ at once, so that $\Events_1=\Events_2=\varnothing$ and $R=\{\mathrm{step}\}$. The hypothesis of Result~\ref{prop:shared-events} fails, since the state $1$ of the modulo-$2$ counter is not reached by a word over the empty part, and the pair has $\operatorname{lcm}(2,4)=4$ classes, not $2\cdot4=8$. Sharing the driving event correlates the counters, and the correlation is arithmetic.
+\end{example}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Construct the product machine of the monitor machines for ``at least $2$ alarms outstanding'' and ``at least $3$ alarms outstanding'' (three and four states respectively). Count its reachable states, minimize it using Moore's algorithm, and compare with the bound $mn$ of Result~\ref{prop:product}.
+\end{exercise}
+
+\begin{exercise}
+Using Result~\ref{lem:distinguishing}, show that the property ``$\#_a+\#_b$ is even'' over $\{a,b\}$ has exactly two classes although the separate parity summaries of $\#_a$ and $\#_b$ have four joint values, and identify which function of the pair of summaries computes it.
+\end{exercise}
+
+\begin{exercise}
+Let $P_1(h)=\#_a(h)\bmod2$ and $P_2(h)=(\#_a(h)+\#_b(h))\bmod3$ over $\{a,b\}$. Show that the hypothesis of Result~\ref{thm:independence} fails for this pair, and nevertheless that $|\Events^{*}/{\approx_{(P_1,P_2)}}|=6=2\cdot3$. Explain why a sufficient condition may hold without being necessary, and find the structure that makes the product formula correct here.
+\end{exercise}
+
+\begin{exercise}
+Prove that the two nondeterministic systems of Example~\ref{ex:bisim-nondet} have the same traces and are not bisimilar. Show that every deterministic system with the same traces has a single state after the event $a$, and that this state can perform both $b$ and $c$, and conclude that determinization identifies $p_0$ with $q_0$.
+\end{exercise}
+
+\begin{exercise}
+A system maintains the pair of questions ``at least $3$ alarms outstanding'' and ``the alarm count since reset is a multiple of $4$'' on the monitor. Compute the continuation classes of each question, the continuation classes of the pair, and the minimal memory of the conjunction. Compare the four numbers with the bounds of Result~\ref{prop:product}.
+\end{exercise}
+
+\begin{exercise}
+The family of questions of the previous exercise is revised by adding the question ``at least $5$ ticks have occurred since the last alarm''. Use Result~\ref{thm:independence} to determine whether the new question is independent of the first two under a suitable partition of the alphabet, and compute the memory of the revised family.
+\end{exercise}
+
+
+\begin{exercise}
+Verify Result~\ref{prop:shared-events} for the counters of the monitor with thresholds $2$ and $3$ by listing the twelve reachable pairs, one representative history each, and a separating extension for each pair of the form $(s,t)$ against $(s',t)$ with $s\ne s'$.
+\end{exercise}
+
+\begin{exercise}
+Show that Result~\ref{prop:shared-events} fails if the machines are not required to be minimal, by exhibiting non-minimal machines for the same properties whose pair machine has more reachable states than there are classes. State which part of the proof uses minimality.
+\end{exercise}
+
+\begin{exercise}
+In Example~\ref{ex:reach-fail} replace the moduli by $3$ and $4$ and by $4$ and $6$. Compute the number of classes of the pair in each case, and compare with the product of the moduli.
+\end{exercise}
+

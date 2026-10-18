@@ -1,0 +1,176 @@
+% v2-ch02-reachability.tex
+\chapter{States, Actions, and Finite Reachability}\label{ch:reach}
+\spec{Which states can be reached, and which action menus overstate real freedom?}
+{Directed graphs, reachability, strongly connected components (Tarjan).}
+{The strongly connected component partition is the minimal sufficient representation for reachability questions (Result~\ref{thm:scc-minimal}); an action is reversible exactly when its target lies in the component of its source, and component index never decreases along a trajectory (Result~\ref{prop:ratchet}); the size of the menu bounds neither the reachable set nor its growth (Result~\ref{prop:menu}).}
+{None.}
+{Chapter~\ref{ch:common} and Appendix~\ref{app:suff}.}
+
+A system with finitely many states and a feasibility correspondence is a labelled directed graph. Questions about what can be reached are questions about paths in the graph, and the structure of the graph answers them completely. This chapter states that structure, the decomposition into strongly connected components, and uses it to separate three things that are often run together: how many actions are listed, how many states can be reached, and how much of the past can be undone.
+
+\section{Reachability in a finite system}
+
+\begin{definition}[Transition graph and reachability]\label{def:graph}
+Let $(\PhysSp,U,F,\delta)$ be a controlled system with $\PhysSp$ finite. Its \emph{transition graph} has vertex set $\PhysSp$ and an edge $x\xrightarrow{u}y$ whenever $u\in F(x)$ and $y=\delta(x,u)$. A state $y$ is \emph{reachable} from $x$, written $x\to^{*}y$, if there is a path (possibly empty) from $x$ to $y$. The \emph{reachable set} is $R(x)=\{y:x\to^{*}y\}$.
+\end{definition}
+
+The relation $\to^{*}$ is reflexive and transitive. Two states are \emph{mutually reachable} if $x\to^{*}y$ and $y\to^{*}x$; this is an equivalence relation whose classes are the \emph{strongly connected components} (SCCs).
+
+\begin{established}[Strongly connected components]\label{thm:tarjan}
+The strongly connected components of a finite directed graph with $n$ vertices and $m$ edges can be computed in time $O(n+m)$. The \emph{condensation} obtained by contracting each component to a vertex is a directed acyclic graph. The relation $x\to^{*}y$ holds if and only if the component of $x$ precedes or equals the component of $y$ in the condensation.
+\end{established}
+\source{Tarjan, ``Depth-first search and linear graph algorithms,'' \emph{SIAM Journal on Computing} 1 (1972).}
+\begin{proof}
+For acyclicity: a directed cycle among components $C_1\to C_2\to\dots\to C_k\to C_1$ would make every state in each $C_i$ mutually reachable with every state in the others, contradicting that they are distinct components. For the reachability statement: a path from $x$ to $y$ projects to a path in the condensation from the component of $x$ to that of $y$, and conversely a path in the condensation lifts to a path of states by moving within components, which are strongly connected. The running time is that of Tarjan's algorithm, which is cited.
+\end{proof}
+
+\section{Components are the minimal representation for reachability}
+
+The question ``can the system reach $y$?'' for a fixed $y$ is a function of the current state. A controller that must answer it for every $y$ needs a representation of the current state that supports all of these questions, and the cheapest such representation is the component index.
+
+\begin{newresult}[Components are the minimal sufficient representation for reachability]\label{thm:scc-minimal}
+Let $r:\PhysSp\to R$ be a representation of the states of a finite transition graph, and let $\Phi=\{\rho_y:y\in\PhysSp\}$ with $\rho_y(x)=\mathbf 1[x\to^{*}y]$. Then $r$ is sufficient for every $\rho_y$ if and only if $\ker r\subseteq\ker\kappa$, where $\kappa(x)$ is the component of $x$. Consequently the component map is a minimal sufficient representation for the family $\Phi$, with exactly as many values as there are components.
+\end{newresult}
+\assumes{$\PhysSp$ finite. Sufficiency in the sense of Appendix~\ref{app:suff}.}
+\begin{proof}
+By Result~\ref{a:minimal} the least sufficient kernel is $\bigcap_y\ker\rho_y$, so it suffices to show $\bigcap_y\ker\rho_y=\ker\kappa$. If $x$ and $x'$ lie in the same component then $R(x)=R(x')$, so $\rho_y(x)=\rho_y(x')$ for every $y$. Conversely if $\rho_y(x)=\rho_y(x')$ for all $y$ then $R(x)=R(x')$; since $x\in R(x)=R(x')$ and $x'\in R(x')=R(x)$, the states are mutually reachable.
+\end{proof}
+
+The result says that nothing finer than the component structure is needed to decide whether something can be reached, and nothing coarser suffices. A system that tracks position on a map but forgets which one-way doors it has passed has a representation that identifies states in different components, and by the factorization theorem cannot answer reachability questions correctly.
+
+\section{Reversibility and the ratchet}
+
+\begin{definition}[Reversible action]\label{def:reversible}
+An edge $x\xrightarrow{u}y$ is \emph{reversible} if $y\to^{*}x$. Otherwise it is \emph{irreversible}.
+\end{definition}
+
+\begin{newresult}[Irreversible actions are the inter-component edges]\label{prop:ratchet}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item An edge $x\xrightarrow{u}y$ is reversible if and only if $x$ and $y$ lie in the same component.
+  \item Along any trajectory the component never returns to an earlier component of the condensation: if $x_s$ and $x_t$ are states of a trajectory with $s\le t$ and $x_t\to^{*}x_s$ then they lie in the same component.
+  \item If the condensation has $c$ components, any trajectory changes component at most $c-1$ times.
+\end{enumerate}
+\end{newresult}
+\assumes{$\PhysSp$ finite.}
+\begin{proof}
+(a) If $y\to^{*}x$, then $x\to y\to^{*}x$ shows mutual reachability. Conversely, same component gives $y\to^{*}x$. (b) The trajectory gives $x_s\to^{*}x_t$, and $x_t\to^{*}x_s$ completes mutual reachability. (c) By Result~\ref{thm:tarjan} the condensation is acyclic, so component changes follow a path in a DAG, which visits each component at most once and has at most $c-1$ steps.
+\end{proof}
+
+Result~\ref{prop:ratchet} identifies the actions that cannot be undone by any sequence of actions. It does not say how costly the others are to undo; Chapter~\ref{ch:irreversibility} separates costly reversal from impossible reversal by attaching costs to edges.
+
+\section{Menus and reachable sets}
+
+The nominal menu bounds the immediate branching but not the reach. Two examples make the point.
+
+\begin{newresult}[Menu size does not bound reach]\label{prop:menu}
+For every $n,m\ge1$ there is a finite transition graph with states $x,y$ such that $x$ has $n$ feasible actions and $|R(x)|=n+1$, while $y$ has one feasible action and $|R(y)|\ge m$. Moreover for every $k$ there is a graph with a state $z$ having a feasible action at each of its $n$ nominal actions in the menu but whose reachable set after $k$ steps has fewer than $n$ states.
+\end{newresult}
+\assumes{Finite graphs; the statement is existential.}
+\begin{proof}
+Take $x$ with $n$ edges to $n$ distinct sinks (states without outgoing edges). Then $R(x)=\{x\}\cup$ sinks has $n+1$ elements. Take $y$ on a directed cycle of length $m$. It has one outgoing edge and $R(y)$ contains the whole cycle. For the second statement let $z$ have $n$ edges all leading to the same state $z'$, with $z'$ a sink; the reachable set after any $k\ge1$ steps is $\{z'\}$.
+\end{proof}
+
+A comparison of two states by the sizes of their menus is therefore misleading. The relevant comparison is of reachable sets, and even that needs care: the set $R(x)$ forgets how many steps are needed and at what cost, which Chapter~\ref{ch:counting} takes up.
+
+\section{Resources and the expanded graph}
+
+A consumable resource enlarges the state. For the rover of Example~\ref{ex:rover} the positional graph on $\{0,1,2,3\}$ ignores battery, while the transition graph of the controlled system has states $(p,b)$.
+
+\begin{newresult}[Positional reachability overstates real reachability]\label{prop:projection}
+Let $\pi:(p,b)\mapsto p$ be the projection from the expanded graph of Example~\ref{ex:rover} to the positional graph on $\{0,1,2,3\}$ with edges between adjacent positions. For every state $(p,b)$, $\pi(R(p,b))\subseteq R_{\mathrm{pos}}(p)$, and the inclusion can be strict: $R_{\mathrm{pos}}(2)=\{0,1,2,3\}$, while $R(2,0)=\{(2,0)\}$.
+\end{newresult}
+\assumes{Rover as in Example~\ref{ex:rover}: moves cost one unit, charging is possible only at position $0$.}
+\begin{proof}
+Every path in the expanded graph projects to a path in the positional graph, which gives the inclusion. At $(2,0)$ no move is feasible since $b=0$, and the actions $\mathrm{sample}$ and $\mathrm{upload}$ leave the state unchanged or are infeasible, so nothing but $(2,0)$ is reachable; the dock, where the battery could be restored, cannot be reached because every move to it needs battery.
+\end{proof}
+
+The positional graph is a sufficient representation of the environment's geometry and an insufficient representation of what the rover can do. The difference is the battery, and the rover at $(2,0)$ is in a component of its own from which nothing else can be reached, although every position looks reachable on the map.
+
+
+\section{The reach profile}\label{sec:profile}
+
+The reachable set $R(x)$ forgets how long it takes to reach each state. Let $R_k(x)$ be the set of states reachable from $x$ in at most $k$ steps, so $R_0(x)=\{x\}$ and $R(x)=\bigcup_kR_k(x)$. The sequence of sizes $\bigl(|R_k(x)|\bigr)_{k\ge0}$ is the \emph{reach profile} of $x$.
+
+\begin{newresult}[The reach profile stabilizes in at most $n-1$ steps]\label{prop:profile}
+In a graph with $n$ states, $R_0(x)\subseteq R_1(x)\subseteq\cdots$ is nondecreasing and $R_k(x)=R(x)$ for every $k\ge n-1$. The bound is attained: on the directed path $v_1\to v_2\to\cdots\to v_n$ the profile of $v_1$ is $1,2,\dots,n$. If $R_{k+1}(x)=R_k(x)$ for some $k$ then $R_j(x)=R(x)$ for all $j\ge k$. The \emph{distance} $d(x,y)=\min\{k:y\in R_k(x)\}$ is computed for all $y$ by breadth-first search in time $O(n+m)$.
+\end{newresult}
+\assumes{Finite graph.}
+\begin{proof}
+Monotonicity is the definition. If $y\in R(x)$, a shortest path from $x$ to $y$ visits no state twice (a repeated state could be cut out, giving a shorter path), so it has at most $n-1$ edges and $y\in R_{n-1}(x)$. If $R_{k+1}(x)=R_k(x)$ then $R_k(x)$ is closed under successors, because every successor of a state in $R_k(x)$ lies in $R_{k+1}(x)=R_k(x)$; it contains $x$, so it contains $R(x)$. For the path graph $R_k(v_1)=\{v_1,\dots,v_{k+1}\}$. Breadth-first search visits states in order of $d$ and examines each edge once.
+\end{proof}
+
+For the rover started at $(0,3)$ the profile is $1,2,4,6$: after one step the rover can be at $(0,3)$ or $(1,2)$, after two steps at four states, and after three steps all six states it will ever reach. Started at $(2,3)$ it is $1,3,5,8$, and at $(1,1)$ it is $1,3,4,5,7,9$, which reaches its limit only after five steps. The profile distinguishes states whose reachable sets are equal in size: two states can have the same $|R(x)|$ and very different times to reach it. A controller with a horizon of two steps sees $4$ states from $(0,3)$ and $5$ from $(2,3)$, although the long-run counts are $6$ and $8$.
+
+\section{Counting trajectories through the condensation}\label{sec:count-traj}
+
+The condensation (Result~\ref{thm:tarjan}) is acyclic, so questions about sequences of component changes are questions about paths in a DAG, and they can be answered by dynamic programming.
+
+\begin{newresult}[Reachable components and component paths]\label{prop:dag-count}
+Let the condensation have components $C_1,\dots,C_c$ numbered in a topological order (every edge goes from a lower to a higher index), and let $e_{ij}$ be the number of edges from $C_i$ to $C_j$. Then the number $N_j$ of distinct paths in the condensation from $C_1$ to $C_j$ satisfies $N_1=1$ and $N_j=\sum_{i<j}e_{ij}N_i$, and the set of components reachable from $C_i$ is computed in $O(c\,(c+m))$ time, or $O(c\,m/w)$ with machine words of $w$ bits.
+\end{newresult}
+\assumes{Finite graph; $e_{ij}$ counts edges between distinct components.}
+\begin{proof}
+A path from $C_1$ to $C_j$ ends with an edge from some $C_i$ with $i<j$, preceded by a path to $C_i$; these are distinguished by the last edge and the preceding path, giving the recurrence. For reachability, process the components in reverse topological order and set $\mathrm{Reach}(C_i)=\{C_i\}\cup\bigcup_{C_i\to C_j}\mathrm{Reach}(C_j)$, which is a union over at most $m$ edges of sets of at most $c$ elements; with bit sets the unions cost $c/w$ words each.
+\end{proof}
+
+\begin{example}[A funnel]\label{ex:funnel}
+A line has four stages $1\to2\to3\to4$ and each stage $i$ can also be reached from stage $1$ by a bypass edge $1\to i$ for $i=3,4$, plus an edge $2\to4$. The condensation is the graph itself, and $N_2=1$, $N_3=e_{13}N_1+e_{23}N_2=1+1=2$ (the bypass and the path through $2$), $N_4=e_{14}N_1+e_{24}N_2+e_{34}N_3=1+1+2=4$. So there are four distinct component paths to the last stage, and the reachable set of $1$ is everything, but a policy that must pass through stage $3$ has only two of the four.
+\end{example}
+
+\section{Dead ends and one-way doors}\label{sec:deadends}
+
+Terminal components deserve their own name because they are where trajectories end. A \emph{dead end} is a terminal component that does not contain the intended goal states.
+
+\begin{newresult}[Trajectories settle; every state leads to a terminal component]\label{prop:terminal}
+In a finite graph every infinite trajectory eventually remains in a single component (not necessarily terminal), and from every state some finite path reaches a terminal component. The set $D$ of states from which a goal set $T$ is unreachable is closed under successors, it is the complement of the backward closure $\mathrm{Pre}^*(T)$, and membership in $D$ is a property of the component: all states of a component are in $D$ or none is.
+\end{newresult}
+\assumes{Finite graph.}
+\begin{proof}
+Along a trajectory the component index never decreases in a topological order (Result~\ref{prop:ratchet}(b)) and takes at most $c$ values, so from some time on it is constant. For the second statement, from any state follow an edge to a different component whenever one exists; the index strictly increases, so this stops after at most $c-1$ steps at a component with no edge to another, which is terminal. If $x\in D$ and $x\to y$ then $y\in D$, for otherwise $x\to y\to^{*}T$. The set $D$ is by definition the complement of $\mathrm{Pre}^*(T)$, and mutually reachable states have equal reachable sets, so they agree on whether $T$ is reached.
+\end{proof}
+
+In the rover, started at $(0,3)$ the terminal components reachable are $\{(1,0)\}$ and $\{(3,0)\}$, both stranded states, and the intended goal ``return to the dock with the sample'' is unreachable from them. Take as goal set $T$ the four dock states $(0,b)$. The set $D$ of states from which $T$ cannot be reached has six members: the three stranded states $(1,0)$, $(2,0)$, $(3,0)$, the sample site $(2,1)$, whose only moves lead to $(1,0)$ and $(3,0)$, and the states $(3,1)$ and $(3,2)$, from which the rover must pass through $(2,0)$ or $(2,1)$ and never gets back. The state $(2,1)$ shows that a state can lie in the viability kernel, because its self-loop \texttt{sample} keeps the constraint, and also in $D$, because the dock is unreachable from it.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute the strongly connected components of the graph with edges $a\to b$, $b\to c$, $c\to a$, $c\to d$, $d\to e$, $e\to d$, $e\to f$. Draw the condensation and list the irreversible edges.
+\end{exercise}
+
+\begin{exercise}
+Prove that if two states have the same reachable set, they lie in the same component, and that the converse fails for the sets $R_k(x)$ of states reachable in exactly $k$ steps.
+\end{exercise}
+
+\begin{exercise}
+In the rover with the charge action available, find all states $(p,b)$ from which a state at position $3$ is reachable. Check your answer against the conditions $b\ge3-p$ (reach position $3$ directly) and $b\ge p$ (return to the dock, charge, and then travel).
+\end{exercise}
+
+\begin{exercise}
+A manufacturing line has states ``raw'', ``cut'', ``assembled'', ``shipped'' with edges raw to cut, cut to assembled, assembled to shipped, and a rework edge from assembled to cut. Compute the components and say which actions are reversible.
+\end{exercise}
+
+\begin{exercise}
+Using Result~\ref{thm:scc-minimal}, describe the minimal representation that a controller needs in order to decide, for each target $y$, whether the system can still reach $y$, for the line of the previous exercise. State what the controller cannot decide if it forgets whether the product has shipped.
+\end{exercise}
+
+\begin{exercise}
+Compute the reach profile of $(2,1)$ in the rover and of $(0,0)$, and explain why $(0,0)$ has reach size $4$ but a profile that stabilizes only at step $3$.
+\end{exercise}
+
+\begin{exercise}
+Prove that if $R_{k+1}(x)=R_k(x)$ then also $R_{k+1}(y)=R_k(y)$ is \emph{not} implied for $y\in R_k(x)$, by constructing a graph in which the profile of $x$ is flat for one step while that of a successor $y$ is still growing. What is the strongest correct statement about profiles of successors?
+\end{exercise}
+
+\begin{exercise}
+Compute $N_j$ for the condensation with components $1,\dots,5$ and edges $1\to2$ (two parallel edges), $1\to3$, $2\to4$, $3\to4$, $4\to5$ (three parallel edges).
+\end{exercise}
+
+\begin{exercise}
+Show that the number of strongly connected components of a graph is at least the number of edges of any maximal acyclic subgraph that is a path, and that equality can fail. Give a graph on six vertices with two components and a path of five vertices in it.
+\end{exercise}
+
+\begin{exercise}
+Let $G$ be a graph in which every state has out-degree exactly two. Show that $G$ has at least one cycle, and that there are graphs of this kind whose condensation is a single path of components.
+\end{exercise}
+

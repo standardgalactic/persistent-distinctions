@@ -1,5 +1,11 @@
 # Persistent Distinctions
 
+[Distinction and Continuation](https://standardgalactic.github.io/persistent-distinctions/books-source/book1-distinction-continuation.pdf) — *In Progress*
+
+[The Shape of Possibility](https://standardgalactic.github.io/persistent-distinctions/books-source/book2-shape-of-possibility.pdf) — *In Progress*
+
+* [Room for Another Way](https://standardgalactic.github.io/persistent-distinctions/) — *Music Visualizer*
+
 **Version:** 0.1.0  
 **Domain:** Complex systems  
 **Theory seed:** `persistent distinctions`

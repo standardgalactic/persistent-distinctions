@@ -1,0 +1,119 @@
+% ch15-identity.tex
+\chapter{Identity Through Continuation}\label{ch:identity}
+\spec{Which identity criteria are appropriate relative to the operations a system promises to support?}
+{Observational equivalence relative to a signature; the Myhill--Nerode congruence.}
+{The coarsest identity criterion preserving a family of promised observations is their joint kernel, and the coarsest one that also survives every promised update is the continuation equivalence of the family (Result~\ref{thm:identity}); enlarging the promises refines identity and cannot be undone (Result~\ref{prop:promise-refine}).}
+{None.}
+{Chapters~\ref{ch:fixed}, \ref{ch:incremental}, and~\ref{ch:provenance}.}
+
+Two records are the same object when nothing a system promises to do can tell them apart. That sentence is a definition schema, and the content depends on what is promised. Promising to report a balance makes two accounts with the same balance the same, for that purpose. Promising to report whether the account was ever overdrawn makes them different if their histories differ in that respect. This chapter states the schema precisely, proves that it has a unique coarsest instance for each set of promises, and shows how identity responds when promises are added.
+
+\section{Promised operations and identity criteria}
+
+Work with histories $\Hist\subseteq\Events^{*}$ as in Chapter~\ref{ch:histories}. A system promises two kinds of operation. An \emph{observation} is a function $q:\Hist\to B_q$ that reports something about the current history without changing it. An \emph{update} is an event $a\in\Events$ that extends the history. A \emph{promise} is a pair $(\mathcal Q,F)$ of a family $\mathcal Q$ of observations and a submonoid $F\subseteq\Events^{*}$ of promised update sequences, the \emph{future the system must support}. The promise $(\mathcal Q,\{\varepsilon\})$ consists of observations alone.
+
+\begin{definition}[Identity criterion]\label{def:identity}
+An \emph{identity criterion} is an equivalence relation $\sim$ on $\Hist$. It \emph{preserves the observations} $\mathcal Q$ if $h\sim h'$ implies $q(h)=q(h')$ for all $q\in\mathcal Q$. It \emph{preserves the promise} $(\mathcal Q,F)$ if, in addition, $h\sim h'$ implies $hw\in\Hist\Leftrightarrow h'w\in\Hist$ and $hw\sim h'w$ for every $w\in F$ with $hw\in\Hist$.
+\end{definition}
+
+An identity criterion that preserves the promise is one that the system can use to treat identified histories as one object: whatever is observed, now or after any promised sequence of updates, is the same for both.
+
+\begin{newresult}[The coarsest criterion preserving a promise]\label{thm:identity}
+Let $\mathcal Q$ be a family of observations and $F\subseteq\Events^{*}$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item The coarsest identity criterion preserving the observations $\mathcal Q$ is the joint kernel $\kappa_{\mathcal Q}=\bigcap_{q\in\mathcal Q}\ker q$.
+  \item For $F=\Events^{*}$, the coarsest identity criterion preserving the promise $(\mathcal Q,\Events^{*})$ is the continuation equivalence
+  \[
+  h\approx_{\mathcal Q}h'\iff \Ext(h)=\Ext(h')\text{ and }\forall w\in\Ext(h),\ \forall q\in\mathcal Q:\ q(hw)=q(h'w),
+  \]
+  which is the largest right congruence contained in $\kappa_{\mathcal Q}$.
+  \item For a submonoid $F$, the coarsest criterion preserving $(\mathcal Q,F)$ is $h\approx^{F}_{\mathcal Q}h'$ if and only if, for all $w\in F$, $hw\in\Hist\Leftrightarrow h'w\in\Hist$ and, when $hw\in\Hist$, $q(hw)=q(h'w)$ for all $q\in\mathcal Q$. For $F=\{\varepsilon\}$ this is $\kappa_{\mathcal Q}$ and for $F=\Events^{*}$ it is $\approx_{\mathcal Q}$.
+\end{enumerate}
+\end{newresult}
+\assumes{The family $\mathcal Q$ may be infinite; $\Hist$ is prefix closed so that $\Ext$ is defined; $F$ is a submonoid of $\Events^{*}$.}
+\begin{proof}
+(a) An equivalence relation preserves $\mathcal Q$ exactly when it is contained in every $\ker q$, hence in $\kappa_{\mathcal Q}$, and $\kappa_{\mathcal Q}$ is itself such a relation. (b) The relation $\approx_{\mathcal Q}$ is an equivalence, is contained in $\kappa_{\mathcal Q}$ by taking $w=\varepsilon$, and is a right congruence: if $h\approx_{\mathcal Q}h'$ and $u\in\Ext(h)$ then $\Ext(hu)=\{w:uw\in\Ext(h)\}=\Ext(h'u)$ and $q(huw)=q(h'uw)$ for all such $w$, so $hu\approx_{\mathcal Q}h'u$. Hence it preserves the promise with $F=\Events^{*}$. Conversely, a relation $\sim$ that preserves the promise satisfies, for $h\sim h'$ and $w\in\Ext(h)$, $hw\sim h'w$ and therefore $q(hw)=q(h'w)$, and has equal extensions; so $\sim\subseteq\approx_{\mathcal Q}$. This is Result~\ref{thm:nerode-family} for the family $\mathcal Q$ and the full set of updates. (c) The relation $\approx^{F}_{\mathcal Q}$ is an equivalence and, taking $w=\varepsilon\in F$, preserves $\mathcal Q$. If $u\in F$ and $hu\in\Hist$, then for $w\in F$ we have $uw\in F$ because $F$ is a submonoid, so $huw\in\Hist\Leftrightarrow h'uw\in\Hist$ and the observations agree; hence $hu\approx^{F}_{\mathcal Q}h'u$. Conversely any $\sim$ preserving the promise satisfies, for $h\sim h'$ and $w\in F$, the membership condition and $hw\sim h'w$, so $q(hw)=q(h'w)$. Thus $\sim\,\subseteq\,\approx^{F}_{\mathcal Q}$. This is the restricted-update theory of Chapter~\ref{ch:incremental}.
+\end{proof}
+
+The account illustrates the three levels.
+
+\begin{example}[Identity of accounts under three promises]\label{ex:identity-accounts}
+Take the histories of Example~\ref{ex:bank}.
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item If the system promises only to report the current balance, $\mathcal Q=\{\beta\}$ and $F=\{\varepsilon\}$, identity is $\ker\beta$: two accounts are the same if their balances agree. If the system also promises to support further deposits and withdrawals, $F=\Events^{*}$, identity is still $\ker\beta$, because $\beta(hw)=\beta(h)+\beta(w)$ makes $\ker\beta$ a right congruence.
+  \item If the system promises to report whether the account has ever been overdrawn, $\mathcal Q=\{q_{\mathrm{neg}}\}$ and $F=\{\varepsilon\}$, identity is $\ker q_{\mathrm{neg}}$, which has two classes. With $F=\Events^{*}$ identity becomes the continuation quotient of Result~\ref{prop:account}: balances matter for accounts not yet overdrawn, and all overdrawn accounts are identified.
+  \item With both promises the criterion is the continuation equivalence of the pair, which is strictly finer than either.
+\end{enumerate}
+\end{example}
+
+\section{Promises refine identity}
+
+\begin{newresult}[Enlarging the promise refines identity]\label{prop:promise-refine}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item If $\mathcal Q\subseteq\mathcal Q'$ and $F\subseteq F'$ then $\approx^{F'}_{\mathcal Q'}\subseteq\approx^{F}_{\mathcal Q}$.
+  \item The inclusion in (a) can be strict at each of the three levels (observations, updates, and both together).
+  \item If a system has identified two histories $h\sim h'$ under a promise and later adds an observation or update that separates them, no operation of the system on the identified object can recover which of the two it was.
+\end{enumerate}
+\end{newresult}
+\assumes{As in Result~\ref{thm:identity}.}
+\begin{proof}
+(a) Preserving a larger promise is a stronger requirement, so every criterion preserving $(\mathcal Q',F')$ preserves $(\mathcal Q,F)$. (b) In Example~\ref{ex:identity-accounts}, $\{\beta\}\subseteq\{\beta,q_{\mathrm{neg}}\}$ with $F=\{\varepsilon\}$ gives strict refinement; $F=\{\varepsilon\}\subseteq F'=\Events^{*}$ with $\mathcal Q=\{q_{\mathrm{neg}}\}$ gives strict refinement from two classes to the continuation quotient; combining them gives the third case. (c) If $\sim$ is the criterion in use and the system's only retained information about the object is the class under $\sim$, then by Result~\ref{cor:norecover} no function of that class separates $h$ from $h'$.
+\end{proof}
+
+Part (c) is the identity analogue of the irreversibility of coarsening. A system that merges records by a coarse criterion has made a commitment about what it will never be asked, and widening the promise later is only possible for records that were kept apart.
+
+\begin{remark}
+The criterion that preserves every conceivable observation is the identity relation on histories, realized by the injective hash-linked representation of Result~\ref{prop:hash-chain}. Chapter~\ref{ch:provenance} used the kernel of an audit family as an identity criterion for revision lineages; this chapter shows that it is the case $F=\{\varepsilon\}$ of the same schema, and that when audits are to be answerable after further revisions the criterion must be the continuation equivalence.
+\end{remark}
+
+
+\section{How an undo operation enlarges identity}\label{sec:undo}
+
+The promise to report the current text of a document and to support further edits identifies two histories whenever they have the same text, since a later edit overwrites what came before. The promise changes if an operation is added that reaches back into the past. Let a single section take contents from a set $C$ with $|C|=k\ge2$ and initial content $c_0$, and let the events be the overwrites $\mathrm{set}(c)$ together with $\mathrm{undo}$, which restores the content held before the most recent overwrite and has no effect if no overwrite has occurred since the start or since the last undo.
+
+\begin{newresult}[Identity of documents with one-level undo]\label{prop:undo-identity}
+For the promise ``report the current text'' with $F$ the submonoid of all sequences of events, the continuation equivalence has exactly $k^{2}$ classes. Without the undo event it has $k$ classes. A class is determined by the current content $c$ together with either the statement that undo would change nothing or the content $p\ne c$ that undo would restore.
+\end{newresult}
+\assumes{One section, $k$ contents, undo of depth one: after an undo a further undo has no effect until the next overwrite.}
+\begin{proof}
+Track the pair $(c,p)$ of current content and previous content, with $p=\bot$ before any overwrite and after an undo. The event $\mathrm{set}(c')$ sends $(c,p)$ to $(c',c)$; the event $\mathrm{undo}$ sends $(c,p)$ to $(p,\bot)$ if $p\ne\bot$ and leaves it unchanged otherwise. The pairs $(c,\bot)$ and $(c,c)$ behave identically: $\mathrm{set}(c')$ sends both to $(c',c)$, and $\mathrm{undo}$ sends the first to itself and the second to $(c,\bot)$, which has the same behaviour, so they are identified. Every other pair $(c,p)$ with $p\notin\{\bot,c\}$ is reached by $\mathrm{set}(p)\,\mathrm{set}(c)$, and the pairs $(c,\bot)$ are reached for every $c$. This gives $k$ classes with trivial previous content and $k(k-1)$ with a distinct previous content, in all $k^{2}$ candidates. They are pairwise separated: different current contents are separated by the empty word; with equal current content $c$ and previous contents $p\ne p'$, at least one of them, say $p$, is a content different from $c$, and the word $\mathrm{undo}$ gives the text $p$ in one case and either $p'\ne p$ or $c\ne p$ in the other. Without the undo event the previous content is never observed, and the classes are the $k$ current contents.
+\end{proof}
+
+For two contents the four classes are the text $0$ with nothing to undo, the text $1$ with nothing to undo, the text $0$ with $1$ to restore, and the text $1$ with $0$ to restore, and the table of futures confirms that no two have the same behaviour; for three contents there are nine, a figure also confirmed by comparing the texts after all event sequences of length at most five. The lesson is general. A promise about the past, here that undo will restore an earlier text, converts information that an overwriting update discards into information that identity must retain, and the amount retained grows from $k$ to $k^{2}$ for a single level of undo. A criterion of identity chosen when only edits were promised is no longer valid when undo is added: two documents that were rightly the same become different, in the sense of Result~\ref{prop:promise-refine}(c), and the system cannot separate them afterwards unless the previous contents were kept.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+In the document of Example~\ref{ex:document}, compute the identity criterion for the promise ``report the current text'' with $F=\{\varepsilon\}$ and with $F$ the submonoid of all sequences of edits. Decide whether two documents with the same text but different held contents are identified in each case.
+\end{exercise}
+
+\begin{exercise}
+Add an undo operation to the document events, which restores the text before the last edit. Show that the continuation equivalence for the promise ``report the current text'' now separates histories that it identified without undo, and compute the minimal number of classes for documents of at most two edits.
+\end{exercise}
+
+\begin{exercise}
+Prove that $\approx^{F}_{\mathcal Q}$ is an equivalence relation and that it contains $\approx_{\mathcal Q}$, and give an example where the containment is strict.
+\end{exercise}
+
+\begin{exercise}
+Two replicas of a counter agree on every observation that either of them has been asked so far. Argue that this does not imply they are the same object for the promise to support future increments, and give the condition under which agreement on past observations suffices.
+\end{exercise}
+
+\begin{exercise}
+A system identifies records by a content hash of the current text and later promises to report who last edited each section. Using Result~\ref{prop:content-not-lineage}, state exactly which pairs of records can no longer be re-separated and which could still be separated if the original lineages had been kept.
+\end{exercise}
+
+
+\begin{exercise}
+Extend Result~\ref{prop:undo-identity} to undo of depth two, in which the system keeps a stack of the two most recent previous contents and each undo pops it, and show that for $k=2$ there are $8$ classes. Identify the general pattern for undo of depth $d$ and $k$ contents.
+\end{exercise}
+
+\begin{exercise}
+Add a $\mathrm{redo}$ event that reverses the most recent undo. Describe the continuation equivalence for $k=2$ and show that it has $6$ classes, more than the $4$ of Result~\ref{prop:undo-identity}, listing a separating future for each pair.
+\end{exercise}
+
+\begin{exercise}
+Show that the criterion of Result~\ref{prop:undo-identity} is not a refinement of the criterion for the promise ``report the current text'' alone but is a refinement of the criterion for the promise ``report the current text'' with $F$ consisting of overwrites only. Explain the difference.
+\end{exercise}
+

@@ -1,0 +1,73 @@
+% v2-appG-numerics.tex
+\chapter{Numerical Methods}\label{app:numerics}
+
+The algorithms of the volume are exact in exact arithmetic. This appendix states what is needed to run them in floating point and what guarantees survive.
+
+\section{Fixed-point iteration for kernels and values}
+
+\begin{newresult}[Finite termination of kernel iteration]\label{g:kernel-iter}
+For a finite system with $|X|$ states the iteration $S_0=C$, $S_{k+1}=\Gamma(S_k)\cap S_k$ (with $\Gamma$ the one-step predecessor operator) stabilizes after at most $|X|-|C^c|$ steps, and the stable set is the kernel. A state's removal time is the least number of steps within which an adversary can force it out.
+\end{newresult}
+\assumes{Finite state set.}
+\begin{proof}
+The sets decrease, and the iteration stops as soon as two consecutive sets agree, since then $\Gamma(S_k)\supseteq S_k$ and $S_k$ is a viability domain; each non-final step removes at least one state, so there are at most $|C|$ steps. The removal-time statement is the induction of Result~\ref{c:kernel}.
+\end{proof}
+
+\begin{newresult}[Stopping rule for value iteration]\label{g:vi}
+Value iteration for a discounted MDP stopped at the first $k$ with $\|V_k-V_{k-1}\|_\infty\le\tfrac{1-\gamma}{\gamma}\epsilon$ returns $V_k$ with $\|V_k-V^*\|_\infty\le\epsilon$. The number of iterations needed from $V_0=0$ is at most $\lceil\log(\bar r/((1-\gamma)\epsilon))/\log(1/\gamma)\rceil$, where $\bar r$ bounds $|r|$. The policy greedy with respect to $V_k$ has value within $2\gamma\epsilon/(1-\gamma)$ of optimal at every state.
+\end{newresult}
+\assumes{Exact arithmetic.}
+\begin{proof}
+The first bound is Result~\ref{e:bellman}. For the count, $\|V_0-V^*\|\le\bar r/(1-\gamma)$ and $\gamma^k\bar r/(1-\gamma)\le\epsilon$ once $k\ge\log(\bar r/((1-\gamma)\epsilon))/\log(1/\gamma)$. For the policy let $\pi$ be greedy for $V_k$, so $T_\pi V_k=TV_k$. Then $\|V^\pi-V^*\|\le\|V^\pi-T_\pi V_k\|+\|TV_k-TV^*\|\le\gamma\|V^\pi-V_k\|+\gamma\|V_k-V^*\|$, and $\|V^\pi-V_k\|\le\|V^\pi-V^*\|+\|V^*-V_k\|$, so $(1-\gamma)\|V^\pi-V^*\|\le2\gamma\|V_k-V^*\|\le2\gamma\epsilon$.
+\end{proof}
+
+\section{Spectral radius}
+
+\begin{established}[Power iteration]\label{g:power}
+If $A$ has a dominant eigenvalue $\lambda_1$ with $|\lambda_1|>|\lambda_2|\ge\cdots$ and the starting vector has a nonzero component along the dominant eigenvector, then $\|A^{k+1}v\|/\|A^kv\|\to|\lambda_1|$ at rate $O(|\lambda_2/\lambda_1|^k)$.
+\end{established}
+\source{Golub and Van Loan, \emph{Matrix Computations}, Section~7.3.}
+
+For a nonnegative reducible matrix with several components of equal spectral radius, the iteration should be run per strongly connected component (Result~\ref{c:scc}) and the maximum taken, as in the growth theorem of Chapter~\ref{ch:counting}. For a periodic irreducible matrix the ratio oscillates and a geometric mean over a period is used.
+
+\section{Monte Carlo certification of chance constraints}
+
+\begin{newresult}[Sample size for a chance constraint]\label{g:mc}
+To decide, from $N$ independent simulated trajectories, whether the probability of constraint violation $q$ is at most $q_0$, estimate $\hat q$ as the violation frequency. Accepting when $\hat q\le q_0-\epsilon$ certifies $q\le q_0$ with confidence at least $1-\delta$ provided $N\ge\ln(2/\delta)/(2\epsilon^2)$, in the sense that the probability of accepting when $q>q_0$ is at most $\delta/2$. The sample size does not depend on the dimension of the state or the length of the horizon.
+\end{newresult}
+\assumes{Independent trajectories from the true model.}
+\begin{proof}
+If $q>q_0$ and $\hat q\le q_0-\epsilon$, then $\hat q\le q-\epsilon$, which by Result~\ref{f:hoeffding} has probability at most $e^{-2N\epsilon^2}\le\delta/2$ for the stated $N$ (one-sided form of the inequality).
+\end{proof}
+
+The guarantee is about the model that is simulated. It transfers to the real system only through the model error bounds of Chapter~\ref{ch:proxies}.
+
+\section{Floating-point and thresholds}
+
+Decisions that compare a computed quantity to a threshold (the kernel membership $b\ge(1+\delta)x$, the break-even $g>hR$) are discontinuous in the inputs. Under floating-point error of size $\eta$, the decision is correct whenever the margin exceeds $\eta$ times the condition number of the computation. The reliable remedy is interval arithmetic: compute an interval containing the exact value and decline to decide when the interval contains the threshold. All kernel computations in the examples of this volume are over integers or rationals and therefore exact.
+
+\section{Worked examples}
+
+\begin{example}[Iterations to $\epsilon$]\label{g:ex-iter}
+With $\gamma=0.9$, rewards in $[0,1]$ and $\epsilon=0.01$, Result~\ref{g:vi} requires at most $\lceil\log(1/(0.1\cdot0.01))/\log(1/0.9)\rceil=\lceil6.91/0.1054\rceil=66$ iterations from $V_0=0$. A tolerance of $10^{-6}$ needs about $131$, so the cost is logarithmic in the accuracy and grows like $1/(1-\gamma)$ in the discount.
+\end{example}
+
+\begin{example}[Samples for a chance constraint]\label{g:ex-mc}
+To certify a violation probability below $q_0=0.05$ with margin $\epsilon=0.02$ and confidence $\delta=0.01$, Result~\ref{g:mc} requires $N\ge\ln(200)/(2\cdot0.0004)=5.30/0.0008\approx6623$ trajectories. Halving the margin to $0.01$ quadruples this to about $26\,500$.
+\end{example}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute the number of iterations of Result~\ref{g:vi} for $\gamma=0.99$, $\bar r=1$ and $\epsilon=10^{-3}$.
+\end{exercise}
+\begin{exercise}
+Run the power iteration by hand for $A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$ from $v=(1,0)^\top$ for three steps and compare the ratios with $\rho(A)=3$.
+\end{exercise}
+\begin{exercise}
+Explain why the power iteration fails for a permutation matrix of a cycle, and how a geometric mean over a period repairs the growth estimate.
+\end{exercise}
+\begin{exercise}
+Design an interval-arithmetic test for the kernel condition $b\ge(1+\delta)x$ when $\delta$ is known only to within $\pm10^{-3}$.
+\end{exercise}

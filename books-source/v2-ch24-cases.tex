@@ -1,0 +1,156 @@
+% v2-ch24-cases.tex
+\chapter{Integrated Case Studies and Research Directions}\label{ch:cases}
+\spec{What does a full analysis look like from specification through intervention and revision?}
+{Results of Parts~I to~VI.}
+{Four cases, each analysed from specification to a computed kernel or region: a resource-limited autonomous system (Result~\ref{prop:robot} with its robust form), a governed evidence archive (Results~\ref{prop:archive-depth} and~\ref{prop:archive-rent}), an adaptive controller (Result~\ref{prop:adaptive}), and an infrastructure network (Result~\ref{prop:network}).}
+{Each case ends with its own list of open obligations.}
+{Parts I to VI.}
+
+The preceding chapters treat one phenomenon at a time. A real system exhibits several together, and the value of the framework lies in how its pieces combine: the specification fixes the state and the constraint, the kernel says what is safe, the cost model says what safety costs, the revision structure says what can change. Each case below is small enough to compute exactly. The cases are not meant to be realistic; they show the order of steps and which result supplies which line of the analysis.
+
+\section{A resource-limited autonomous system}
+
+\paragraph{Specification.} A vehicle moves on positions $\{0,1,\dots,L\}$ with a charger at $0$. State $(x,b)$ with battery $b\in\{0,\dots,B\}$. Moving one step or waiting away from the charger costs one unit of battery; waiting at $0$ restores $b=B$. An action is available only if the battery suffices. A state without an available action is a failure. The constraint is to never reach a failure.
+
+\begin{newresult}[Kernel of the vehicle]\label{prop:robot}
+The viability kernel is $\mathcal K=\{(x,b):b\ge x\}$. From $(0,B)$ the positions reachable inside the kernel are $0,1,\dots,\min(L,\lfloor B/2\rfloor)$, whereas without the kernel constraint positions up to $\min(L,B)$ are reachable. If each step costs an amount in $[1,1+\delta]$ chosen adversarially, the robust kernel is $\{(x,b):b\ge(1+\delta)x\}$.
+\end{newresult}
+\assumes{Integer batteries in the first statement; real batteries and costs in $[1,1+\delta]$ in the second.}
+\begin{proof}
+The set $\{b\ge x\}$ is a viability domain: at $(x,b)$ with $x\ge1$ moving left gives $(x-1,b-1)$ with $b-1\ge x-1$, and at $x=0$ waiting gives $(0,B)$. Conversely if $b<x$, each step changes the position by at most one and costs at least one unit, so after $b$ steps the battery is zero at a position $x'\ge x-b\ge1$, where no action is available. Hence such states are not viable. From $(0,B)$ after $m$ rightward moves the state is $(m,B-m)$, which lies in the kernel iff $m\le B/2$, and the positions reachable ignoring the kernel are those with $m\le B$. For the robust statement: the set $\{b\ge(1+\delta)x\}$ is robustly invariant, since moving left with cost $c\le1+\delta$ gives $b-c\ge(1+\delta)x-(1+\delta)=(1+\delta)(x-1)$, and at $0$ waiting restores $B$; if $b<(1+\delta)x$ the adversary charges $1+\delta$ at every step, and after $b/(1+\delta)<x$ steps the vehicle is stranded.
+\end{proof}
+
+The reachable set shrinks by a factor of two under the safety requirement, and by a further factor $1/(1+\delta)$ under cost uncertainty. Exploration of the corridor is then governed by Result~\ref{thm:safe-explore}: the unknown cell beyond position $\lfloor B/2\rfloor$ is not safely testable from the charger with a single charge.
+
+\paragraph{Obligations of this case.} (i) The chance-constrained version with independent per-step costs is treated for a two-valued cost in Section~\ref{sec:vehicle-chance}; the general case with continuous costs, and the Boole allocation across many excursions, are not treated beyond the remark there. (ii) The multi-charger version, in which the kernel is the set of states within battery distance of some charger.
+
+\section{A governed evidence archive}
+
+\paragraph{Specification.} An archive receives records from two sources and admits claims under a rule. The constitutional constraint is $C$: no claim is admitted without sourced evidence. The rule $r_0$ admits a claim when at least one record from each source has been received; $r_1$ admits it when at least three records from source $1$ and one record from source $2$ have been received; $r_2$ admits any claim. The revision graph is $r_0\to r_1\to r_2$; $r_0,r_1$ admit $C$ and $r_2$ does not.
+
+\begin{newresult}[Protection and entrenchment]\label{prop:archive-depth}
+The amendment depth of $C$ at $r_0$ is $2$. If a rule $r_1'$ equal to $r_1$ in its admission test is introduced with $\mathrm{Rev}(r_1)=\{r_1,r_1'\}$ and $\mathrm{Rev}(r_1')=\{r_1',r_2\}$, the depth is $3$. The representation that supports both $r_0$ and $r_1$ has $8$ values, namely the pair (indicator that source $2$ has reported, count of source $1$ capped at $3$), against $4$ values for $r_0$ alone.
+\end{newresult}
+\assumes{Finite revision graph.}
+\begin{proof}
+The shortest path from $r_0$ to $r_2$, the only rule not admitting $C$, has length $2$, and with the extra layer length $3$ (Result~\ref{thm:depth}). The Nerode classes of $r_0$'s admission test are the pairs of indicators that sources $1$ and $2$ have reported ($4$ classes); those of $r_1$'s are the capped count and the source-$2$ indicator ($8$ classes), and the indicator of source $1$ is a function of the count. By Result~\ref{thm:family} the family representation has the intersection of the kernels and therefore $8$ values, which is the larger of the two and not their product $32$.
+\end{proof}
+
+Supporting both rules costs one additional bit over $r_0$ alone (Result~\ref{prop:marginal}).
+
+\begin{newresult}[Keeping the extra bit]\label{prop:archive-rent}
+Let the extra bit cost rent $\rho=1$ per month and let re-acquiring it after an amendment to $r_1$ cost $C=12$ (re-requesting records). If amendments to $r_1$ arrive at rate $h$ per month, the extra bit should be kept always if $h>1/12$ and never otherwise; at $h=1/24$ it is not kept, at $h=1/6$ it is. A deterministic keep-then-drop rule that keeps it for $12$ months is $2$-competitive.
+\end{newresult}
+\assumes{Exponential demand.}
+\begin{proof}
+Result~\ref{thm:rent} with $\rho=1$, $C=12$: the boundary is $\rho=hC$, that is $h=1/12$; and $s^*=C/\rho=12$.
+\end{proof}
+
+\paragraph{Obligations of this case.} (i) A monitor for the bounded-response obligation ``every submitted claim receives a decision within $k$ steps'' composed with the rules, whose kernel is given by Result~\ref{thm:obl-kernel}; the interaction between amendment and open obligations is not analysed. (ii) Estimation of the amendment hazard $h$ from the archive's own history.
+
+\section{An adaptive controller}
+
+\paragraph{Specification.} A scalar state $x_{t+1}=x_t+1+b\,u_t$ on integers with $b\in\{-1,+1\}$ an unknown constant gain, inputs $u\in\{-1,0,1\}$, constraint $K=\{-3,\dots,3\}$.
+
+\begin{newresult}[Three kernels]\label{prop:adaptive}
+If $b$ is known, the viability kernel is all of $K$. If $b$ is unknown but constant, the controller observes the state and learns $b$ from any step with $u\ne0$; the set of initial states from which the constraint can be maintained is $\{-3,\dots,1\}$. If $b$ may change at every step, the robust kernel is empty.
+\end{newresult}
+\assumes{Observation of the state at each step; the controller knows the form of the dynamics.}
+\begin{proof}
+Known $b$: the choice $u=-b$ gives $x_{t+1}=x_t+1-b^2=x_t$, so every state in $K$ is held. Unknown constant $b$, before learning: the action $u=0$ gives $x+1$ without information, and $u=\pm1$ gives $x+1\pm b\in\{x,x+2\}$, the two values of $b$ giving different outcomes, so $b$ is known afterwards and the state is held at its new value. Learning in one step succeeds without leaving $K$ iff the worst outcome $x+2$ lies in $K$, that is $x\le1$. For $x\in\{2,3\}$ the action $u=\pm1$ has a possible outcome $x+2\ge4$, and the action $u=0$ leads to $x+1$ with $b$ still unknown, from which the same dilemma recurs and the state leaves $K$ within two steps. Hence the safe set is $\{-3,\dots,1\}$ (states below $-3$ are outside $K$). Time-varying $b$: no learning is possible. Let $S$ be a current candidate set with maximum $m$. From $m$, the action $u=0$ leads to $m+1\notin S$, and each action $u=\pm1$ has, for the adversarial sign of $b$, the outcome $m+2\notin S$. So $m$ is removed, and the iteration of the predecessor operator removes the maximum at each stage until the set is empty.
+\end{proof}
+
+The price of learning is the loss of $\{2,3\}$ from the kernel, and the price of an adversary able to change $b$ at will is everything. The step with $u\ne0$ is the exciting action, and its worst-case cost $x\mapsto x+2$ is the explicit price of identification. When a handover to the automatic controller $u=-b$ follows identification, the arrangement is an instance of relegation as in Chapter~\ref{ch:relegation} with handover time $\tau=1$ and the common core $K$ on which the automatic controller is invariant.
+
+\paragraph{Obligations of this case.} (i) Noisy identification: with observation noise the learning step may fail, and the kernel must be replaced by the probabilistic version of Chapter~\ref{ch:robust}. (ii) Continuous parameter sets, where identification takes infinitely many steps and the guarantee requires a rate.
+
+\section{An infrastructure network}
+
+\paragraph{Specification.} A service $r$ requires $n$ regions $e_1,\dots,e_n$; region $e_i$ is supplied by any one of $m_i$ lines $p_{i,1},\dots,p_{i,m_i}$, each carrying load $1$ when used; the capacity is $\Gamma=n$. This is the dependency system of Chapter~\ref{ch:fallback}, with the lines as primitives.
+
+\begin{newresult}[Redundancy is not capacity]\label{prop:network}
+The fallback region is $\mathrm{FB}(n)=\{F:\ \forall i,\ F\not\supseteq\{p_{i,1},\dots,p_{i,m_i}\}\text{ and }F\cap\{r,e_1,\dots,e_n\}=\varnothing\}$ and $\mathrm{FB}(n-1)=\varnothing$. The system tolerates every set of $k$ simultaneous line faults if and only if $m_i\ge k+1$ for all $i$, so tolerance of $k$ faults requires $n(k+1)$ lines in total, while the capacity $\Gamma=n$ is unchanged. The number of maximal elements of $\mathrm{FB}(n)$ is $\prod_im_i$.
+\end{newresult}
+\assumes{Faults hit primitives only.}
+\begin{proof}
+A support must contain $r$, all $e_i$, and one line for each $i$, so its least load is $n$; hence $\mathrm{FB}(n-1)=\varnothing$ and, by Result~\ref{thm:fallback}(a), $F\in\mathrm{FB}(n)$ iff some support of load $n$ is disjoint from $F$, i.e. iff each region retains a line and $r,e_i\notin F$. A set $F$ of $k$ line faults destroys region $i$ iff it contains all $m_i$ lines, which is impossible when $m_i\ge k+1$; if some $m_i\le k$ then $F=\{p_{i,\cdot}\}$ is a $k$-fault pattern outside $\mathrm{FB}(n)$. The minimal supports choose one line per region, $\prod m_i$ of them, with pairwise incomparable complements.
+\end{proof}
+
+The redundancy needed is paid in components and not in capacity, and the number of maximal fault patterns that the system survives, $\prod m_i$, grows multiplicatively in the redundancy. This is the sense in which the fallback region carries more information than the single capacity number.
+
+\paragraph{Obligations of this case.} (i) Cascading failure, in which the load of a failed line moves to its neighbours and raises their hazard; the fallback region must then be defined along a trajectory rather than for a static fault set. (ii) Repair sequencing with the recoverable region of Result~\ref{thm:recoverable}.
+
+\section{Research directions}
+
+The cases show where the present results run out. Four directions recur. First, quantitative robustness: the kernels above are worst-case, and the stochastic variants (chance constraints along trajectories) are available only for linear Gaussian systems, with the general case open. Second, learning of the model while preserving the kernel, of which the adaptive controller is the smallest example, requires identification rates in the continuous case. Third, institutional dynamics: the amendment hazard in the archive is exogenous, whereas in real institutions it depends on the state of the system, and the augmented system is then a game rather than a control problem. Fourth, computation: the NP-hardness results of Chapters~\ref{ch:fallback} and~\ref{ch:architecture} suggest studying structured subclasses (tree-like dependency, bounded interface width) where exact algorithms are polynomial.
+
+
+\section{The vehicle under random costs}\label{sec:vehicle-chance}
+
+The robust kernel of Result~\ref{prop:robot} charges every step at the worst cost. If the cost of each step is random, independent of the action, equal to $1$ with probability $1-p$ and to $2$ with probability $p$, the worst-case threshold $b\ge2x$ is wasteful, and a chance constraint per excursion gives a smaller one. Fix a risk level $\varepsilon$ and call $(x,b)$ \emph{$\varepsilon$-safe} if the vehicle, following the best policy, returns to the charger before the battery is exhausted with probability at least $1-\varepsilon$.
+
+\begin{newresult}[Chance kernel of the vehicle]\label{prop:vehicle-chance}
+The state $(x,b)$ is $\varepsilon$-safe if and only if $b\ge x+q_{1-\varepsilon}(x)$, where $q_{1-\varepsilon}(x)$ is the least integer $q$ with $\Pr[\mathrm{Bin}(x,p)\le q]\ge1-\varepsilon$. Returning immediately is optimal. The threshold satisfies $x\le x+q_{1-\varepsilon}(x)\le2x$ and, as $x\to\infty$, $x+q_{1-\varepsilon}(x)=(1+p)x+z_{1-\varepsilon}\sqrt{p(1-p)x}+o(\sqrt x)$ with $z_{1-\varepsilon}=\Phi^{-1}(1-\varepsilon)$.
+\end{newresult}
+\assumes{Costs independent of the action and of one another; the battery resets at the charger.}
+\begin{proof}
+Reaching the charger from $x$ takes at least $x$ steps, and the cost of the first $k\ge x$ steps is at least the cost $S_x$ of the first $x$ steps, because costs are positive and do not depend on the action. The vehicle survives only if its battery covers all steps taken, so the survival probability of any policy is at most $\Pr[S_x\le b]$, and moving left at every step attains it. Since $S_x=x+\mathrm{Bin}(x,p)$, survival holds with probability at least $1-\varepsilon$ iff $b-x\ge q_{1-\varepsilon}(x)$. The bounds follow from $0\le\mathrm{Bin}(x,p)\le x$, and the expansion is the central limit theorem for the binomial distribution, whose quantile is $px+z\sqrt{p(1-p)x}+o(\sqrt x)$.
+\end{proof}
+
+The expected form that Result~\ref{prop:robot} gave was a threshold of order $x+\kappa\sqrt x$; the result shows that the drift of the mean cost enters first, as $(1+p)x$, and the fluctuation term $\kappa\sqrt x$ is a correction on top of it. For $p=0.2$ and $\varepsilon=0.05$ the exact thresholds, computed from the binomial distribution, together with the Gaussian approximation $1.2x+1.645\sqrt{0.16x}$ and the worst-case threshold $2x$ are as follows.
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+$x$ & exact $x+q$ & Gaussian & worst case $2x$\\
+\midrule
+$1$ & $2$ & $1.86$ & $2$\\
+$3$ & $5$ & $4.74$ & $6$\\
+$5$ & $8$ & $7.47$ & $10$\\
+$10$ & $14$ & $14.08$ & $20$\\
+$20$ & $27$ & $26.94$ & $40$\\
+$50$ & $65$ & $64.65$ & $100$\\
+$100$ & $127$ & $126.58$ & $200$\\
+\bottomrule
+\end{tabular}
+\end{center}
+For small $x$ the Gaussian approximation can fall below the exact threshold (at $x=3$ it gives $4.74$ where $5$ is required), which is the reason the exact binomial quantile is stated. For $x=100$ the chance-constrained vehicle ventures out to a battery requirement of $127$, a saving of $36\%$ over the worst-case $200$, at the cost of a risk of $5\%$ per excursion. Across $N$ excursions the Boole allocation of Chapter~\ref{ch:robust} requires the per-excursion level $\varepsilon/N$, which raises $z$ only logarithmically in $N$.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For the vehicle with $B=7$ and $L=10$, list the reachable positions inside the kernel and the positions reachable without it.
+\end{exercise}
+
+\begin{exercise}
+Add a second charger at position $L$ to the vehicle and compute the kernel. Where is the farthest position reachable from $(0,B)$?
+\end{exercise}
+
+\begin{exercise}
+In the archive, find the representation size for the family $\{r_0,r_1\}$ if $r_1$ is replaced by ``at least three records in total, one of them from source $2$''.
+\end{exercise}
+
+\begin{exercise}
+For the adaptive controller extend the input set to $\{-2,\dots,2\}$ and compute the three kernels.
+\end{exercise}
+
+\begin{exercise}
+For the network with $n=3$ and $m=(2,2,3)$, count the maximal elements of the fallback region and the number of line-fault patterns of size two that lie outside it.
+\end{exercise}
+
+\begin{exercise}
+Verify the first three exact thresholds of Section~\ref{sec:vehicle-chance} by computing $\Pr[\mathrm{Bin}(x,0.2)\le q]$ for $x=1,2,3$.
+\end{exercise}
+
+\begin{exercise}
+Compute the exact threshold at $x=10$ for $\varepsilon=0.01$ and for $\varepsilon=0.001$, and compare with $2x$.
+\end{exercise}
+
+\begin{exercise}
+Allow the vehicle to detect the realized cost and to turn back at any step. Show that returning immediately remains optimal, and explain why the answer would change if costs depended on the direction of travel.
+\end{exercise}
+
+\begin{exercise}
+Suppose the vehicle must make $N=10$ excursions of length $x=10$ with total failure probability at most $0.05$. Compute the per-excursion level and the required battery by the Boole allocation, and by the exact independent allocation $1-0.95^{1/10}$.
+\end{exercise}
+

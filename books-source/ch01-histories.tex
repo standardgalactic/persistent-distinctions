@@ -1,0 +1,103 @@
+% ch01-histories.tex
+\chapter{Histories, Representations, and Three Obstructions}\label{ch:common}
+\spec{What must a decision procedure be able to distinguish, and in how many different ways can a proposed continuation become unavailable?}
+{Factorization of a function through a quotient.}
+{Conservative gating removes admissible futures (Result~\ref{prop:gating}).}
+{None.}
+{Nothing.}
+
+\section{Objects, descriptions, and observational questions}\label{sec:objects}
+
+Every mathematical model of a system begins with a decision about what the model will keep. A document under revision is, in the world, a succession of edits made by particular people at particular times; a model of it retains some of that succession and discards the rest, and everything that is later said about the document is said on the basis of what was retained. The purpose of this chapter is to fix a vocabulary in which that decision can be stated exactly, so that the question of what is lost by discarding can be asked and, in the cases that matter, answered.
+
+\begin{definition}[Cases, questions, representations]\label{def:question}
+Fix a nonempty set $X$ of \emph{cases}. An \emph{observational question} on $X$ is a function $q:X\to A$ into a set $A$ of answers. A \emph{representation} of $X$ is a function $r:X\to R$ into a set $R$ of descriptions. A representation $r$ \emph{answers} a question $q$ if there is a function $g:r(X)\to A$ with $q=g\circ r$; any such $g$ is a \emph{reading} of $q$ from $r$.
+\end{definition}
+
+The definition separates an object from a representation of it. The value $r(x)$ is not the case $x$, and the equation $r(x)=r(x')$ records only that the representation cannot tell the two cases apart. Whether it matters that it cannot depends entirely on which questions are asked. A representation is therefore neither good nor bad in itself; it is adequate or inadequate for a family of questions, and the relation between a representation and the questions it answers is the subject of the next three chapters. In most of this volume the cases are histories, the finite records of what has happened to a system, and a question about a history is a question about the whole of what has happened and not only about where the system now stands.
+
+Three families of examples recur throughout the book. Each is small enough to analyze completely and each isolates a distinct way in which a representation can fail.
+
+\begin{example}[Document revisions]\label{ex:document}
+A document has $m$ sections, each holding a value from a set $C$ of contents, and every section initially holds a fixed value $c_0\in C$. The events are the overwrites $\mathrm{set}(j,c)$ with $1\le j\le m$ and $c\in C$, and the cases are all finite sequences of such events. Let $\tau(h)\in C^{m}$ be the \emph{current text} after the history $h$, and let $\nu(h)$ record, for each section, the set of contents it has held at some point. The current text answers the question ``what does section $j$ contain now?'' and does not answer ``has section $j$ ever contained $c$?''. To see the second claim take $m=1$, $C=\{0,1\}$, $c_0=0$, and compare the empty history with $\mathrm{set}(1,1)\,\mathrm{set}(1,0)$: both have current text $0$, but only the second has held the content $1$. The held-content record $\nu$ answers the second question and fails the first in turn, since $\mathrm{set}(1,1)$ and $\mathrm{set}(1,1)\,\mathrm{set}(1,0)$ have the same $\nu$ and different current texts. Neither representation can replace the other, and the pair $(\tau,\nu)$ answers both questions.
+\end{example}
+
+\begin{example}[Transaction histories]\label{ex:bank}
+The events are deposits $\mathrm{d}(n)$ and withdrawals $\mathrm{w}(n)$ for positive integers $n$, and the cases are all finite sequences of events. Overdraft is physically permitted. The \emph{balance} $\beta(h)$ is the total deposited minus the total withdrawn in $h$, and $q_{\mathrm{neg}}(h)\in\{0,1\}$ is $1$ exactly when some prefix of $h$ has a negative balance. The balance answers the question it names and does not answer $q_{\mathrm{neg}}$: the empty history and $\mathrm{w}(1)\,\mathrm{d}(1)$ both have balance $0$, but $q_{\mathrm{neg}}$ takes the values $0$ and $1$ on them. The pair $(\beta,q_{\mathrm{neg}})$ answers both questions, and Chapter~\ref{ch:quotients} shows that it carries more than is needed to keep answering $q_{\mathrm{neg}}$ after every further event.
+\end{example}
+
+\begin{example}[Monitored process]\label{ex:monitor}
+A monitor observes the events $\mathrm{tick}$, $\mathrm{alarm}$, and $\mathrm{reset}$. Let $c(h)$ be the number of alarms in $h$ since the most recent reset, or since the start if there has been none, and let $\rho(h)=\min(c(h),3)$. The representation $\rho$ answers the question ``are at least three alarms outstanding?'' It identifies any two histories with the same capped count, and in particular it discards the number of ticks. That loss is harmless for every question about alarm counts and fatal for any question about elapsed time, such as how long ago the last alarm occurred. It also fails to answer ``have three alarms ever been outstanding?'', because a reset erases the count that would have recorded it.
+\end{example}
+
+\input{common-model}
+
+\section{The obstructions in the running examples}\label{sec:obstructions-examples}
+
+Definition~\ref{def:obstructions} can be read off in each running example, and the readings show that the three obstructions are properties of different parts of a system. Consider an account with the transaction events of Example~\ref{ex:bank} together with a further event $\mathrm{close}$ and a further event $\mathrm{report}$ that files a regulatory report on past overdrafts. Suppose a bank holds a finite cash reserve, so that a withdrawal is physically executable only while the reserve covers it; this fixes $\Reach(\phys(h))$. Suppose in addition that closing the account is admissible only if no overdraft is unreported, meaning that a report has been filed after the last prefix of $h$ with a negative balance. Write $p(h)=1$ when some overdraft is unreported and $p(h)=0$ otherwise; the rule fixes the obligations in $\Obl(h)$.
+
+If the reserve is exhausted, the proposed continuation $\{\mathrm{w}(n)\}$ is subject to $\ObsPhys$. If $p(h)=1$, then $\{\mathrm{close}\}$ is physically executable but every realization violates the reporting obligation, and it is subject to $\ObsObl$. The third case is the delicate one. Suppose the bank retains only the balance, so that $\rep=\beta$, and consider the empty history and $\mathrm{w}(1)\,\mathrm{d}(1)$ again. The first has $p=0$ and closing is admissible; the second has $p=1$ and closing is inadmissible; the representations coincide. By Result~\ref{prop:gating}, every sound gate that consults the balance alone refuses $\{\mathrm{close}\}$ after the empty history, although closing is then both executable and compliant. The future has been lost to a decision about what to retain, and neither the reserve nor the obligation had any part in it.
+
+The same example shows how a revision of the rules can reach back into the representation. The pair $(\beta,p)$ determines admissibility of closure under the rule above, since $p$ alone does. If the bank adds a rule that closure additionally requires that no deposit above a fixed amount has occurred since the last report, the pair no longer determines admissibility, because the new rule depends on a distinction the pair never recorded. Whether the retained representation can support a given family of future rules is the revision question of Part VI, and it is already visible at this scale: a representation can be sufficient for every rule currently in force and insufficient for a rule that will be adopted later.
+
+\section{Plan of the volume}
+
+Part~I develops the mathematics of distinction. Chapter~\ref{ch:quotients} treats equivalence relations and quotient constructions and proves the factorization theorem on which everything else rests. Chapter~3 orders representations by the questions they answer and shows that, once a bound on size is imposed, no representation is universally best. Chapter~4 turns from sets of cases to histories and separates properties of the state a system occupies from properties of the history that led there. Part~II asks which representation is sufficient for a given policy, a family of policies, or the maintenance of an answer under arbitrary future events, and it brings in the theory of minimal automata and bisimulation. Part~III adds approximation, verification, provenance, and the architecture of retrieval. Part~IV states obligations and admissible transitions precisely and studies identity and disposition. Part~V treats degradation, compensation, distribution, and delegated authority. Part~VI collects the consequences for revision, the cost of keeping alternatives open, and a set of complete worked systems, and it closes with the questions that remain open.
+
+\section{Conventions and the recurring exercise sequence}
+
+Functions are written on the left, $\ker f=\{(x,x') : f(x)=f(x')\}$ is the kernel of a function $f$, and $\im f$ is its image. A result is labelled \emph{established} when it is attributed to a source, \emph{new} when it is proved in full under the assumptions displayed beside it, and as a \emph{proof obligation} when it is a proposed statement that has not yet been proved. No later chapter cites a proof obligation as a theorem.
+
+Each chapter ends with exercises, and most chapters contain a sequence of four that is repeated with different subject matter. The first asks the reader to construct a representation for a stated family of questions. The second asks for a proof of exactly what the construction preserves. The third asks for a counterexample to a stronger claim that a reader might be tempted to make about it. The fourth asks what happens to the construction when the family of questions or policies is revised. The sequence is the book's working method in miniature: a representation is a claim about what suffices, and the claim has content only when its boundary is located.
+
+
+\section{Counting the values of a joint description}\label{sec:doc-count}
+
+The pair $(\tau,\nu)$ of Example~\ref{ex:document} answers both of its questions, and it is natural to ask how many values it needs. The product $C^{m}\times\mathcal P(C)^{m}$ is far larger than the set of pairs that actually occur, because the current content of a section must belong to the set of contents the section has held. The count is exact and small enough to be checked by hand for $m=1$.
+
+\begin{newresult}[Values of the joint document description]\label{prop:doc-count}
+Let $|C|=k\ge2$. The pair $(\tau,\nu)$ takes exactly $\bigl(2^{k-2}(k+1)\bigr)^{m}$ values on the histories of Example~\ref{ex:document}, and the set of its values is the product over sections of the set of pairs $(c,H)$ with $c\in H\subseteq C$ and $c_0\in H$. In particular, for $k=2$ and $m=1$ there are three values, not the four of the product $C\times\mathcal P(C)$ restricted to $c_0\in H$.
+\end{newresult}
+\assumes{Events are the overwrites $\mathrm{set}(j,c)$; every section starts at the fixed content $c_0$; $\nu_j(h)$ is the set of contents section $j$ has held, including $c_0$.}
+\begin{proof}
+Each event touches one section, so the pair of values for section $j$ depends only on the subsequence of events addressed to $j$, and subsequences for different sections can be chosen independently; the set of values of $(\tau,\nu)$ is therefore the product of the sets of values for single sections. For a single section, every value $(c,H)$ satisfies $c\in H$ and $c_0\in H$, because the current content is one the section has held and the initial content was held. Conversely, given such a pair, enumerate $H\setminus\{c_0\}$ in any order with $c$ last if $c\ne c_0$, and overwrite in that order; if $c=c_0$ finish with $\mathrm{set}(j,c_0)$ after the other elements. The history has current content $c$ and held set $H$. It remains to count the pairs. If $c=c_0$ then $H$ ranges over the subsets of $C$ containing $c_0$, giving $2^{k-1}$ pairs. If $c\ne c_0$ there are $k-1$ choices of $c$ and $2^{k-2}$ sets $H$ containing both $c_0$ and $c$. The total is $2^{k-1}+(k-1)2^{k-2}=2^{k-2}(k+1)$.
+\end{proof}
+
+For $k=2$ the three values are $(0,\{0\})$, $(0,\{0,1\})$ and $(1,\{0,1\})$: the fourth combination, a current content of $1$ with $1$ never held, is impossible. The count matters because it separates two ideas that the word ``independent'' tends to blur. The questions ``what is the text now?'' and ``was $c$ ever held?'' are incomparable as representations, yet they are not independent as information, since the answer to the first constrains the answer to the second. The smallest representation answering both has three values and not four, and for $k=3$ it has $8$ values and not the $3\cdot 4=12$ of $C\times\mathcal P(C\setminus\{c_0\})$ on one section. The figures $3$, $8$, $9$ (for $k=2,m=2$) and $20$ (for $k=4$, $m=1$) have been confirmed by enumerating all histories up to a length at which no new value appears.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Construct a representation $r$ of the cases in Example~\ref{ex:document} that answers both ``what does section $j$ contain now?'' and ``has section $j$ ever contained $c$?'' for all $j$ and $c$, and whose set of values is as small as you can make it when $m=1$ and $C=\{0,1\}$.
+\end{exercise}
+
+\begin{exercise}
+For the representation of the previous exercise, prove that it answers each of the two families of questions. Then prove that the empty history and $\mathrm{set}(1,1)\,\mathrm{set}(1,0)$ are separated by $r$.
+\end{exercise}
+
+\begin{exercise}
+Show that the following stronger claim is false: ``any representation that answers every question about the current text and every question about whether a content was ever held also answers every question about the order in which the contents were assumed.'' Give two histories for $m=1$ and $C=\{0,1,2\}$ that exhibit the failure.
+\end{exercise}
+
+\begin{exercise}
+The monitor of Example~\ref{ex:monitor} is revised so that the rule becomes: five alarms outstanding, or three alarms outstanding with a tick in between each pair. Decide whether $\rho$ still answers the revised question, and if it does not, exhibit a pair of histories that $\rho$ identifies and the revised question separates.
+\end{exercise}
+
+\begin{exercise}
+With $p$ as in Section~\ref{sec:obstructions-examples}, show that the pair $(\beta,p)$ determines whether $\{\mathrm{close}\}$ is admissible after $h$, and that the pair $(\beta,q_{\mathrm{neg}})$ does not, by exhibiting two histories with the same value of $(\beta,q_{\mathrm{neg}})$ and different admissibility of closure. Then identify the step of your first argument that fails under the revised rule of that section.
+\end{exercise}
+
+
+\begin{exercise}
+Extend Result~\ref{prop:doc-count} to the case in which the initial contents of the $m$ sections differ, $c_0^{(j)}$ depending on $j$, and show that the count is unchanged. Then explain why adding an event $\mathrm{clear}(j)$ that erases the held set of section $j$ down to the current content changes the set of values of $\nu$, and recompute the count for $m=1$ and $k=2$.
+\end{exercise}
+
+\begin{exercise}
+Prove that the set of values of $(\tau,\nu)$ for $m$ sections is the product of the sets for single sections, and deduce that the number of values is multiplicative in $m$. Then show that the representation recording only the number of sections whose current content differs from $c_0$ is a coarsening of $\tau$, and count its values.
+\end{exercise}
+
+\begin{exercise}
+A representation $\kappa(h)$ records, for $k=3$ and $m=1$, the current content and the number of distinct contents held. Decide whether $\kappa$ answers ``has $c$ ever been held?'' for each $c$, and give the number of values of $\kappa$. Show that $\kappa$ has $7$ values, compare with the $8$ of Result~\ref{prop:doc-count}, and give two histories that $\kappa$ identifies and that differ on a question about a held content.
+\end{exercise}
+

@@ -1,0 +1,184 @@
+% ch02-quotients.tex
+\chapter{Equivalence Relations and Quotient Constructions}\label{ch:quotients}
+\spec{When does an observation factor through a compressed representation?}
+{Partitions, quotient maps, refinement, and the universal property of the quotient; the lattice of equivalence relations.}
+{A complete computation of the continuation quotient for the account of Example~\ref{ex:bank}.}
+{None.}
+{Chapter~\ref{ch:common}.}
+
+A representation identifies cases, and an identification is exactly an equivalence relation. This chapter develops the elementary theory of equivalence relations with the single purpose of making the following statement precise and complete: a question can be answered from a representation if and only if the representation identifies only cases that the question also identifies. Everything in this chapter is standard. It is presented in full because the later chapters apply it in settings where the cases are histories and the representations are memory, and each application is only as secure as the statement it rests on.
+
+\section{Equivalence relations and partitions}
+
+\begin{definition}[Equivalence relation, class, partition]
+An \emph{equivalence relation} on a set $X$ is a relation $\sim\ \subseteq X\times X$ that is reflexive, symmetric, and transitive. The \emph{class} of $x$ is $[x]=\{y : y\sim x\}$, and the set of classes is the \emph{quotient} $X/{\sim}$. A \emph{partition} of $X$ is a set of nonempty, pairwise disjoint subsets of $X$ whose union is $X$. The \emph{quotient map} is $\pi_{\sim}:X\to X/{\sim}$, $x\mapsto[x]$.
+\end{definition}
+
+\begin{established}[Equivalence relations are partitions]\label{thm:partitions}
+For every equivalence relation $\sim$ on $X$ the set $X/{\sim}$ is a partition of $X$. For every partition $P$ of $X$ the relation $x\sim_P y$ if and only if $x$ and $y$ lie in the same block is an equivalence relation, and the two constructions are mutually inverse.
+\end{established}
+\source{Standard; see any text on elementary set theory or algebra.}
+\begin{proof}
+Each class is nonempty because $x\in[x]$ by reflexivity, and the classes cover $X$ for the same reason. If $z\in[x]\cap[y]$ then $x\sim z$ and $z\sim y$, so $x\sim y$ by symmetry and transitivity, and then $[x]=[y]$ because $w\sim x$ implies $w\sim y$ and conversely. Hence distinct classes are disjoint. In the other direction, ``lying in the same block'' is reflexive, symmetric, and transitive because equality of blocks is. The classes of $\sim_P$ are the blocks of $P$, and the relation $\sim_P$ built from the classes of $\sim$ is $\sim$ itself, which shows the constructions are inverse.
+\end{proof}
+
+\begin{definition}[Kernel]
+The \emph{kernel} of a function $f:X\to Y$ is $\ker f=\{(x,x')\in X\times X : f(x)=f(x')\}$.
+\end{definition}
+
+\begin{established}[Kernels]\label{prop:kernel}
+The kernel of every function is an equivalence relation, and every equivalence relation $\sim$ is the kernel of its quotient map, $\ker\pi_{\sim}={\sim}$.
+\end{established}
+\source{Standard.}
+\begin{proof}
+Equality in $Y$ is reflexive, symmetric, and transitive, and these properties transfer to $\ker f$. For the second claim, $\pi_\sim(x)=\pi_\sim(x')$ if and only if $[x]=[x']$ if and only if $x\sim x'$.
+\end{proof}
+
+By Result~\ref{prop:kernel} nothing is lost in passing between equivalence relations and representations: every representation determines an equivalence relation on the cases, namely the set of identifications it makes, and every equivalence relation is realized by a representation.
+
+\section{Factorization}
+
+The following theorem is the technical center of the volume. It was already used in Result~\ref{prop:factorization} for the pair $(\rep,P)$ and it is restated here in its general form.
+
+\begin{established}[Factorization through a representation]\label{thm:factorization}
+Let $X$ be nonempty, let $r:X\to R$ be a representation, and let $f:X\to Y$ be a question. The following are equivalent.
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item There is a function $g:r(X)\to Y$ with $f=g\circ r$.
+  \item $\ker r\subseteq\ker f$.
+\end{enumerate}
+When they hold, $g$ is unique.
+\end{established}
+\source{Standard; this is the universal property of the quotient by a kernel.}
+\begin{proof}
+Suppose (i) holds and $(x,x')\in\ker r$. Then $f(x)=g(r(x))=g(r(x'))=f(x')$, so $(x,x')\in\ker f$. Suppose (ii) holds. Define $g(r(x))=f(x)$. If $r(x)=r(x')$ then $(x,x')\in\ker r\subseteq\ker f$, so $f(x)=f(x')$, and the definition does not depend on the choice of $x$ with the given value $r(x)$. Hence $g$ is a well-defined function on $r(X)$ with $f=g\circ r$. It is unique because its value at each element of $r(X)$ is forced.
+\end{proof}
+
+The theorem says that a question can be answered from a representation exactly when the representation never merges two cases that the question distinguishes. The condition is about the representation and the question and nothing else: it does not depend on how $r$ is computed, stored, or named. An extension of $g$ from $r(X)$ to all of $R$ is always possible when $Y$ is nonempty and plays no role in what follows.
+
+\begin{established}[Canonical factorization]\label{prop:canonical}
+Every function $f:X\to Y$ factors as $f=\bar f\circ\pi_{\ker f}$ where $\bar f:X/{\ker f}\to Y$, $[x]\mapsto f(x)$, is injective with image $f(X)$.
+\end{established}
+\source{Standard.}
+\begin{proof}
+Result~\ref{thm:factorization} applied to $r=\pi_{\ker f}$, whose kernel is $\ker f$ by Result~\ref{prop:kernel}, gives $\bar f$. If $\bar f([x])=\bar f([x'])$ then $f(x)=f(x')$, so $[x]=[x']$, and injectivity follows. The image is $f(X)$ by construction.
+\end{proof}
+
+\section{Refinement and the lattice of equivalence relations}
+
+\begin{definition}[Refinement]
+An equivalence relation $\sim$ \emph{refines} $\approx$ if ${\sim}\subseteq{\approx}$. We call $\sim$ \emph{finer} and $\approx$ \emph{coarser}. Write $\Eq(X)$ for the set of equivalence relations on $X$, partially ordered by inclusion. Its least element is the diagonal $\{(x,x)\}$, which identifies nothing, and its greatest element is $X\times X$, which identifies everything.
+\end{definition}
+
+\begin{established}[Lattice of equivalence relations]\label{prop:lattice}
+$\Eq(X)$ is a complete lattice. The meet of a family $\{{\sim_i}\}_{i\in I}$ is the intersection $\bigcap_i{\sim_i}$, and its join is the transitive closure of the union $\bigcup_i{\sim_i}$.
+\end{established}
+\source{Ore, ``Theory of equivalence relations,'' \emph{Duke Mathematical Journal} 9 (1942); see also Birkhoff, \emph{Lattice Theory}.}
+\begin{proof}
+Take a nonempty family. Reflexivity, symmetry, and transitivity are each preserved by intersection, so $\bigcap_i{\sim_i}$ is an equivalence relation, and it is contained in each ${\sim_i}$ and contains every equivalence relation that is contained in all of them; it is therefore the greatest lower bound. For the join, let $U=\bigcup_i{\sim_i}$ and let $U^{+}$ be its transitive closure. The relation $U$ is reflexive and symmetric, and these properties are inherited by $U^{+}$, which is transitive by construction. Any equivalence relation containing every ${\sim_i}$ contains $U$ and hence $U^{+}$, so $U^{+}$ is the least upper bound. The empty family has meet $X\times X$ and join the diagonal.
+\end{proof}
+
+\begin{example}[Three cases]\label{ex:M3}
+Let $X=\{1,2,3\}$. Then $\Eq(X)$ has five elements: the diagonal, the three relations each identifying exactly one pair, namely $\{12\,|\,3\}$, $\{13\,|\,2\}$, and $\{23\,|\,1\}$, and $X\times X$. Any two of the three pair relations intersect in the diagonal, and the transitive closure of the union of any two of them is $X\times X$. The lattice is therefore the five-element lattice consisting of a bottom, a top, and three pairwise incomparable elements between them. It is the standard five-element non-distributive lattice, so $\Eq(X)$ is not distributive whenever $X$ has at least three elements.
+\end{example}
+
+\begin{established}[Coarsening is a function]\label{prop:coarsening}
+If $\sim$ refines $\approx$ then there is a unique function $c:X/{\sim}\to X/{\approx}$ with $c\circ\pi_{\sim}=\pi_{\approx}$, and it is surjective. If a function $d:X/{\approx}\to X/{\sim}$ with $d\circ\pi_{\approx}=\pi_\sim$ exists, then ${\sim}={\approx}$.
+\end{established}
+\source{Standard.}
+\begin{proof}
+Apply Result~\ref{thm:factorization} with $r=\pi_{\sim}$ and $f=\pi_{\approx}$: the hypothesis $\ker\pi_\sim={\sim}\subseteq{\approx}=\ker\pi_\approx$ gives $c$, which is surjective because $\pi_\approx$ is. If $d$ exists then the same theorem gives ${\approx}\subseteq{\sim}$, so the relations are equal.
+\end{proof}
+
+The second statement of Result~\ref{prop:coarsening} is the mathematical content of the remark that discarded distinctions cannot be recovered. A coarser description is a function of a finer one, but the converse fails unless nothing was discarded.
+
+\begin{established}[No recovery by computation]\label{cor:norecover}
+Let $r:X\to R$ be a representation and let $r'=u\circ r$ for some function $u$. Then every question answered by $r'$ is answered by $r$. Conversely, if every question answered by $r$ is answered by $r'$, then $\ker r=\ker r'$.
+\end{established}
+\source{Standard consequence of Result~\ref{thm:factorization}.}
+\begin{proof}
+If $q=g\circ r'$ then $q=(g\circ u)\circ r$. For the converse, $r$ answers the question $q=r$, so by hypothesis $r'$ answers $r$, which by Result~\ref{thm:factorization} means $\ker r'\subseteq\ker r$. The relation $\ker r\subseteq\ker r'$ holds because $r'=u\circ r$, and the two inclusions give equality.
+\end{proof}
+
+\section{Families of questions}
+
+Questions are usually asked in families, and a representation is asked to serve all members at once.
+
+\begin{established}[Joint kernel]\label{prop:joint}
+Let $\{f_i:X\to Y_i\}_{i\in I}$ be a family of questions and let $f_I:X\to\prod_iY_i$ be the function $x\mapsto(f_i(x))_{i\in I}$. Then $\ker f_I=\bigcap_i\ker f_i$, and a representation $r$ answers every $f_i$ if and only if $\ker r\subseteq\bigcap_i\ker f_i$.
+\end{established}
+\source{Standard.}
+\begin{proof}
+Two cases have the same image under $f_I$ exactly when they have the same image under every $f_i$, which gives the first claim. By Result~\ref{thm:factorization}, $r$ answers $f_i$ if and only if $\ker r\subseteq\ker f_i$, and $\ker r$ is contained in every $\ker f_i$ if and only if it is contained in their intersection.
+\end{proof}
+
+Consequently the coarsest equivalence relation through which all of the $f_i$ factor is $\bigcap_i\ker f_i$, realized by the quotient map onto $X/\bigcap_i\ker f_i$. This is the object that Chapters~5 and~6 study under the names of the minimal sufficient representation for a policy and for a family of policies.
+
+\section{A worked quotient: the account}
+
+The notion of answering a question about a history is not the notion of answering it about every possible future of the history, and the account of Example~\ref{ex:bank} shows the difference with exact numbers. Let $X=\{\mathrm{d}(n),\mathrm{w}(n)\}^{*}$ and let $q=q_{\mathrm{neg}}$. For a history $h$ and a word $w$ write $hw$ for the extended history. The \emph{continuation question} of $q$ is the function $q^{+}:X\to\{0,1\}^{X}$ with $q^{+}(h)=(w\mapsto q(hw))$. It asks of a history not only what $q$ says now but what $q$ would say after every further sequence of events.
+
+\begin{newresult}[Continuation quotient of the account]\label{prop:account}
+Let $m(h)$ denote the least balance among the prefixes of $h$, including the empty prefix, so that $m(h)\le 0$ and $q(h)=1$ if and only if $m(h)<0$. Then $\ker q^{+}$ has the following description: $(h,h')\in\ker q^{+}$ if and only if either $q(h)=q(h')=1$, or $q(h)=q(h')=0$ and $\beta(h)=\beta(h')$. In particular $X/{\ker q^{+}}$ is in bijection with $\NN\cup\{\bot\}$, where $\bot$ is the class of all histories with $q=1$ and $n\in\NN$ is the class of histories with $q=0$ and balance $n$.
+\end{newresult}
+\assumes{Events are the deposits and withdrawals of Example~\ref{ex:bank}, with positive integer amounts; overdraft is permitted; the cases are all finite sequences.}
+\begin{proof}
+For histories $h$ and words $w$, the prefixes of $hw$ are the prefixes of $h$ together with the histories $hu$ for $u$ a prefix of $w$, and $\beta(hu)=\beta(h)+\beta(u)$. Hence $m(hw)=\min\bigl(m(h),\,\beta(h)+m(w)\bigr)$, and therefore $q(hw)=1$ if and only if $m(h)<0$ or $\beta(h)+m(w)<0$.
+
+If $q(h)=q(h')=1$ then $q(hw)=q(h'w)=1$ for every $w$, so $q^{+}(h)=q^{+}(h')$. If $q(h)=1$ and $q(h')=0$, taking $w$ empty separates them. Suppose now $q(h)=q(h')=0$. Since $\beta(h)$ is the balance of a prefix of $h$, we have $\beta(h)\ge m(h)\ge0$, and similarly $\beta(h')\ge0$. Write $b=\beta(h)$ and $b'=\beta(h')$. For every $w$ we have $q(hw)=1$ if and only if $b+m(w)<0$ and $q(h'w)=1$ if and only if $b'+m(w)<0$. If $b=b'$ the two functions of $w$ coincide. If $b<b'$ then $b'\ge1$ and the one-event word $w=\mathrm{w}(b')$ has $m(w)=-b'$, so that $q(hw)=1$ because $b-b'<0$, while $q(h'w)=0$ because $b'-b'=0$. By symmetry the case $b>b'$ is the same, and so $q^{+}(h)\ne q^{+}(h')$ when $b\ne b'$.
+
+Every $n\in\NN$ occurs as a balance with $q=0$, realized by $\mathrm{d}(n)$ for $n\ge1$ and by the empty history for $n=0$, and $\bot$ occurs, realized by $\mathrm{w}(1)$.
+\end{proof}
+
+The comparison with the question asked once is immediate. The question $q$ has two classes, so a single bit suffices to answer it about the present history. Keeping the answer available after every further event requires the whole of $\NN\cup\{\bot\}$, and it requires no more: after an overdraft the balance can be forgotten, because every later answer is already $1$. The pair $(\beta,q)$ over-records in exactly this region, since it distinguishes histories with different balances and $q=1$ that the future can never separate. Chapter~7 develops this phenomenon in general.
+
+
+\section{A second worked quotient: two questions about a monitor}\label{sec:monitor-quotient}
+
+The account has one infinite family of classes and one absorbing class. The monitor of Example~\ref{ex:monitor} is finite, and it shows how the continuation quotient of a joint question differs from the product of the quotients of its parts. Take the events $\mathrm{tick}$, $\mathrm{alarm}$ and $\mathrm{reset}$, let $c(h)$ be the number of alarms since the last reset, let $q_{\mathrm{now}}(h)=1$ when $c(h)\ge3$, and let $q_{\mathrm{ever}}(h)=1$ when some prefix $h'$ of $h$ has $c(h')\ge3$. The continuation question of each is defined as in the previous section.
+
+\begin{newresult}[Continuation quotients of the monitor]\label{prop:monitor-quotients}
+The relation $\ker q_{\mathrm{now}}^{+}$ has four classes, determined by $\min(c(h),3)$. The relation $\ker q_{\mathrm{ever}}^{+}$ has four classes: the histories with $q_{\mathrm{ever}}=1$, which form one class, and the three classes of histories with $q_{\mathrm{ever}}=0$ and $c(h)=0,1,2$. The joint question $(q_{\mathrm{now}},q_{\mathrm{ever}})^{+}$ has seven classes, and $\ker(q_{\mathrm{now}},q_{\mathrm{ever}})^{+}=\ker q_{\mathrm{now}}^{+}\cap\ker q_{\mathrm{ever}}^{+}$ is not the product relation, which would have $4\cdot4=16$ classes.
+\end{newresult}
+\assumes{Events $\mathrm{tick}$, $\mathrm{alarm}$, $\mathrm{reset}$; $c$ counts alarms since the last reset; ticks change nothing relevant.}
+\begin{proof}
+Write $\rho=\min(c,3)$. Ticks leave $\rho$ and $q_{\mathrm{ever}}$ unchanged; an alarm sends $\rho$ to $\min(\rho+1,3)$; a reset sends $\rho$ to $0$; and $q_{\mathrm{ever}}$ becomes $1$ exactly when $\rho$ reaches $3$ and stays $1$ afterwards. So the pair $(\rho,q_{\mathrm{ever}})$ evolves as a function of itself and the event, and its reachable values are $(0,0),(1,0),(2,0)$ and $(0,1),(1,1),(2,1),(3,1)$; the value $(3,0)$ is impossible because $\rho=3$ implies $q_{\mathrm{ever}}=1$. For $q_{\mathrm{now}}$: the future $\mathrm{alarm}^{3-\rho}$ makes $q_{\mathrm{now}}=1$ and no shorter run of alarms does, so histories with different $\rho$ are separated, and equal $\rho$ gives equal futures. For $q_{\mathrm{ever}}$: once $q_{\mathrm{ever}}=1$ every future answer is $1$, so all such histories are identified. If $q_{\mathrm{ever}}=0$ then $\rho\in\{0,1,2\}$, and the future $\mathrm{alarm}^{3-\rho}$ makes $q_{\mathrm{ever}}=1$ while no shorter run does, so different $\rho$ are separated and equal $\rho$ are identified. For the joint question the seven reachable values of $(\rho,q_{\mathrm{ever}})$ are pairwise separated: two values with different $q_{\mathrm{ever}}$ are separated by the empty future, and two with $q_{\mathrm{ever}}=1$ and different $\rho$ are separated by $q_{\mathrm{now}}$ as above. The kernel of the joint question is the intersection by Result~\ref{prop:joint}.
+\end{proof}
+
+The numbers carry the lesson. Each question alone needs four classes; the two together need seven, not sixteen and not even eight, since the combination $\rho=3$ with $q_{\mathrm{ever}}=0$ cannot occur. A designer who sizes the memory as the product of the sizes for the parts overbuilds by a factor of more than two, and one who sizes it as the larger of the two underbuilds, because the two quotients are cut along different lines. The seven values have been confirmed by comparing the answers of all futures up to length four from each reachable state.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For the cases of Example~\ref{ex:document} with $m=1$ and $C=\{0,1\}$, compute the join in $\Eq(X)$ of $\ker\tau$ and $\ker\nu$. Conclude that the only questions answered by both $\tau$ and $\nu$ are the constant ones, and explain in words why the two representations share no information even though neither is trivial.
+\end{exercise}
+
+\begin{exercise}
+Prove that the join in Result~\ref{prop:lattice} of two equivalence relations $\sim$ and $\approx$ can be described as follows: $x$ and $y$ are related if and only if there is a finite sequence $x=z_0,z_1,\dots,z_k=y$ such that consecutive elements are related by $\sim$ or by $\approx$. Show by example that the union of two equivalence relations is in general not transitive.
+\end{exercise}
+
+\begin{exercise}
+Show that if a representation $r:X\to R$ with $|r(X)|=k$ answers a question $q$, then $\ker q$ has at most $k$ classes. Show by a small example that the converse fails: a question whose kernel has at most $k$ classes need not be answered by $r$.
+\end{exercise}
+
+\begin{exercise}
+List the seven histories of length at most two over the events $\mathrm{d}(1)$ and $\mathrm{w}(1)$ together with their values of $(\beta,q)$, and use Result~\ref{prop:account} to determine which of them lie in the same class of $\ker q^{+}$. Explain why the empty history and $\mathrm{d}(1)\,\mathrm{w}(1)$ are identified although they differ as histories.
+\end{exercise}
+
+\begin{exercise}
+Revise the question of Example~\ref{ex:bank} to $q_{k}(h)=1$ if and only if some prefix of $h$ has balance below $-k$, where $k\ge0$ is a fixed integer. Show that $X/{\ker q_k^{+}}$ is in bijection with $\{\bot\}\cup\{-k,-k+1,\dots\}$, in the style of Result~\ref{prop:account}. Then show that for $k<k'$ neither of $\ker q_k^{+}$ and $\ker q_{k'}^{+}$ contains the other, so that revising the threshold in either direction can invalidate a representation that was sufficient before. (The histories $\mathrm{w}(k+1)$ and $\mathrm{w}(k+1)\,\mathrm{d}(1)$ and the histories $\mathrm{w}(k+1)\,\mathrm{d}(k+1)$ and the empty history are useful.)
+\end{exercise}
+
+
+\begin{exercise}
+Replace the threshold $3$ by $t$ in Result~\ref{prop:monitor-quotients} and compute the three class counts as functions of $t$. Check that the joint count is $2t+1$.
+\end{exercise}
+
+\begin{exercise}
+Prove that if $\ker f$ has $a$ classes and $\ker g$ has $b$ classes, then $\ker(f,g)$ has at least $\max(a,b)$ and at most $ab$ classes, and exhibit questions on a set of six cases for which each extreme is attained. Which extreme does Result~\ref{prop:monitor-quotients} resemble, and why is it strictly between?
+\end{exercise}
+
+\begin{exercise}
+For the monitor of Result~\ref{prop:monitor-quotients} prove that no representation with six values answers both $q_{\mathrm{now}}^{+}$ and $q_{\mathrm{ever}}^{+}$, and exhibit a representation with seven values that does.
+\end{exercise}
+

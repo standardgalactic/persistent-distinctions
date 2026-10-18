@@ -1,0 +1,153 @@
+% v2-ch06-petri.tex
+\chapter{Resource-Sensitive Transitions and Petri Nets}\label{ch:petri}
+\spec{How do consumable resources change which transitions are executable?}
+{Petri nets (Murata); decidability of reachability (Mayr, Kosaraju); EXPSPACE-hardness of coverability (Lipton).}
+{The state equation is necessary but not sufficient for reachability (Result~\ref{prop:state-equation}); place invariants bound the reachable markings (Result~\ref{prop:invariants}); the markings from which a net can run forever form an upward-closed set with a finite basis (Result~\ref{thm:upward}).}
+{None.}
+{Chapter~\ref{ch:reach}.}
+
+A resource is consumed when it is used. A transition that requires a token cannot fire when the token is absent, and firing may remove the token for later transitions. Petri nets model exactly this, and they do so with a finite description of what may be an infinite state space. This chapter states the model, proves the elementary invariants that constrain reachability, shows that the markings from which the system can keep running form an upward-closed set, and records what is known about the cost of deciding reachability.
+
+\section{Nets and firing}
+
+\begin{definition}[Petri net]\label{def:petri}
+A \emph{Petri net} consists of finite sets $P$ of places and $T$ of transitions and weight functions $\mathrm{Pre},\mathrm{Post}:T\to\mathbb N^{P}$. A \emph{marking} is an element $m\in\mathbb N^{P}$. A transition $t$ is \emph{enabled} at $m$ if $m\ge\mathrm{Pre}(t)$ componentwise, and firing it yields $m'=m-\mathrm{Pre}(t)+\mathrm{Post}(t)$, written $m\xrightarrow{t}m'$. The \emph{incidence matrix} is the $P\times T$ matrix $C$ with columns $\mathrm{Post}(t)-\mathrm{Pre}(t)$. For a firing sequence $\sigma$ the \emph{Parikh vector} $\#\sigma\in\mathbb N^{T}$ counts occurrences.
+\end{definition}
+
+The nominal menu is $T$; the executable set at $m$ is $\{t:m\ge\mathrm{Pre}(t)\}$. The rover of Example~\ref{ex:rover} is a net with places $p_0,\dots,p_3$ (one token marks the position), $b$ and $d$ (battery charge and deficit, with $b+d=3$), transitions $m_{ij}$ for adjacent positions consuming $p_i$ and $b$ and producing $p_j$ and $d$, and a charging transition consuming $p_0$ and $d$ and producing $p_0$ and $b$ (one unit at a time).
+
+\section{Necessary conditions for reachability}
+
+\begin{newresult}[The state equation]\label{prop:state-equation}
+If $m\xrightarrow{\sigma}m'$ then $m'=m+C\,\#\sigma$. Hence $m'$ is reachable from $m$ only if the equation $m'=m+Cx$ has a solution $x\in\mathbb N^{T}$. The converse fails: in the net with places $p,q,s$, transitions $t_1:p\to q+s$ and $t_2:q\to p$, the equation from $m=(0,0,0)$ to $m'=(0,0,1)$ is solved by $x=(1,1)$, but no transition is enabled at $m$, so $m'$ is not reachable.
+\end{newresult}
+\assumes{Weights are nonnegative integers.}
+\begin{proof}
+By induction on $|\sigma|$: each firing adds the column $\mathrm{Post}(t)-\mathrm{Pre}(t)$. For the counterexample $C\,(1,1)^{\mathsf T}$ is the sum of $(-1,1,1)$ and $(1,-1,0)$, which is $(0,0,1)$. At $(0,0,0)$ neither $t_1$ (needing $p$) nor $t_2$ (needing $q$) is enabled.
+\end{proof}
+
+The failing instance has a cycle that would be fine if it could start; the solution of the equation does not respect the order in which tokens become available. This is the sense in which resources impose an ordering that linear algebra alone cannot see.
+
+\begin{newresult}[Place invariants]\label{prop:invariants}
+If $y\in\mathbb Z^{P}$ satisfies $y^{\mathsf T}C=0$ then $y\cdot m$ is constant on every set of markings reachable from one another. If $y\ge0$ and $y\cdot m_0=k$ then every reachable marking has support in $\{p:y_p>0\}$ with $y\cdot m=k$, so every place with $y_p>0$ is bounded by $\lfloor k/y_p\rfloor$.
+\end{newresult}
+\assumes{Weights are nonnegative integers.}
+\begin{proof}
+By Result~\ref{prop:state-equation}, $y\cdot m'=y\cdot m+y^{\mathsf T}C\,\#\sigma=y\cdot m$. If $y\ge0$ then $y_pm'(p)\le y\cdot m'=k$ for each $p$.
+\end{proof}
+
+For the rover net, $y=(1,1,1,1,0,0)$ and $y'=(0,0,0,0,1,1)$ are invariants: every move transition removes a position token and adds one, and every charge unit moves a token between $d$ and $b$. With the initial marking of one position token and $b+d=3$, every reachable marking has exactly one position token and $b+d=3$, so at most $4\cdot4=16$ markings are reachable, the state space of Example~\ref{ex:rover}. The net is bounded and Chapter~\ref{ch:reach} applies to its marking graph.
+
+\section{Monotonicity and upward-closed sets}
+
+\begin{newresult}[Monotonicity]\label{prop:monotone}
+If $m\xrightarrow{\sigma}m'$ and $x\in\mathbb N^{P}$ then $m+x\xrightarrow{\sigma}m'+x$. Consequently, if a net can fire an infinite sequence from $m$ it can from every $m+x$, and if a marking $\ge g$ can be reached from $m$ then one can be reached from $m+x$.
+\end{newresult}
+\begin{proof}
+If $m\ge\mathrm{Pre}(t)$ then $m+x\ge\mathrm{Pre}(t)$, and the result of firing is $m+x-\mathrm{Pre}(t)+\mathrm{Post}(t)$. Induct on $|\sigma|$.
+\end{proof}
+
+\begin{established}[Dickson's lemma]\label{thm:dickson}
+Every upward-closed subset of $\mathbb N^{P}$ has finitely many minimal elements, and is the set of markings above one of them.
+\end{established}
+\source{Dickson (1913).}
+
+\begin{newresult}[The viability set of a net is upward closed]\label{thm:upward}
+The set $M_\infty=\{m\in\mathbb N^{P}:\text{an infinite firing sequence is enabled at }m\}$ is upward closed and so has a finite basis of minimal markings. Likewise for every target $g\in\mathbb N^{P}$ the set of markings from which a marking $\ge g$ can be reached is upward closed with a finite basis.
+\end{newresult}
+\assumes{The set of markings is $\mathbb N^{P}$ with the componentwise order.}
+\begin{proof}
+Upward closure is Result~\ref{prop:monotone}; the finite basis is Result~\ref{thm:dickson}.
+\end{proof}
+
+The set $M_\infty$ is the viability kernel of the constraint set $\mathbb N^{P}$ in the sense of Chapter~\ref{ch:viability}: the markings from which operation can continue forever. The theorem says that it is characterized by finitely many minimal resource endowments, a finite list of resource vectors each of which suffices and below none of which operation eventually stalls. The same holds for the markings from which a goal can be covered, which is the set of initial endowments that make a task feasible.
+
+\section{What is known about the complexity}
+
+\begin{established}[Decidability and complexity]\label{thm:petri-complexity}
+Reachability of a marking in a Petri net is decidable. Coverability, deciding whether a marking above a given one is reachable, is EXPSPACE-complete. Boundedness and the existence of an infinite firing sequence are decidable.
+\end{established}
+\source{Mayr (1981) and Kosaraju (1982) for decidability of reachability; Lipton (1976) for EXPSPACE-hardness and Rackoff (1978) for the matching upper bound for coverability; Karp and Miller (1969) for boundedness. Recent work shows reachability is Ackermann-complete (Czerwi\'nski and Orlikowski; Leroux, 2021).}
+
+The practical consequence is that exact reachability questions for resource-sensitive systems are expensive in general, while the structural statements of this chapter, invariants and upward closure, come cheaply and often settle the question that matters.
+
+
+\section{Backward coverability}\label{sec:backward}
+
+Result~\ref{thm:upward} says that the set of markings from which a goal can be covered has a finite basis, and it can be computed. For an upward-closed set $U$ with basis $B$ and a transition $t$, the markings from which one firing of $t$ lands in $U$ form an upward-closed set whose basis is obtained by a one-line formula.
+
+\begin{established}[Backward coverability]\label{thm:backward}
+For $u\in\mathbb N^P$ and a transition $t$, the least marking $m$ with $m\xrightarrow{t}m'$ and $m'\ge u$ is $\operatorname{pb}(t,u)=\mathrm{Pre}(t)+\max\bigl(0,\ u-\mathrm{Post}(t)\bigr)$, with maximum taken componentwise. Define $B_0=\{g\}$ and $B_{k+1}=\min\bigl(B_k\cup\{\operatorname{pb}(t,u):u\in B_k,\ t\in T\}\bigr)$. Then $B_k$ is the basis of the set of markings from which $g$ can be covered by at most $k$ firings, the sequence stabilizes after finitely many steps, and the limit is the basis of the set of markings from which a marking $\ge g$ is reachable.
+\end{established}
+\source{Abdulla, \v{C}er\={a}ns, Jonsson and Tsay (1996); Esparza, Finkel and Mayr (also for the general framework of well-structured systems).}
+\begin{proof}
+The two conditions $m\ge\mathrm{Pre}(t)$ and $m-\mathrm{Pre}(t)+\mathrm{Post}(t)\ge u$ together say $m\ge\mathrm{Pre}(t)$ and $m\ge\mathrm{Pre}(t)+u-\mathrm{Post}(t)$,
+which is $m\ge\operatorname{pb}(t,u)$. Let $U_k$ be the set of markings above some element of $B_k$. Then $U_0\subseteq U_1\subseteq\cdots$ is an increasing chain of upward-closed sets, and $U_k$ is exactly the set of markings from which $g$ is covered in at most $k$ firings. If the chain were strictly increasing forever, each step would add a new minimal element not above any earlier one, giving an infinite sequence in $\mathbb N^P$ with no element above an earlier one, which Dickson's lemma (Result~\ref{thm:dickson}) forbids. So $U_k=U_{k+1}$ for some $k$, and then $U_k$ is closed under predecessors and equals the limit.
+\end{proof}
+
+\begin{example}[Two coins make a coin]\label{ex:two-coins}
+A net with places $A,B,C$ and two transitions: $t_1$ consumes two tokens from $A$ and produces one in $B$; $t_2$ consumes one token from $B$ and produces one in each of $A$ and $C$. The goal is to cover $C\ge1$. Starting from $g=(0,0,1)$ (in coordinates $(A,B,C)$): $\operatorname{pb}(t_1,g)=(2,0,0)+\max(0,(0,0,1)-(0,1,0))=(2,0,1)$, which is above $g$ and is discarded; $\operatorname{pb}(t_2,g)=(0,1,0)+\max(0,(0,0,1)-(1,0,1))=(0,1,0)$. So $B_1=\{(0,0,1),(0,1,0)\}$. In the next round, $\operatorname{pb}(t_1,(0,1,0))=(2,0,0)+\max(0,(0,1,0)-(0,1,0))=(2,0,0)$, and $B_2=\{(0,0,1),(0,1,0),(2,0,0)\}$. Further rounds add nothing, so the basis is $\{C,\ B,\ 2A\}$: $C$ can be covered from a marking iff it already holds a $C$-token, a $B$-token (fire $t_2$), or two $A$-tokens (fire $t_1$ then $t_2$). A brute-force search over all markings with at most five tokens per place agrees with this basis.
+\end{example}
+
+\section{The coverability tree and unboundedness}\label{sec:km}
+
+When the net can be unbounded, the marking graph is infinite and exploration does not terminate. The Karp--Miller construction repairs this by acceleration.
+
+\begin{established}[Karp--Miller coverability tree]\label{thm:km}
+Extend $\mathbb N$ to $\mathbb N\cup\{\omega\}$ with $\omega+k=\omega$ and $\omega\ge n$. Build a tree from the root $m_0$: for a node labelled $m$ and each enabled transition $t$, the child is labelled $m'=m-\mathrm{Pre}(t)+\mathrm{Post}(t)$, except that if an ancestor $m''$ satisfies $m''\le m'$ and $m''\ne m'$, every place $p$ with $m''(p)<m'(p)$ is set to $\omega$ in the child, and branches stop when a node repeats an ancestor's label. The tree is finite. A place is unbounded iff some node has $\omega$ in that place, and a marking $\ge g$ is coverable iff some node label is $\ge g$.
+\end{established}
+\source{Karp and Miller (1969).}
+
+\begin{example}[A source]\label{ex:source}
+One place $A$ initially marked and one place $B$, and a transition $t$ consuming nothing from $B$ and one token from $A$ while producing a token in $A$ and a token in $B$. The root is $(1,0)$; its child is $(1,1)$, which is above the ancestor $(1,0)$ in place $B$, so it becomes $(1,\omega)$, whose child is again $(1,\omega)$ and stops. The tree has three nodes. The place $B$ is unbounded, $A$ is bounded by $1$, and every marking $(1,k)$ is coverable.
+\end{example}
+
+In the worst case the tree is very large: its size is not bounded by any primitive recursive function of the size of the net (see Figueira, Figueira, Schmitz and Schnoebelen 2011 for the Ackermannian bounds), although coverability itself is decidable in exponential space (Result~\ref{thm:petri-complexity}). The backward algorithm of the previous section often does much better in practice because it works with minimal elements only.
+
+\section{Invariants as design constraints}\label{sec:invariants-design}
+
+Place invariants (Result~\ref{prop:invariants}) are sometimes read as properties of a given net and sometimes as specifications to be enforced when a net is designed. The second reading gives a design rule. If a conservation law $y\cdot m=k$ is required (for example, the total number of tokens representing a licence pool is fixed), then every transition must satisfy $y\cdot(\mathrm{Post}(t)-\mathrm{Pre}(t))=0$, a linear condition on the transition weights that can be checked locally, transition by transition. A violation by any one transition breaks the conservation for the whole system, and a violating transition can be found in time linear in the size of the net. The dual use is diagnostic: the failure of an expected invariant at a measured marking, $y\cdot m\ne k$, where $k=y\cdot m_0$ is computed from the modelled initial marking, certifies that either a transition not in the model has occurred or the measurement or the initial marking is wrong, since no firing sequence of the modelled net from $m_0$ can produce the marking.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Verify that $y=(1,1,1,1,0,0)$ and $y'=(0,0,0,0,1,1)$ are invariants of the rover net. Use them to list the reachable markings and compare with the sixteen states of Example~\ref{ex:rover}.
+\end{exercise}
+
+\begin{exercise}
+Add a transition that creates a spare battery token with no input, and show that the net becomes unbounded. Which invariant fails?
+\end{exercise}
+
+\begin{exercise}
+Prove that if a net is bounded then the set of reachable markings from any $m$ is finite, and conclude that reachability is decidable by exploration of the marking graph of Chapter~\ref{ch:reach}.
+\end{exercise}
+
+\begin{exercise}
+Find the minimal markings of $M_\infty$ for the net with one place $p$ and one transition consuming one token from $p$ and producing one token in $p$, and for the net with a transition consuming two tokens and producing one.
+\end{exercise}
+
+\begin{exercise}
+Show that the set of markings from which a transition $t$ can ever fire is upward closed, and compute its basis for the net of Result~\ref{prop:state-equation} with $t=t_2$.
+\end{exercise}
+
+\begin{exercise}
+Run the backward algorithm by hand for the net of Example~\ref{ex:two-coins} with the goal $(0,0,2)$ and find the basis.
+\end{exercise}
+
+\begin{exercise}
+Build the Karp--Miller tree for the net with places $A,B$, initial marking $(1,0)$, and two transitions $t_1:A\mapsto A+B$ and $t_2:B\mapsto A$. Identify the unbounded places.
+\end{exercise}
+
+\begin{exercise}
+Prove that the formula for $\operatorname{pb}(t,u)$ in Result~\ref{thm:backward} gives the \emph{least} predecessor and not merely a predecessor, and give a net in which a predecessor not above $\operatorname{pb}(t,u)$ would be enabled but would not reach $u$.
+\end{exercise}
+
+\begin{exercise}
+For the rover net, add a transition that leaks a battery token with no input (the battery self-discharges). Show that the set of markings from which the rover can run forever (without consuming the last token) is smaller than before and compute its basis.
+\end{exercise}
+
+\begin{exercise}
+Show that the set of markings from which a given marking $g$ is exactly reachable is not in general upward closed, by an example in a one-place net.
+\end{exercise}
+

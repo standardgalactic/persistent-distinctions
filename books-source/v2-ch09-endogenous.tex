@@ -1,0 +1,158 @@
+% v2-ch09-endogenous.tex
+\chapter{Endogenous Action Spaces}\label{ch:endogenous}
+\spec{How are systems modelled in which actions create, destroy, or transform the available actions?}
+{Control systems with state-dependent action sets; delete-free planning (Bylander); Horn closure.}
+{When actions only add capabilities the reachable capability sets have a unique maximum, the closure, computed in time linear in the size of the rules (Result~\ref{thm:closure}); shortest acquisition plans have length at most the number of capabilities (Result~\ref{prop:short-plan}); nominal, eventual, and current menus are nested and the gaps between them are measurable (Result~\ref{prop:three-menus}); when actions also remove capabilities, reachability is PSPACE-complete.}
+{Reachability for endogenous action spaces with both gains and losses under restricted structure.}
+{Chapters~\ref{ch:reach} and~\ref{ch:history-state}.}
+
+In the systems of the previous chapters the menu of actions was part of the specification: at each state the controller chooses among actions that are there. A great deal of what matters in practice does not have this form. A tool must be acquired before it can be used, a skill trained before it can be exercised, a permission granted before a request can be filed, and each of these acquisitions is itself the result of acting. The action space is then a state variable. This chapter gives a model for it, proves what can be said when acquisitions only accumulate, and separates what is nominally listed, what can eventually be done, and what can be done now.
+
+\section{Capability systems}
+
+\begin{definition}[Capability system]\label{def:capsys}
+A \emph{capability system} consists of a finite set $\mathrm{Cap}$ of capabilities and a finite set $\mathrm{Act}$ of actions. An action $a$ has a precondition $\mathrm{req}(a)\subseteq\mathrm{Cap}$, a set $\mathrm{gain}(a)\subseteq\mathrm{Cap}$ of capabilities it creates, and a set $\mathrm{lose}(a)\subseteq\mathrm{Cap}$ of capabilities it destroys. A \emph{configuration} is a set $C\subseteq\mathrm{Cap}$ of capabilities held. The action $a$ is \emph{enabled} at $C$ if $\mathrm{req}(a)\subseteq C$, and then it leads to $C'=(C\setminus\mathrm{lose}(a))\cup\mathrm{gain}(a)$. The system is \emph{monotone} if $\mathrm{lose}(a)=\varnothing$ for every $a$.
+\end{definition}
+
+Examples are of this form. A hammer is a capability required by the action \emph{drive nail}; the action \emph{buy hammer}, with the precondition that money is held, gains it. A licence is a capability required by \emph{file request}, gained by \emph{pass test}, which requires the capability \emph{identity document}, gained by \emph{request document}, which requires \emph{birth certificate}. A consumable tool is a capability lost by the action that uses it.
+
+The enabled actions at a configuration $C$ are the \emph{current menu} $\mathrm{Cur}(C)=\{a:\mathrm{req}(a)\subseteq C\}$. The \emph{nominal menu} is $\mathrm{Act}$. The \emph{eventual menu} $\mathrm{Ev}(C)$ is the set of actions enabled at some configuration reachable from $C$.
+
+\section{The monotone case}
+
+For a configuration $C$ define the closure $\mathrm{Cl}(C)$ as the least set containing $C$ and closed under the rule: if $\mathrm{req}(a)\subseteq D$ then $\mathrm{gain}(a)\subseteq D$. Equivalently $\mathrm{Cl}(C)$ is the limit of $C_0=C$, $C_{k+1}=C_k\cup\bigcup\{\mathrm{gain}(a):\mathrm{req}(a)\subseteq C_k\}$.
+
+\begin{newresult}[Closure in monotone systems]\label{thm:closure}
+In a monotone capability system:
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item Every configuration reachable from $C$ is contained in $\mathrm{Cl}(C)$, and $\mathrm{Cl}(C)$ is itself reachable from $C$. Hence the family of reachable configurations has a unique maximum.
+  \item $\mathrm{Cl}$ is extensive ($C\subseteq\mathrm{Cl}(C)$), monotone ($C\subseteq D$ implies $\mathrm{Cl}(C)\subseteq\mathrm{Cl}(D)$) and idempotent.
+  \item $\mathrm{Cl}(C)$ is computed in time $O\bigl(\sum_a(|\mathrm{req}(a)|+|\mathrm{gain}(a)|)\bigr)$.
+  \item A capability $c$ can be acquired from $C$ if and only if $c\in\mathrm{Cl}(C)$.
+\end{enumerate}
+\end{newresult}
+\assumes{$\mathrm{lose}(a)=\varnothing$ for all $a$.}
+\begin{proof}
+(a) By induction on the length of a path, each reachable configuration lies in every set closed under the rule that contains $C$, in particular in $\mathrm{Cl}(C)$. For the converse, the sequence $C_k$ above increases and stabilizes; each step from $C_k$ to $C_{k+1}$ is realized by firing the enabled actions one after another, and since enabledness is preserved as the configuration grows (monotonicity of $\mathrm{req}(a)\subseteq D$ in $D$), the actions can be fired in turn. (b) Extensiveness and idempotence are immediate from the definition. For monotonicity, $\mathrm{Cl}(D)$ contains $C$ and is closed under the rule, so contains $\mathrm{Cl}(C)$. (c) Keep for each action a counter of unmet preconditions, and a queue of newly acquired capabilities; processing a capability decrements the counters of the actions that require it and fires an action when its counter reaches zero. Each requirement and each gain is processed once. (d) follows from (a).
+\end{proof}
+
+\begin{newresult}[Short acquisition plans]\label{prop:short-plan}
+In a monotone system, if a capability $c$ can be acquired from $C$ then it can be acquired by a sequence of at most $|\mathrm{Cap}\setminus C|$ actions, each of which gains a capability not previously held. This bound is attained.
+\end{newresult}
+\assumes{Monotone.}
+\begin{proof}
+Take a shortest sequence of actions leading from $C$ to a configuration containing $c$. If some action gained nothing new, deleting it leaves the configurations after it unchanged, so the later actions are still enabled and the sequence is shorter, contradicting minimality. So each action gains a new capability, and there are at most $|\mathrm{Cap}\setminus C|$ new capabilities. For attainment take capabilities $c_1,\dots,c_n$, with an action $a_i$ requiring $c_{i-1}$ and gaining $c_i$ ($c_0\in C$); the only plan to obtain $c_n$ is $a_1,\dots,a_n$.
+\end{proof}
+
+\begin{newresult}[Nominal, eventual, and current menus]\label{prop:three-menus}
+For every configuration $C$ of a monotone system, $\mathrm{Cur}(C)\subseteq\mathrm{Ev}(C)\subseteq\mathrm{Act}$ and $\mathrm{Ev}(C)=\mathrm{Cur}(\mathrm{Cl}(C))$. Each inclusion can be strict, and the length of the shortest plan enabling an action $a\in\mathrm{Ev}(C)$ is the \emph{distance} of $a$ from $C$; it is at most $|\mathrm{Cap}\setminus C|$.
+\end{newresult}
+\assumes{Monotone.}
+\begin{proof}
+The first inclusion holds because $C$ is reachable from itself; the second is trivial. Since the reachable configurations are contained in $\mathrm{Cl}(C)$ and $\mathrm{Cl}(C)$ is reachable, an action is enabled somewhere reachable iff it is enabled at $\mathrm{Cl}(C)$, since enabledness is monotone in the configuration. Strictness: with $\mathrm{Cap}=\{c_1,c_2,c_3\}$, $C=\varnothing$, an action $a_1$ with no requirement gaining $c_1$, an action $a_2$ requiring $c_1$ and gaining $c_2$, and an action $a_3$ requiring the capability $c_3$, which no action gains, one finds $\mathrm{Cur}=\{a_1\}$, $\mathrm{Ev}=\{a_1,a_2\}$, $\mathrm{Act}=\{a_1,a_2,a_3\}$. The distance bound is Result~\ref{prop:short-plan}.
+\end{proof}
+
+The result separates three notions that the list of actions blurs. The nominal menu says what the system has been designed to do. The eventual menu says what it can come to do. The current menu says what it can do now. A system can have a large nominal menu and a small eventual one, as when an action depends on a capability that no action creates, and the distance quantifies how far the eventual menu is from the current one.
+
+\begin{example}[Permission chains]\label{ex:chain}
+A licence application requires an identity document, which requires a birth certificate, which requires a form request. If each requirement is a capability gained by exactly one action, the plan to file the application has four steps, and the distance of \emph{file application} from the empty configuration is four. A policy that adds one further prerequisite to the chain lengthens the shortest plan by one without changing the nominal menu at all, which is how administrative burden acts on freedom: through distance, not through the list.
+\end{example}
+
+\section{Gains and losses}
+
+\begin{established}[Planning with deletions]\label{thm:bylander}
+For capability systems in which actions may lose capabilities, deciding whether a given capability can be obtained from a given configuration is PSPACE-complete. Without deletions, deciding whether a shortest plan of at most a given length exists is nonetheless NP-complete, even though deciding reachability is polynomial by Result~\ref{thm:closure}.
+\end{established}
+\source{Bylander (1994), \emph{The computational complexity of propositional STRIPS planning}.}
+
+The established result shows that the monotone case is exceptional in two ways: closure removes the order of actions from the question of reachability, and with deletions the order matters and the problem becomes a search in a space of configurations of size $2^{|\mathrm{Cap}|}$. A consumable capability (a tool lost by use, a permission that expires) is a loss. If the capability may be held in multiple units, the system is a Petri net as in Chapter~\ref{ch:petri}, and the markings are the multiplicities.
+
+\begin{example}[Training]\label{ex:training}
+A skill that is gained after $k$ practice sessions is not a capability in the sense of Definition~\ref{def:capsys}, because the gain depends on a count. It is modelled by capabilities $t_1,\dots,t_k$ with a practice action gaining $t_{i}$ from $t_{i-1}$, and the skill is $t_k$. The monotone result applies and gives distance $k$. A skill that decays, so that $t_i$ is lost when unused, is a loss and takes the system outside the monotone case.
+\end{example}
+
+
+\section{A workshop}\label{sec:workshop}
+
+A small capability system shows the quantities of this chapter together. The capabilities are \emph{money, tools, wood, id, permit, saw, shed, stock, fuel, kiln}, and the eight actions, written as $\mathrm{req}\Rightarrow\mathrm{gain}$, are:
+\begin{center}
+\begin{tabular}{@{}ll@{\qquad}ll@{}}
+buy tools & money $\Rightarrow$ tools & build shed & tools, wood, permit $\Rightarrow$ shed\\
+buy wood & money $\Rightarrow$ wood & make saw & tools, wood $\Rightarrow$ saw\\
+get id & money $\Rightarrow$ id & make stock & saw, wood $\Rightarrow$ stock\\
+get permit & id, money $\Rightarrow$ permit & fire kiln & shed, stock, fuel $\Rightarrow$ kiln
+\end{tabular}
+\end{center}
+Starting from the configuration $C=\{\mathrm{money}\}$, the closure iteration defined above adds in successive rounds
+\[
+\{\text{wood, id, tools}\},\quad\{\text{saw, permit}\},\quad\{\text{shed, stock}\},
+\]
+and stops, so $\mathrm{Cl}(C)$ has eight of the ten capabilities. The action \emph{fire kiln} is never enabled: it requires \emph{fuel}, which no action creates. The three menus are therefore the current menu $\{$buy tools, buy wood, get id$\}$ of size three, the eventual menu of size seven, and the nominal menu of size eight. The gap between the nominal and eventual menus is a single action, and it is caused by a single missing capability; adding \emph{fuel} to the starting configuration enlarges the closure by two capabilities (\emph{fuel} itself and \emph{kiln}) and the eventual menu to eight.
+
+The \emph{depth} of a capability is the round in which it first appears: one for \emph{wood, id, tools}; two for \emph{saw, permit}; three for \emph{shed, stock}. If actions take one unit of time and independent actions can run in parallel, the earliest time to the shed is its depth, three. A single worker, performing one action at a time, needs the five actions \emph{buy tools, buy wood, get id, get permit, build shed}, so the shortest sequential plan to the shed has length five. The two numbers answer different questions, and the difference is the available parallelism.
+
+\begin{newresult}[Depth and plan length]\label{prop:depth}
+In a monotone capability system let $d(c)$ be the round of the closure iteration at which $c\in\mathrm{Cl}(C)$ first appears ($d=0$ on $C$). Then $d(c)$ is the length of the shortest parallel plan for $c$ (the minimum number of rounds, each round firing any set of enabled actions), and $d(c)\le\ell(c)\le|\mathrm{Cap}\setminus C|$, where $\ell(c)$ is the length of a shortest sequential plan. Both bounds are attained.
+\end{newresult}
+\assumes{Monotone system.}
+\begin{proof}
+A parallel plan with $r$ rounds acquires everything in $C_r$ of the closure iteration by induction on $r$: round $j$ can fire only actions whose requirements lie in the capabilities acquired by round $j-1$, which are contained in $C_{j-1}$. Conversely the iteration is itself a parallel plan. So the shortest parallel plan for $c$ has $d(c)$ rounds. A sequential plan of $\ell$ actions is a parallel plan of $\ell$ rounds with one action per round, so $\ell\ge d(c)$ by the first part. The upper bound is Result~\ref{prop:short-plan}. For attainment of the first bound take a chain, where parallelism does not help and $d=\ell$; for the second take $n$ capabilities gained independently from the starting configuration and one further capability requiring all of them, where $d=2$ for the last capability and the shortest sequential plan has $n+1=|\mathrm{Cap}\setminus C|$ actions.
+\end{proof}
+
+\section{Capabilities are complements}\label{sec:complements}
+
+How much is a capability worth? A natural measure is the increase in the size of the closure. In the workshop, starting from the empty configuration, \emph{tools} alone gives a closure of size one, \emph{wood} alone gives a closure of size one, and the pair gives size four (tools, wood, saw, stock, since the saw needs both and the stock needs the saw and the wood). So the marginal value of \emph{wood} given \emph{tools} is three, against one given nothing. The closure size is not submodular: capabilities that are useful only in combination are complements, and the value of the second exceeds the value of the first.
+
+\begin{newresult}[The closure size is neither submodular nor supermodular]\label{prop:complement}
+The set function $f(D)=|\mathrm{Cl}(D)|$ is monotone, and in general it is neither submodular nor supermodular. In the workshop $f(\{\mathrm{tools,wood}\})-f(\{\mathrm{tools}\})=3>1=f(\{\mathrm{wood}\})-f(\varnothing)$, so the marginal value of a capability can rise as others are added, and $f$ is not submodular. With capabilities $c_1,c_2,g$ and actions $a_1:c_1\Rightarrow g$, $a_2:c_2\Rightarrow g$ the marginal value can fall: $f(\{c_2\})-f(\varnothing)=2>1=f(\{c_1,c_2\})-f(\{c_1\})$, so $f$ is not supermodular.
+\end{newresult}
+\assumes{Monotone systems.}
+\begin{proof}
+Monotonicity of $f$ is Result~\ref{thm:closure}(b). In the workshop, $f(\varnothing)=0$, $f(\{\mathrm{tools}\})=1$, $f(\{\mathrm{wood}\})=1$ (no action fires from either alone) and $f(\{\mathrm{tools,wood}\})=4$ (adding the saw, then the stock). For the second system, $f(\varnothing)=0$, $f(\{c_1\})=f(\{c_2\})=2$ (the capability and $g$), $f(\{c_1,c_2\})=3$.
+\end{proof}
+
+The consequence for planning is that greedy acquisition by marginal closure gain is not safe. Complementary capabilities must be acquired in groups, the substitutes in the other direction should be acquired only once, and a good plan reasons about the hypergraph of requirements, not about capabilities one at a time.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute $\mathrm{Cl}(\varnothing)$ and the distances of all actions in a system with three capabilities and four actions of your choice, in which one action is never enabled.
+\end{exercise}
+
+\begin{exercise}
+Show that adding a loss to a single action of a monotone system can make the family of reachable configurations have two incomparable maximal elements.
+\end{exercise}
+
+\begin{exercise}
+Show that in a monotone system there is a shortest plan to any acquirable capability in which no action is repeated, and explain why repetition is useless in the monotone case but not in Example~\ref{ex:training} if the skill is modelled by a count instead of by capabilities $t_1,\dots,t_k$.
+\end{exercise}
+
+\begin{exercise}
+In Example~\ref{ex:chain}, suppose each step has a waiting time and the steps can be started in parallel when their requirements are met. Compute the time to file as a longest path in a directed acyclic graph.
+\end{exercise}
+
+\begin{exercise}
+State and prove the analogue of Result~\ref{thm:closure}(d) when each action also has a cost and one wishes to know the least total cost at which a capability is acquirable, for the case in which the requirement hypergraph is a tree. Explain where the proof breaks if two actions share a prerequisite.
+\end{exercise}
+
+\begin{exercise}
+Verify the closure rounds, the three menus and the depths of the workshop of Section~\ref{sec:workshop}. Then add an action \emph{buy fuel} with requirement money and gain fuel, and recompute the eventual menu and the depth of kiln.
+\end{exercise}
+
+\begin{exercise}
+Prove that in a monotone system the depth function $d$ satisfies $d(c)=1+\min_{a:\,c\in\mathrm{gain}(a)}\max_{c'\in\mathrm{req}(a)}d(c')$ for $c\notin C$, with $d=0$ on $C$ and the minimum over the empty set equal to $\infty$.
+\end{exercise}
+
+\begin{exercise}
+Give a capability system in which the shortest sequential plan to a capability is $n$ but the shortest parallel plan is $2$, and one in which the two coincide for every capability.
+\end{exercise}
+
+\begin{exercise}
+Show that every capability system, monotone or not, has a configuration graph on $2^{|\mathrm{Cap}|}$ vertices, and explain why for monotone systems the strongly connected components of this graph are singletons.
+\end{exercise}
+
+\begin{exercise}
+In the workshop, suppose \emph{build shed} also loses \emph{wood}. Describe the reachable configurations from $\{\mathrm{money}\}$. Is \emph{stock} still acquirable, and does the order of actions now matter?
+\end{exercise}
+

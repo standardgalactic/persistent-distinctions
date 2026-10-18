@@ -1,0 +1,23 @@
+% division-of-labour.tex
+% Overlap rule, included in the front matter of both volumes.
+
+\chapter*{Division of Labour Between the Volumes}
+\addcontentsline{toc}{chapter}{Division of Labour Between the Volumes}
+
+The governing rule is short. \emph{Distinction and Continuation} defines and proves what a representation must preserve. \emph{The Shape of Possibility} studies how actions transform reachable futures and what that transformation costs. When a topic appears in both volumes, the first volume owns its definitions and its sufficiency or impossibility theorems, and the second volume cites those definitions and adds only the dynamics, the optimization, and the computation of regions and costs. Each volume carries a self-contained appendix recapping the statements it needs from the other, so either can be read first.
+
+\begin{longtable}{@{}p{0.17\textwidth}p{0.38\textwidth}p{0.38\textwidth}@{}}
+\toprule
+\textbf{Topic} & \textbf{Distinction and Continuation} & \textbf{The Shape of Possibility}\\
+\midrule
+\endhead
+Obligations & Semantics, monitors, and temporal specification of commitments that cannot be read from one state (Ch.~14). & Viability under evolving obligations: which regions allow continued compliance (Ch.~14). \\[4pt]
+Degradation & Characterization of admissible shedding from obligations and dependency structure (Ch.~17). & Computation of recovery and fallback regions and their cost (Ch.~16). \\[4pt]
+Revision & Revision sufficiency and the revision horizon (Ch.~21). & The cost of maintaining or acquiring revision sufficiency (Ch.~22). \\[4pt]
+History and state & Sufficient representations, incremental sufficiency, bisimulation (Ch.~5--8). & State augmentation and path-dependent feasibility (Ch.~7). \\[4pt]
+Interfaces & Delegated authority, boundary contracts, compatibility conditions (Ch.~20). & Action abstraction and simulation: when an interface preserves admissible reachability (Ch.~18). \\[4pt]
+Identity and provenance & Identity criteria relative to promised operations; lineage (Ch.~11, 15). & Cited only; no independent development. \\
+\bottomrule
+\end{longtable}
+
+Every result in either volume carries one of three statuses, displayed in its heading. An \emph{established result} is attributed to its mathematical source. A \emph{new result} is proved in full under assumptions stated beside it. A \emph{proof obligation} is a proposed statement whose proof has not yet survived scrutiny; it is displayed as such and nothing downstream may cite it as a theorem. The companion ledger \texttt{proof-spine.tex} lists every load-bearing result with its status, assumptions, and dependencies.

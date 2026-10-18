@@ -1,0 +1,164 @@
+% v2-ch04-mdp.tex
+\chapter{Markov Decision Processes and Constrained Variants}\label{ch:mdp}
+\spec{How do feasibility and optimality interact under stochastic transitions?}
+{Discounted MDPs (Puterman); constrained MDPs (Altman).}
+{Almost-sure safety is decided by the greatest fixed point of a support-based predecessor operator (Result~\ref{thm:as-kernel}); optimizing under an almost-sure constraint is the same as optimizing the restricted process on that kernel (Result~\ref{thm:restriction}); expected-cost constraints can require randomization (Example~\ref{ex:randomization}) and make the optimal action depend on remaining budget.}
+{None.}
+{Chapter~\ref{ch:viability} and Appendix~\ref{app:suff}.}
+
+When transitions are stochastic, two questions that were one in the deterministic setting separate. One is whether a constraint can be kept, with what assurance. The other is how well the system performs while keeping it. This chapter treats the interaction. It begins with the standard theory of discounted Markov decision processes, introduces the stochastic analogue of the viability kernel for constraints that must hold with certainty, proves that optimizing under such a constraint reduces to optimizing a restricted process, and then treats constraints on expected cost, where the reduction fails and the state must be enlarged.
+
+\section{Discounted Markov decision processes}
+
+\begin{definition}[MDP]\label{def:mdp}
+A finite \emph{Markov decision process} is a tuple $(S,A,P,R,\gamma)$ with finite state and action sets $S,A$, transition probabilities $P(s'\mid s,a)$, reward $R:S\times A\to\mathbb R$, and discount $\gamma\in[0,1)$. A \emph{policy} $\pi$ chooses, for each finite history of states and actions, a distribution over actions. The value of $\pi$ from $s$ is $V^{\pi}(s)=\mathbb E_{\pi,s}\bigl[\sum_{t\ge0}\gamma^{t}R(s_t,a_t)\bigr]$ and the optimal value is $V^{*}(s)=\sup_\pi V^{\pi}(s)$.
+\end{definition}
+
+\begin{established}[Bellman optimality]\label{thm:bellman}
+The operator $(TV)(s)=\max_{a}\bigl[R(s,a)+\gamma\sum_{s'}P(s'\mid s,a)V(s')\bigr]$ is a $\gamma$-contraction in the supremum norm, so it has a unique fixed point $V^{*}$, and value iteration $V_{n+1}=TV_n$ converges to $V^{*}$ geometrically. A stationary deterministic policy that chooses in each state an action attaining the maximum in $(TV^{*})(s)$ is optimal.
+\end{established}
+\source{Puterman, \emph{Markov Decision Processes} (1994), Chapter 6.}
+\begin{proof}[Proof of the contraction property]
+For $V,W$ and each $s$,
+\[
+|(TV)(s)-(TW)(s)|\le\max_a\gamma\sum_{s'}P(s'\mid s,a)\,|V(s')-W(s')|\le\gamma\|V-W\|_\infty,
+\]
+using that the maximum of functions differs by at most the maximum difference. Banach's fixed point theorem gives the rest of the first claim. That the fixed point is the optimal value and that a greedy policy attains it is the standard verification argument cited above.
+\end{proof}
+
+In an MDP the current state is a sufficient representation of the history in the sense of Appendix~\ref{app:suff}: the distribution of the future given the history depends on the history only through the state, and the optimal action depends on the state alone. This is what is lost when the state is only partly observed (Chapter~\ref{ch:pomdp}) or when the objective is constrained in expectation (the last section of this chapter).
+
+\section{Feasibility with certainty}
+
+Let $K\subseteq S$ be a constraint set. Say that a policy is \emph{almost surely safe} from $s$ if $\Pr_{\pi,s}[s_t\in K\text{ for all }t]=1$, and write $\Pi_K(s)$ for the set of such policies. The condition is the stochastic counterpart of the viability condition of Chapter~\ref{ch:viability} with certainty replaced by probability one. Its solution involves the \emph{support} of the transition law, the set of successors with positive probability. Let $\operatorname{supp}P(s,a)=\{s':P(s'\mid s,a)>0\}$ and
+\[
+\operatorname{Pre}_{\forall\exists}(W)=\{s\in S:\exists a\in A,\ \operatorname{supp}P(s,a)\subseteq W\}.
+\]
+
+\begin{newresult}[Almost-sure safety is a support-based viability kernel]\label{thm:as-kernel}
+Let $W^{*}$ be the greatest set with $W^{*}\subseteq K\cap\operatorname{Pre}_{\forall\exists}(W^{*})$, obtained as the limit of $W_0=K$, $W_{n+1}=K\cap\operatorname{Pre}_{\forall\exists}(W_n)$. Then $\Pi_K(s)\ne\varnothing$ if and only if $s\in W^{*}$. For $s\in W^{*}$, any policy that selects at each state $s'\in W^{*}$ an action $a$ with $\operatorname{supp}P(s',a)\subseteq W^{*}$ is almost surely safe, in fact safe on every sample path.
+\end{newresult}
+\assumes{Finite $S$ and $A$; policies may depend on the full history.}
+\begin{proof}
+The sets $W_n$ decrease and stabilize on a finite set, at the greatest fixed point $W^{*}$ (the argument is that of Result~\ref{thm:kernel}(c) for the operator $K\cap\operatorname{Pre}_{\forall\exists}$). ($\Leftarrow$) If $s\in W^{*}$, the stationary policy that picks at each $s'\in W^{*}$ an action with support inside $W^{*}$ moves only within $W^{*}\subseteq K$, so every sample path stays in $K$. ($\Rightarrow$) Let $\pi\in\Pi_K(s)$ and let $W$ be the set of states visited with positive probability at some time under $\pi$ from $s$. Then $s\in W$ and $W\subseteq K$, since a state visited with positive probability that lay outside $K$ would contradict almost sure safety. Take $s'\in W$ and a history of positive probability ending in $s'$ at time $t$. The policy puts positive mass on some action $a$ at that history. Every $s''\in\operatorname{supp}P(s',a)$ is visited at time $t+1$ with positive probability, so $s''\in W$. Thus $\operatorname{supp}P(s',a)\subseteq W$, which shows $W\subseteq\operatorname{Pre}_{\forall\exists}(W)$, and $W\subseteq K$ gives $W\subseteq W^{*}$. Hence $s\in W^{*}$.
+\end{proof}
+
+The theorem says that almost-sure safety is blind to the magnitudes of the probabilities: only which transitions can occur matters. Any action that has even a small chance of leaving $W^{*}$ is excluded at that state, because over an unbounded horizon the small chance is eventually realized. This is the stochastic counterpart of the observation in Chapter~\ref{ch:viability} that the constraint set is not the set of safe states.
+
+\begin{example}[A field excursion]\label{ex:excursion}
+States $D$ (dock), $F$ (field), $X$ (stranded). At $D$ the actions are $\mathrm{wait}$ (stay at $D$ with probability $1$, reward $0$) and $\mathrm{go}$ (move to $F$, reward $0$). At $F$ the actions are $\mathrm{return}$ (move to $D$, reward $0$) and $\mathrm{sample}$ (reward $1$; stay at $F$ with probability $0.9$, move to $X$ with probability $0.1$). The state $X$ is absorbing with reward $0$. Let $K=\{D,F\}$. Then $W_1=\{D,F\}$ since $\mathrm{wait}$ and $\mathrm{return}$ have supports inside $K$, and $W^{*}=\{D,F\}$. At $F$ the action $\mathrm{sample}$ is not in the restricted set, since its support contains $X$. The unconstrained optimum samples at $F$ repeatedly, with positive value; the almost-sure constraint forbids it, and the optimal almost-surely safe value is $0$.
+\end{example}
+
+\section{Optimizing under an almost-sure constraint}
+
+\begin{newresult}[Reduction to the restricted process]\label{thm:restriction}
+Let $W^{*}$ be as in Result~\ref{thm:as-kernel} and define the restricted MDP $M'$ with state set $W^{*}$, action sets $A'(s)=\{a:\operatorname{supp}P(s,a)\subseteq W^{*}\}$ (nonempty for $s\in W^{*}$), and the same $P,R,\gamma$ restricted. Then for every $s\in W^{*}$,
+\[
+\sup_{\pi\in\Pi_K(s)}V^{\pi}(s)\;=\;V^{*}_{M'}(s).
+\]
+Consequently the optimal almost-surely safe value is attained by a stationary deterministic policy on $W^{*}$, obtained by value iteration on $M'$.
+\end{newresult}
+\assumes{As in Result~\ref{thm:as-kernel}.}
+\begin{proof}
+Every policy of $M'$ (extended arbitrarily outside $W^{*}$) stays in $W^{*}\subseteq K$ on every sample path, so it belongs to $\Pi_K(s)$ and has the same value. Conversely let $\pi\in\Pi_K(s)$. By the proof of Result~\ref{thm:as-kernel} the set $W$ of states visited with positive probability satisfies $W\subseteq W^{*}$, and at every history of positive probability ending in $s'$ every action in the support of $\pi$ has $\operatorname{supp}P(s',a)\subseteq W\subseteq W^{*}$, so lies in $A'(s')$. Changing $\pi$ on histories of probability zero does not change $V^{\pi}(s)$, so $\pi$ has the same value as a policy of $M'$. Hence the suprema agree, and the last claim is Result~\ref{thm:bellman} for $M'$.
+\end{proof}
+
+The result separates the two questions cleanly. Feasibility is settled first, by the kernel, and performance is optimized afterwards over what feasibility leaves. A policy that optimizes performance first and is then corrected for safety is in general not optimal under the constraint; the correct order is the one in the theorem.
+
+\section{Constraints on expected cost}
+
+A different kind of constraint bounds an expected accumulated cost. Let $C:S\times A\to\mathbb R_{\ge0}$ be a cost function and $d\ge0$ a budget. The \emph{constrained problem} is to maximize $V^{\pi}(s_0)$ subject to $\mathbb E_{\pi,s_0}\bigl[\sum_t\gamma^{t}C(s_t,a_t)\bigr]\le d$.
+
+\begin{established}[Randomization and occupation measures]
+The constrained problem is equivalent to a linear program over the discounted occupation measures $\rho(s,a)=\sum_t\gamma^{t}\Pr_{\pi,s_0}[s_t=s,a_t=a]$, and its optimal policy may have to be randomized.
+\end{established}
+\source{Altman, \emph{Constrained Markov Decision Processes} (1999).}
+
+\begin{example}[A constraint that forces randomization]\label{ex:randomization}
+One state $s$ with two actions: $a_1$ with reward $1$ and cost $1$, $a_2$ with reward $0$ and cost $0$, and $s$ is left unchanged by both. Let the budget be $d=1/(2(1-\gamma))$. A stationary policy that chooses $a_1$ with probability $q$ has reward and cost both equal to $q/(1-\gamma)$, so it is feasible if and only if $q\le1/2$, and the best feasible value is attained at $q=1/2$ and equals $1/(2(1-\gamma))$. The stationary deterministic policies are $q=0$, with value $0$, and $q=1$, which is infeasible. No stationary deterministic policy attains the optimum.
+\end{example}
+
+There is a second effect. In the unconstrained problem the optimal action depends on the state alone. In the constrained problem it depends on the budget already spent: at the same state, a system that has used most of its budget must act differently from one that has used none. The state is therefore not a sufficient representation of the history for the constrained optimum. The remedy is to enlarge it, adding the remaining budget, and this is the first instance of the construction studied in Chapter~\ref{ch:history-state}: the augmented state is sufficient for the constrained problem exactly when the added component is sufficient for the feasibility question.
+
+
+\section{The price of certainty in the excursion}\label{sec:price-certainty}
+
+Take Example~\ref{ex:excursion} with discount $\gamma=0.9$. The unconstrained value at the field satisfies $V(F)=1+\gamma\cdot0.9\,V(F)$, because sampling pays $1$ and the rover survives with probability $0.9$ to sample again, so $V(F)=1/(1-0.81)\approx5.263$ and, going out from the dock, $V(D)=\gamma V(F)\approx4.737$. The alternative at $F$, to return, is worth $\gamma V(D)\approx4.263$, so sampling is optimal. Under the almost-sure constraint the optimal value is $0$. The gap of $4.737$ is the price of certainty, and the interesting design question is what lies between the extremes.
+
+Consider the policy that leaves the dock, samples a fixed number $n$ of times, returns if it has survived, and then waits at the dock forever. Its value is $\sum_{k=0}^{n-1}\gamma^{1+k}0.9^{k}$ and its probability of ending stranded is $1-0.9^{n}$. For $n=1,\dots,8$ the values are $0.900,\ 1.629,\ 2.220,\ 2.698,\ 3.085,\ 3.399,\ 3.653,\ 3.859$ and the ruin probabilities are $0.100,\ 0.190,\ 0.271,\ 0.344,\ 0.410,\ 0.469,\ 0.522,\ 0.570$. Every increment in value is paid for by an increment in the probability of ruin. The $n$th sample adds $0.9\cdot0.81^{n-1}$ to the value and $0.1\cdot0.9^{n-1}$ to the probability of ruin, so the value gained per unit of added risk is $9,\ 8.1,\ 7.29,\dots$, falling by the factor $0.9$ at each further sample: later samples are worse bargains, but each still buys something, and no sample is free of risk. Among these policies, a chance constraint requiring ruin probability at most $0.2$ selects $n=2$, with value $1.629$ against $4.737$ for the unconstrained optimum; the almost-sure formulation selects $n=0$. (A randomized choice between $n=2$ and $n=3$ that meets the constraint with equality would do slightly better, which is the phenomenon of Result~\ref{prop:one-random} below.)
+
+\begin{newresult}[Repeated exposure drives ruin to one]\label{prop:geometric-ruin}
+Let $\pi$ be a policy and $t_0\ge0$ such that, at every history of positive probability of length $t\ge t_0$ that ends in $K$, the action chosen has probability at least $p>0$ of leading outside $K$. Then $\Pr_{\pi}[s_t\in K\text{ for }t=0,\dots,t_0+T]\le(1-p)^{T}$ for all $T\ge0$, so $\Pr[s_t\in K\text{ for all }t]=0$.
+\end{newresult}
+\assumes{As stated; $K$ is the constraint set.}
+\begin{proof}
+Let $E_T$ be the event that the first $t_0+T$ steps remain in $K$. Conditional on any history in $E_T$ the next step leaves $K$ with probability at least $p$, so $\Pr[E_{T+1}\mid\text{history}]\le1-p$, and by induction $\Pr[E_T]\le(1-p)^T$. The event ``in $K$ forever'' is contained in every $E_T$.
+\end{proof}
+
+The proposition is the quantitative form of the remark after Result~\ref{thm:as-kernel}: a small, constant risk per period becomes certain ruin over a long horizon, and a risk that is tolerable for one excursion is not tolerable for an unbounded program of excursions. With $p=0.1$ the probability of surviving $50$ exposures is $0.9^{50}\approx0.005$.
+
+\section{Where randomization occurs}\label{sec:where-random}
+
+Example~\ref{ex:randomization} shows that the constrained optimum can need randomization. How much randomization it needs is limited by the number of constraints.
+
+\begin{newresult}[One constraint, one randomized state]\label{prop:one-random}
+For the constrained problem with a single expected-cost constraint there is an optimal stationary policy that randomizes in at most one state; with $k$ constraints, in at most $k$ states.
+\end{newresult}
+\assumes{Finite MDP; the problem is feasible and has an optimal solution.}
+\begin{proof}
+By the occupation-measure formulation (Altman) the problem is the linear program $\max\sum R\rho$ subject to $\sum_a\rho(s',a)-\gamma\sum_{s,a}P(s'\mid s,a)\rho(s,a)=\mu_0(s')$ for each $s'$, $\sum C\rho+z=d$ with a slack $z\ge0$, and $\rho,z\ge0$. An optimal solution exists at a vertex, which has at most $|S|+1$ positive coordinates because the system has $|S|+1$ equality constraints. Let $S'$ be the set of states with positive total occupation $\sum_a\rho(s,a)$. Every pair $(s,a)$ with $\rho(s,a)>0$ has $s\in S'$ and, since inflow to a state forces positive occupation there, all its successors with positive probability lie in $S'$; so the columns of the positive coordinates are supported on the $|S'|$ flow rows of $S'$ and the budget row, and a vertex has at most $|S'|+1$ of them. Each state of $S'$ has at least one positive coordinate, so the number of states of $S'$ with two or more is at most $(|S'|+1)-|S'|=1$. The stationary policy $\pi(a\mid s)=\rho(s,a)/\sum_{a'}\rho(s,a')$ on $S'$ reproduces $\rho$ and randomizes in at most one state. With $k$ constraints the same count gives at most $k$.
+\end{proof}
+
+The result explains the shape of Example~\ref{ex:randomization}, where the single state randomizes, and it gives a design rule: a system with a single budget needs a single coin. The policy is deterministic everywhere except at one state, and its placement is part of the solution of the linear program.
+
+\section{Value in the budget as a state variable}\label{sec:budget-state}
+
+The remedy named at the end of the chapter, adding the remaining budget to the state, can be made explicit in the finite-horizon deterministic-cost case, where it is exact. Let costs be nonnegative integers and the budget a nonnegative integer $d$ with a hard (path-wise) constraint $\sum_tC(s_t,a_t)\le d$. The augmented state $(s,\beta)$, with $\beta$ the remaining budget, evolves by $\beta'=\beta-C(s,a)$ and an action is allowed only if $C(s,a)\le\beta$. The value function satisfies
+\[
+V_n(s,\beta)=\max_{a:\,C(s,a)\le\beta}\Bigl[R(s,a)+\gamma\sum_{s'}P(s'\mid s,a)\,V_{n-1}\bigl(s',\beta-C(s,a)\bigr)\Bigr],
+\]
+which is the Bellman recursion on the product, an MDP with $|S|(d+1)$ states. The optimal action at the same $s$ depends on $\beta$ through the allowed set and the continuation value. For expected-cost constraints there is no exact finite augmentation (Result~\ref{prop:no-finite} of Chapter~\ref{ch:history-state}), and the budget becomes a real-valued state whose value function is concave in $\beta$ (Result~\ref{e:concave}).
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute $W^{*}$ for the excursion of Example~\ref{ex:excursion} when $K=\{D,F,X\}$ and when $K=\{D\}$.
+\end{exercise}
+
+\begin{exercise}
+Modify Example~\ref{ex:excursion} so that $\mathrm{sample}$ moves to $X$ with probability $0.1$ and returns to $D$ with probability $0.9$. Recompute $W^{*}$, the restricted action sets, and the optimal almost-surely safe value for $\gamma=1/2$ and reward $1$ for $\mathrm{sample}$.
+\end{exercise}
+
+\begin{exercise}
+Show that if the support of a transition law is replaced by the whole successor set whenever the probability is positive but arbitrarily small, the sets $W_n$ do not change, and conclude that the kernel $W^{*}$ depends on $P$ only through its supports.
+\end{exercise}
+
+\begin{exercise}
+Give a two-state MDP in which the optimal unconstrained policy leaves $W^{*}$ with positive probability, and compare its value with the optimal value of Result~\ref{thm:restriction}.
+\end{exercise}
+
+\begin{exercise}
+For Example~\ref{ex:randomization}, construct a deterministic nonstationary policy whose cost does not exceed $d$ and whose value is within $\gamma^{N}$ of the randomized optimum for some $N$, for $\gamma=1/2$. Explain why non-stationarity of this kind amounts to adding a clock to the state.
+\end{exercise}
+
+\begin{exercise}
+Verify the table of values and ruin probabilities in Section~\ref{sec:price-certainty} for $n=3$, and find the largest $n$ with ruin probability at most $0.3$ and the corresponding value.
+\end{exercise}
+
+\begin{exercise}
+In the excursion with $\gamma=0.9$, add an action $\mathrm{recharge}$ at $F$ that costs nothing and returns to $F$ with the reward $0.5$ and no risk. Compute the unconstrained optimum, the almost-surely safe optimum, and the policy that mixes the two to achieve ruin probability at most $0.2$ over a single excursion.
+\end{exercise}
+
+\begin{exercise}
+Prove Result~\ref{prop:geometric-ruin} for a policy that exposes itself at independent times with different risks $p_1,p_2,\dots$ and show that $\Pr[\text{stay}]\le\prod(1-p_i)$, which is $0$ iff $\sum p_i=\infty$. State the connection to the second Borel--Cantelli lemma in Appendix~\ref{app:stoch}.
+\end{exercise}
+
+\begin{exercise}
+For a two-state MDP with a single cost constraint, write the occupation-measure linear program explicitly, find a basic optimal solution, and identify the state in which the policy randomizes.
+\end{exercise}
+
+\begin{exercise}
+Find the augmented-state recursion of Section~\ref{sec:budget-state} for a two-state, two-action MDP with integer costs $0$ and $1$ and budget $d=2$, horizon $3$, and compute $V_3$ at every augmented state.
+\end{exercise}
+

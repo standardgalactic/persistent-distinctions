@@ -1,0 +1,104 @@
+% ch23-worked.tex
+\chapter{Worked Mathematical Systems}\label{ch:worked}
+\spec{What do complete constructions look like?}
+{None.}
+{Four constructions, an obligation monitor, a provenance-preserving document system, a degrading service, and a claim ledger, each with its formal assumptions, an implementation sketch, one proposition that instantiates earlier results, and failure cases.}
+{Each construction lists its own.}
+{Parts~I to~V.}
+
+The preceding chapters proved results about representations in isolation. This chapter assembles them. Each of the four systems below states what is assumed, what is retained, what is guaranteed, and how the guarantee fails when an assumption is withdrawn. The sketches are written at the level of state and transition, not of code, because the point is the relation between what is kept and what can be decided.
+
+\section{An obligation monitor}
+
+\paragraph{Assumptions.} A service has two obligations over disjoint event components in the sense of Definition~\ref{def:fragment}. Invoices must be paid within $k_1=3$ events of the billing component $\Sigma_1=\{\mathrm{inv},\mathrm{pay},e_1\}$, and incidents must be reported within $k_2=2$ events of the incident component $\Sigma_2=\{\mathrm{inc},\mathrm{rep},e_2\}$. Time for each obligation is counted in the events of its own component.
+
+\paragraph{Construction.} The retained state is the pair $(\rho_1,\rho_2)$ with $\rho_1\in\{0,1,2,3\}$ and $\rho_2\in\{0,1,2\}$, together with the absorbing flag $\bot$. A billing event updates $\rho_1$ by Definition~\ref{def:monitor-state}; an incident event updates $\rho_2$; events of the other component leave the coordinate unchanged. An event is \emph{admitted} by the gate if and only if it does not take the state to $\bot$: in a state with $\rho_1=1$ the only admitted billing event is $\mathrm{pay}$.
+
+\begin{newresult}[Instantiation of the monitor theorem]\label{prop:worked-monitor}
+The monitor has $(3+1)(2+1)+1=13$ states. It is a sound and complete gate for compliance. Every maintainable representation of the history with fewer than $13$ values, used as a sound gate, refuses an event that is admissible at some history.
+\end{newresult}
+\assumes{As in Result~\ref{thm:monitor}.}
+\begin{proof}
+The count is Result~\ref{thm:monitor}. Soundness and completeness of the gate hold because $\bot$ is reached exactly by violating histories. For the last statement let $\sigma$ be maintainable with fewer than $13$ values. By Result~\ref{prop:monitor-lower} two histories $h,h'$ in distinct monitor states share a value of $\sigma$, and by the distinguishing argument in the proof of Result~\ref{thm:monitor} there is a word after which exactly one of $hw$, $h'w$ is violating. Take such a word $w=ua$ of least length. By minimality $hu$ and $h'u$ are both alive, and $a$ is admissible at one and takes the other to $\bot$. Because $\ker\sigma$ is a right congruence, $\sigma(hu)=\sigma(h'u)$. A sound gate consulting $\sigma$ alone must therefore refuse $a$ at both histories (Result~\ref{prop:gating}), so $a$ is refused at a history where it is admissible.\end{proof}
+
+\paragraph{Failure cases.} If the monitor keeps only whether an invoice is pending, it conflates $\rho_1\in\{1,2,3\}$ and the argument above applies: it cannot say whether a payment event is still timely (the second exercise of Chapter~\ref{ch:obligations}). If one clock drives both obligations, the system leaves the fragment and the count is the open Research problem~\ref{rp:shared-clock}. If the monitor state is lost on restart and re-initialized to $(0,0)$, a pending obligation is forgotten, and a gate built from the reinitialized state is unsound: it admits events that the true history forbids.
+
+\section{A provenance-preserving document system}
+
+\paragraph{Assumptions.} A document has $K$ sections and is revised by a finite set $U$ of authors. An event $(u,i,t)$ is author $u$ replacing the text of section $i$ by $t$. Events are totally ordered (a single writer or a serializing server). A hash function $H$ is injective on the texts that occur.
+
+\paragraph{Construction.} The retained record is $(H(\tau(h)),\Lambda(h))$ where $\tau(h)$ is the current text, $H(\tau(h))$ its content address, and $\Lambda(h)=(\lambda_1,\dots,\lambda_K)$ the vector of last authors. An event updates both components.
+
+\begin{newresult}[Adequacy of the document record]\label{prop:worked-doc}
+The record $(H\circ\tau,\Lambda)$ is maintainable and adequate for the family consisting of the content-integrity question ``is the text $t$?'' for each $t$ and the questions $\lambda_1,\dots,\lambda_K$. Neither component alone is adequate for the family if some revision $(a,i,t)$ and $(b,i,t)$ with $a\ne b$ yield the same text from the same lineage.
+\end{newresult}
+\assumes{As above, with $H$ injective.}
+\begin{proof}
+After an event $(u,i,t)$ the new text is a function of the old text and the event, and the new vector is the old vector with coordinate $i$ replaced by $u$, so each component, and hence the pair, is updated by a function of the current value and the event; its kernel is a right congruence. Content questions are functions of $H\circ\tau$ because $H$ is injective, and $\lambda_i$ is a coordinate of $\Lambda$. For the final statement, the two lineages obtained by the revisions have equal texts and different $\lambda_i$, so $H\circ\tau$ is not adequate (Result~\ref{prop:content-not-lineage}); and no function of $\Lambda$ alone recovers the text, since lineages with equal $\Lambda$ can hold different texts.
+\end{proof}
+
+\paragraph{Failure cases.} If two replicas revise the same section concurrently, $\lambda_i$ is undefined; by Result~\ref{prop:local-decidable} it cannot be computed from either causal past alone, and the record must hold the set of maximal concurrent revisions. If the hash is not injective on occurring texts, content integrity can be falsely affirmed. If the audit family gains the question ``has more than one author revised section $i$?'', the record must be enlarged to the pairs $(\lambda_i,S_i)$ of Result~\ref{thm:last-author}, with each section's factor rising from $|U|+1$ to $1+|U|2^{|U|-1}$.
+
+\section{A degrading service}
+
+\paragraph{Assumptions.} The capabilities and dependencies are those of the checkout service: $C=\{\mathrm{db},\mathrm{cache},\mathrm{pay},\mathrm{rec},\mathrm{store},\mathrm{checkout}\}$ with primitives $\mathrm{db},\mathrm{cache},\mathrm{pay}$, and rules $(\mathrm{store},\{\mathrm{db}\})$, $(\mathrm{store},\{\mathrm{cache}\})$, $(\mathrm{rec},\{\mathrm{db}\})$, $(\mathrm{checkout},\{\mathrm{pay},\mathrm{store}\})$. The only required capability is $\mathrm{Req}=\{\mathrm{checkout}\}$.
+
+\begin{newresult}[Admissible shedding in the checkout service]\label{prop:worked-service}
+The minimal supports are $S_1=\{\mathrm{checkout},\mathrm{pay},\mathrm{store},\mathrm{db}\}$ and $S_2=\{\mathrm{checkout},\mathrm{pay},\mathrm{store},\mathrm{cache}\}$. The maximal admissible shed sets are $\{\mathrm{cache},\mathrm{rec}\}$ and $\{\mathrm{db},\mathrm{rec}\}$. The shed set $\{\mathrm{db},\mathrm{cache}\}$ has the same size as $\{\mathrm{db},\mathrm{rec}\}$ and is not admissible, so the count of surviving capabilities does not decide admissibility.
+\end{newresult}
+\assumes{Finite Horn dependency system as above.}
+\begin{proof}
+A support must derive $\mathrm{checkout}$, hence contain $\mathrm{pay}$ and $\mathrm{store}$, and $\mathrm{store}$ needs $\mathrm{db}$ or $\mathrm{cache}$; $\mathrm{rec}$ is in no support. By Result~\ref{thm:shedding}(b) the maximal admissible sets are the complements of minimal supports, namely $\{\mathrm{cache},\mathrm{rec}\}$ and $\{\mathrm{db},\mathrm{rec}\}$. Shedding $\{\mathrm{db},\mathrm{cache}\}$ meets both supports, while $\{\mathrm{db},\mathrm{rec}\}$ meets only $S_1$; the two sets have the same size.
+\end{proof}
+
+The requirement here is $\mathrm{pay}\wedge(\mathrm{db}\vee\mathrm{cache})$, which is a linear threshold function of the primitives (weights $2$ for $\mathrm{pay}$, $1$ for each of $\mathrm{db}$ and $\mathrm{cache}$, threshold $3$), so a weighted test exists for this service. The counterexample to additive tests of Result~\ref{prop:scalar} needs two disjoint alternative pairs; the service shows only that a count of surviving capabilities is not a test.
+
+\paragraph{Failure cases.} A health metric that reports ``three of three primitives up'' hides that $\mathrm{pay}$ is required and $\mathrm{rec}$ is not. A dashboard that reports the fraction of capabilities alive treats $\{\mathrm{db},\mathrm{rec}\}$ and $\{\mathrm{db},\mathrm{cache}\}$ alike. If a new rule makes $\mathrm{store}$ also depend on a logging capability, the supports change and every earlier admissibility judgement must be recomputed; the check takes time linear in the size of the system (Result~\ref{thm:shedding}).
+
+\section{A claim ledger}
+
+\paragraph{Assumptions.} A ledger records claims, each supported by evidence items and other claims. It is a dependency system in the sense of Definition~\ref{def:dependency}: an evidence item $e$ has the primitive rule $(e,\varnothing)$, and a claim $c$ has rules $(c,P)$ with $P$ a set of evidence items and claims. Retracting evidence $e$ sheds $e$. Each claim $c$ also carries a challenge component $\Sigma_c=\{\mathrm{ch}_c,\mathrm{ans}_c,e_c\}$ with the obligation that a challenge be answered within $k_c$ events of its component.
+
+\begin{newresult}[Ledger semantics]\label{prop:worked-ledger}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item After retracting a set $D$ of evidence, the supported claims are $\operatorname{Prov}(D)\cap\mathrm{Claims}$. Mutual support does not support: if $c$ and $c'$ have only the rules $(c,\{c'\})$ and $(c',\{c\})$ then neither is supported.
+  \item A retraction set $D$ leaves the required claims $\mathrm{Req}$ supported if and only if $D$ is disjoint from a support of $\mathrm{Req}$.
+  \item The challenge obligations have a minimal compliance monitor with $\prod_c(k_c+1)+1$ states.
+\end{enumerate}
+\end{newresult}
+\assumes{Finite ledger; challenge components disjoint.}
+\begin{proof}
+(a) $\operatorname{Prov}(D)$ is the least fixed point, and the set $\{c,c'\}$ with those rules is closed but not derived from the empty set, so it is not in the least fixed point. (b) is Result~\ref{thm:shedding}(b). (c) is Result~\ref{thm:monitor}.
+\end{proof}
+
+\paragraph{Failure cases.} If two evidence items are indistinguishable in role, so that each supports the same claims and nothing else, the ledger holds two records for what the identity criterion of Chapter~\ref{ch:identity} treats as one; the minimal representation identifies them. If support is read as a greatest fixed point instead of a least one, circular justifications are accepted, which is the characteristic failure of ledgers that allow claims to cite one another as their only basis. If retraction is permitted without the check of part (b), a claim that was required for an obligation can silently lose its support, which is the loss of verification relative to retained evidence described in Chapter~\ref{ch:verification}.
+
+
+\section{Counting what the service can lose}\label{sec:service-count}
+
+The checkout service admits an exact count of its admissible losses, which shows how little of the space of failures an availability fraction can describe. Shed sets here range over subsets of the four capabilities $\mathrm{db},\mathrm{cache},\mathrm{pay},\mathrm{rec}$ that are not derived from others; the derived capabilities $\mathrm{store}$ and $\mathrm{checkout}$ are lost exactly when their rules fail.
+
+\begin{newresult}[Admissible losses in the checkout service]\label{prop:service-count}
+Of the sixteen subsets of $\{\mathrm{db},\mathrm{cache},\mathrm{pay},\mathrm{rec}\}$, exactly six are admissible shed sets: those that omit $\mathrm{pay}$ and do not contain both $\mathrm{db}$ and $\mathrm{cache}$, with $\mathrm{rec}$ included or not. The two maximal ones are $\{\mathrm{cache},\mathrm{rec}\}$ and $\{\mathrm{db},\mathrm{rec}\}$, and every admissible shed set is contained in one of them.
+\end{newresult}
+\assumes{The dependency system and requirement of Result~\ref{prop:worked-service}.}
+\begin{proof}
+Shedding $D$ is admissible if and only if $\mathrm{checkout}$ remains derivable from the primitives outside $D$. This requires $\mathrm{pay}\notin D$ and at least one of $\mathrm{db},\mathrm{cache}$ outside $D$. The intersection of $D$ with $\{\mathrm{db},\mathrm{cache}\}$ is then $\varnothing$, $\{\mathrm{db}\}$ or $\{\mathrm{cache}\}$, and $\mathrm{rec}$ lies in no support, so it is in $D$ or not freely, giving $3\cdot2=6$. The sets with one primitive and $\mathrm{rec}$ shed are maximal and contain all others.
+\end{proof}
+
+A rule that tolerates the loss of any two of the four capabilities admits eleven subsets, five of which are not admissible, namely $\{\mathrm{pay}\}$, $\{\mathrm{db},\mathrm{cache}\}$, $\{\mathrm{db},\mathrm{pay}\}$, $\{\mathrm{cache},\mathrm{pay}\}$ and $\{\mathrm{pay},\mathrm{rec}\}$. The size rule therefore admits losses that break checkout, and it is not repaired by shrinking the bound: the rule ``at most one'' refuses the admissible set $\{\mathrm{db},\mathrm{rec}\}$, so no bound on size alone separates the six admissible sets from the rest.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Recompute the count of Result~\ref{prop:service-count} after adding the rule $(\mathrm{rec},\{\mathrm{cache}\})$, and state whether the maximal admissible shed sets change.
+\end{exercise}
+
+\begin{exercise}
+Give a dependency system on three primitives and a requirement for which the size rule ``shed at most one'' is exactly the admissible family, and one for which it is neither sound nor complete.
+\end{exercise}
+
+\begin{exercise}
+For the monitor of the first section, compute the number of reachable states if the billing and incident components share a single event $e$ that advances both clocks, and explain why the product count of $13$ no longer applies.
+\end{exercise}

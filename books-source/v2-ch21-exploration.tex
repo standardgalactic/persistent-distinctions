@@ -1,0 +1,155 @@
+% v2-ch21-exploration.tex
+\chapter{Exploration and Unattempted Alternatives}\label{ch:exploration}
+\spec{How is an infeasible alternative distinguished from an untested one?}
+{Bandits (Lai and Robbins; Auer, Cesa-Bianchi and Fischer); Bayesian experimental design; safe exploration.}
+{A three-way classification of alternatives into attempted, certified infeasible, and untested, with the untested set shrinking monotonically (Result~\ref{prop:trichotomy}); data on attempted alternatives carry no information about untested ones (Result~\ref{prop:no-info}); the exact threshold horizon above which attempting an untested alternative pays (Result~\ref{thm:threshold}); the knowledge-indexed viability kernel is monotone in knowledge, and safe attempts are those whose every possible outcome lies in it (Result~\ref{thm:safe-explore}).}
+{None.}
+{Chapters~\ref{ch:pomdp}, \ref{ch:endogenous}, and~\ref{ch:viability}.}
+
+A system that has never done something does not know whether it can. An institution that has never attempted a reform, an agent that has never tried an action, a laboratory that has never run an assay, each holds a set of alternatives about which the history is silent. The silence is ambiguous between two situations that call for opposite responses: the alternative is excluded by a constraint, so that attempting it is wasted or harmful, or it is available and merely unused, so that failing to attempt it forfeits whatever it would have yielded. This chapter shows what separates the two, what cannot be inferred from experience alone, and what exploration costs and returns.
+
+\section{Three epistemic statuses}
+
+Let $A$ be a finite set of alternatives in a context. The world fixes a feasible subset $F\subseteq A$ that is unknown to the agent. An \emph{attempt} of $a\in A$ costs $c_a\ge0$ and reveals whether $a\in F$ (and, if so, its value). A \emph{certificate of infeasibility} for $a$ is a proof, from the known structure of the system, that $a\notin F$: for example a conservation law violated by the transition (Chapter~\ref{ch:petri}), a kernel exclusion (Chapter~\ref{ch:viability}), or an unreachable capability (Chapter~\ref{ch:endogenous}).
+
+\begin{newresult}[Trichotomy]\label{prop:trichotomy}
+At each time the alternatives are partitioned into $A_{\mathrm{ok}}$ (attempted and found feasible), $A_{\times}$ (attempted and found infeasible, or certified infeasible), and $A_{?}$ (neither). Over time $A_{?}$ is non-increasing, $A_{\mathrm{ok}}\cup A_\times$ is non-decreasing, and the three sets stay disjoint, provided that certificates are sound (a certified alternative is infeasible) and that feasibility does not change. An alternative lies in $A_?$ at time $t$ if and only if no attempt of it has occurred and no available certificate decides it; consequently $A_?=\varnothing$ exactly when every alternative has been attempted or certified.
+\end{newresult}
+\assumes{Feasibility is static; attempts are truthful; certificates are sound.}
+\begin{proof}
+Attempting $a$ places it in $A_{\mathrm{ok}}$ or $A_\times$ according to the outcome and never removes it from there, since feasibility is static. A sound certificate places $a$ in $A_\times$, and no attempt can contradict it. Disjointness of $A_{\mathrm{ok}}$ and $A_\times$ follows from truthfulness and soundness. The remaining statements are the definition of $A_?$.
+\end{proof}
+
+If feasibility can change (Chapter~\ref{ch:endogenous}) the status of an attempted alternative expires with the change, and the chapter's analysis applies per epoch. The practical lesson of the trichotomy is that the set $A_{\times}\cup A_?$ is what ordinary language calls ``not done'', and that the two parts of it are separated only by a certificate or an attempt.
+
+\begin{newresult}[Experience on attempted alternatives is silent on the rest]\label{prop:no-info}
+Suppose the feasibility indicators $(1\{a\in F\})_{a\in A}$ are independent under the prior. Then for every policy, the posterior probability that an unattempted $a$ is feasible, given the history, equals its prior probability. In particular, no quantity of data on the attempted alternatives changes the prior of the untested one. If the indicators are dependent, the posterior of $a$ changes with the data only through the dependence, and an untested alternative whose feasibility is independent of all the attempted ones remains at its prior.
+\end{newresult}
+\assumes{Observations of a policy depend on the world only through the attempted alternatives' outcomes.}
+\begin{proof}
+The history is a function of the attempted alternatives' indicators (and independent randomization). By independence the indicator of $a$ is independent of that history, so its conditional law is its prior. In the dependent case, Bayes' rule gives the posterior as the conditional law given the attempted indicators.
+\end{proof}
+
+This is the formal sense of the statement that absence of evidence is weak evidence of absence: the evidence is absent for a reason that is not informative, namely that nobody looked. Where the indicators are dependent, evidence about related alternatives is informative in the amount of the dependence, and this is the sole route by which a system infers the feasibility of what it has not tried.
+
+\section{When an attempt pays}
+
+\begin{newresult}[Threshold horizon]\label{thm:threshold}
+An agent has a known best attempted option of per-round value $\mu^*$ and an untested alternative $a$ that is feasible with probability $p\in(0,1)$, in which case it yields $\mu^*+\Delta$ per round ($\Delta>0$) from the round after it is attempted. Attempting $a$ costs $c>0$ once, and reveals feasibility exactly. Over a horizon of $n$ rounds, with the attempt taking one round (in which the agent earns $\mu^*-c$ on the attempt round, and an infeasible attempt leaves the agent to continue with $\mu^*$), the policy ``attempt in the first round, then use the best option'' has expected total value larger than ``never attempt'' if and only if
+\[
+p\,\Delta\,(n-1)>c,\qquad\text{that is,}\qquad n>n^*:=1+\frac{c}{p\Delta}.
+\]
+Among policies that attempt at most once, attempting at a fixed time is optimal at time $1$ or never: delaying the attempt to round $t$ changes the gain to $p\Delta(n-t)-c$, which is decreasing in $t$. Writing $G=((n-1)\Delta-c)^+$, the regret of a policy in a world is its shortfall against the best policy for that world; the minimax regret over the two worlds ($a$ feasible, $a$ infeasible) is $cG/(c+G)$ when randomization is allowed, attained by attempting in round $1$ with probability $q=G/(c+G)$, and it is $\min(c,G)$ over pure policies.
+\end{newresult}
+\assumes{Feasibility revealed by one attempt; static; value additive across rounds.}
+\begin{proof}
+Never attempting yields $n\mu^*$. Attempting in round $1$ yields $\mu^*-c$ in that round, then $\mu^*+\Delta$ in each of the remaining $n-1$ rounds if $a$ is feasible and $\mu^*$ if not, for an expected total $n\mu^*-c+p\Delta(n-1)$. The comparison is the stated inequality. Attempting in round $t$ gains $p\Delta(n-t)-c$ in expectation, decreasing in $t$, so the best attempt time is $1$ if this is positive and no attempt otherwise.
+
+For regret, the best policy in the feasible world attempts at round $1$ (value $n\mu^*-c+(n-1)\Delta$) and in the infeasible world never attempts (value $n\mu^*$). Never attempting therefore has regret $G$ when $a$ is feasible and $0$ otherwise; attempting at round $1$ has regret $0$ when $a$ is feasible and $c$ otherwise. A policy attempting at round $1$ with probability $q$ has worst-case regret $\max(qc,(1-q)G)$, minimal where the two are equal, at $q=G/(c+G)$, with value $cG/(c+G)$; among pure policies the minimum of $c$ and $G$ is the smaller endpoint. A policy that attempts later has the same regret $c$ in the infeasible world and a larger regret in the feasible one, so it does no better.
+\end{proof}
+
+The threshold $n^*=1+c/(p\Delta)$ expresses the exploration premium in the three quantities that matter: the cost of the attempt, the prior chance of feasibility, and the size of the gain. It is linear in the cost and inversely proportional to both probability and gain. Two corollaries are immediate. A system with a short remaining horizon rationally attempts nothing new, and a system with a long one attempts almost everything not certified infeasible. The second is the justification for the first volume's emphasis on separating the untested from the infeasible: certifying infeasibility removes alternatives from the set that a long-lived system should attempt.
+
+\begin{example}[Several alternatives]\label{ex:several}
+With $m$ independent untested alternatives with parameters $(p_i,\Delta_i,c_i)$ and the ability to adopt only the best feasible one, the problem is the Pandora's box problem of Weitzman, whose optimal rule is an index policy in reservation values (Chapter~\ref{ch:domain}). The single-alternative threshold above is the case $m=1$ in which the reservation value reduces to $\mu^*+p\Delta-c/(n-1)$. For $m\ge2$ with additional structure (shared costs, correlated feasibility) the index property can fail, and exploration order becomes a combinatorial problem.
+\end{example}
+
+\section{Safe exploration and the knowledge-indexed kernel}
+
+Exploration is not free of risk when attempts can move the state. Let a system have states $X$, actions $U$, and an unknown transition function; the agent knows a set $\Theta\subseteq X\times U$ of state-action pairs whose outcome is known and deterministic: $\delta(x,u)$ for $(x,u)\in\Theta$. For $(x,u)\notin\Theta$ the agent knows only a set $Z(x,u)\subseteq X$ that contains the outcome. Let $C\subseteq X$ be the constraint set.
+
+\begin{newresult}[Knowledge-indexed kernel and safe attempts]\label{thm:safe-explore}
+Let $K(\Theta)$ be the largest $S\subseteq C$ such that every $x\in S$ has $u$ with $(x,u)\in\Theta$ and $\delta(x,u)\in S$ (viability using known transitions only).
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $K(\Theta)$ is monotone in $\Theta$: if $\Theta\subseteq\Theta'$ (with $\delta$ agreeing) then $K(\Theta)\subseteq K(\Theta')$.
+  \item An attempt of $(x,u)\notin\Theta$ at $x\in K(\Theta)$ is \emph{safe} if $Z(x,u)\subseteq K(\Theta)$: whatever the outcome, the agent can continue to satisfy the constraint with known transitions forever. Executing safe attempts, and adding each revealed pair to $\Theta$, yields $\Theta_0\subseteq\Theta_1\subseteq\cdots$ and kernels $K(\Theta_0)\subseteq K(\Theta_1)\subseteq\cdots$, all constraint-satisfying along the way, and the process stabilizes after at most $|X||U|$ attempts.
+  \item The stable knowledge $\Theta_\infty$ is the set of pairs reachable by safe attempts. An unattempted pair $(x,u)$ with $x\in K(\Theta_\infty)$ and $Z(x,u)\not\subseteq K(\Theta_\infty)$ is not safely testable from the current knowledge; it may be tested only if some other source of information shrinks $Z(x,u)$.
+\end{enumerate}
+\end{newresult}
+\assumes{Finite system; the true outcome of an unknown pair lies in $Z$; revealed outcomes are deterministic.}
+\begin{proof}
+(a) The predecessor operator $\Gamma_\Theta(S)=\{x\in C: \exists u,\ (x,u)\in\Theta,\ \delta(x,u)\in S\}$ is monotone in both $S$ and $\Theta$, so the greatest fixed point is monotone in $\Theta$ by the Knaster--Tarski characterization (Result~\ref{thm:kernel}).
+
+(b) At $x\in K(\Theta_k)$ a safe attempt leads to a state in $K(\Theta_k)\subseteq C$, so the constraint holds after the attempt, and the agent then follows the known policy from the new state, which lies in the kernel. After the attempt, $\Theta_{k+1}=\Theta_k\cup\{(x,u)\}$ and (a) gives $K(\Theta_k)\subseteq K(\Theta_{k+1})$. Each attempt adds a new pair, so there are at most $|X||U|$ attempts.
+
+(c) By construction, when the process stops, no remaining pair with $x\in K(\Theta_\infty)$ satisfies the safety condition. Pairs with $x\notin K(\Theta_\infty)$ cannot be attempted from a kernel state. The last statement is the definition.
+\end{proof}
+
+The theorem makes precise a distinction the previous section could not draw: an alternative may be untested because attempting it is unsafe given the present knowledge, which is different from being untested because nobody tried. The set of safely testable pairs is the exploration frontier, and exploration enlarges the kernel in the sense that the system learns its way to a larger safe region. Chapter~\ref{ch:admcost} gives the price of restricting to the kernel; here the kernel is also the limit of what can be learned without risk.
+
+\begin{example}[A frontier that does not advance]\label{ex:frontier}
+States $X=\{0,1,2,3\}$ on a line with $C=\{0,1,2\}$, known actions \texttt{stay} at every state, and the unknown action \texttt{right} with $Z(x,\texttt{right})=\{x,x+1\}$. Then $K(\Theta_0)=C$, the pair $(0,\texttt{right})$ is safe to attempt ($Z=\{0,1\}\subseteq C$), as is $(1,\texttt{right})$ ($Z=\{1,2\}$), but $(2,\texttt{right})$ has $Z=\{2,3\}\not\subseteq C$ and is not safely testable. If moreover $\texttt{right}$ at state $1$ turns out to reach $2$, nothing changes for $(2,\texttt{right})$: its uncertainty is not reduced by information on other pairs, unless the model relates them (for example by a translation-invariance assumption, which would make $(2,\texttt{right})$ known to be $3$ and so certified unsafe). The exploration frontier is stopped by the edge of the constraint set.
+\end{example}
+
+
+\section[Learning while exploring]{Learning while exploring: a Bayesian two-armed instance}\label{sec:bayes-explore}
+
+Result~\ref{thm:threshold} treats feasibility as revealed by one attempt. When an alternative returns an informative but noisy signal, the agent may learn from repeated attempts, and the single-attempt threshold becomes a sufficient condition and not the exact one. Consider the standard instance: a known arm that pays $\lambda$ per round, an untested arm that pays $1$ with unknown probability $\theta$ and $0$ otherwise, a uniform prior $\theta\sim\mathrm{Beta}(1,1)$, and a horizon of $n$ rounds, with the posterior updated after every pull of the unknown arm.
+
+\begin{newresult}[Threshold for attempting once, and for exploring]\label{prop:bayes-threshold}
+For $\tfrac13\le\lambda<\tfrac23$, the policy that pulls the untested arm once and then keeps the better of the two arms by posterior mean beats never exploring if and only if $n>(3\lambda-1)/(2-3\lambda)$. For $\lambda\ge\tfrac23$ this policy never beats never exploring, since a single success moves the posterior mean to $\tfrac23\le\lambda$.
+\end{newresult}
+\assumes{Uniform prior; arms as above.}
+\begin{proof}
+After one pull, a success (probability $\tfrac12$) gives the posterior mean $\tfrac23$ and a failure gives $\tfrac13$. For $\lambda\in[\tfrac13,\tfrac23)$ the agent commits to the untested arm after a success and reverts after a failure, so the value is $\tfrac12\bigl(1+(n-1)\tfrac23\bigr)+\tfrac12(n-1)\lambda$, and subtracting the value $n\lambda$ of never exploring gives the gain $\tfrac12+\tfrac{n-1}3-\tfrac{\lambda(n+1)}2$. This is positive if and only if $2n+1>3\lambda(n+1)$, that is $n(2-3\lambda)>3\lambda-1$. For $\lambda\ge\tfrac23$ the commit rule never selects the untested arm, so the value is $\tfrac12+\tfrac12\cdot 0+(n-1)\lambda<n\lambda$.
+\end{proof}
+
+Dynamic programming over the posterior $(a,b)$ gives the exact optimal value with unrestricted adaptation. For $\lambda=\tfrac12$ the values over horizons $n=1,2,3,5,10,20,50$ are as follows (rounded to three places).
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+$n$ & never explore & attempt once & optimal\\
+\midrule
+$1$ & $0.500$ & $0.500$ & $0.500$\\
+$2$ & $1.000$ & $1.083$ & $1.083$\\
+$3$ & $1.500$ & $1.667$ & $1.667$\\
+$5$ & $2.500$ & $2.833$ & $2.850$\\
+$10$ & $5.000$ & $5.750$ & $5.824$\\
+$20$ & $10.000$ & $11.583$ & $11.912$\\
+$50$ & $25.000$ & $29.083$ & $30.350$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The first horizon at which exploring has positive value is $n=2$ for $\lambda=0.5$, $n=4$ for $\lambda=0.6$, and $n=11$ for $\lambda=0.7$. For $\lambda=0.6$ the attempt-once policy needs $n>4$, that is $n=5$, so the optimal policy explores one round of horizon earlier; for $\lambda=0.7$ the attempt-once policy never pays while the optimal policy does, because it can pull again after a success to separate a good arm from a lucky one. The gap between the third and fourth columns widens with the horizon: at $n=50$ the optimal policy earns $4.4\%$ more than the policy that attempts once, and $21\%$ more than never exploring.
+
+The lesson for the trichotomy of this chapter is that the untested set should be explored not only when a single attempt pays but when the knowledge it begets pays over a sequence of decisions; the threshold of Result~\ref{thm:threshold} understates the case for exploration whenever signals are noisy and the agent can respond to them.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Show that the threshold horizon of Result~\ref{thm:threshold} is the exact break-even point by computing the expected value of both policies for $p=\tfrac12$, $\Delta=2$, $c=3$, and $n\in\{3,4,5\}$.
+\end{exercise}
+
+\begin{exercise}
+Extend Result~\ref{thm:threshold} to the case in which an infeasible attempt costs an additional penalty $c'$ (an attempt of the infeasible alternative damages the system). Find the new threshold.
+\end{exercise}
+
+\begin{exercise}
+Prove that in Result~\ref{thm:safe-explore} the order in which safe attempts are made does not affect $\Theta_\infty$.
+\end{exercise}
+
+\begin{exercise}
+Give an example with dependent feasibility indicators in which data on attempted alternatives push the posterior of an untested alternative to $0$, and an example where they push it to $1$. Which of the two corresponds to a certificate of infeasibility?
+\end{exercise}
+
+\begin{exercise}
+Combine Result~\ref{thm:threshold} with a discount factor $\gamma$: find the threshold on $(p,\Delta,c,\gamma)$ for an infinite horizon, and show that the finite-horizon threshold $n^*$ is recovered as $\gamma\to1$ when $n$ replaces $1/(1-\gamma)$.
+\end{exercise}
+
+\begin{exercise}
+Verify the entries of the table for $n=2$ and $n=3$ by enumerating the two or four outcome sequences under the optimal policy.
+\end{exercise}
+
+\begin{exercise}
+For $\lambda=0.7$ and $n=11$ describe the optimal policy that makes exploration worthwhile (which pull sequence it follows after a first success), and show that the gain over never exploring is $13/560\approx0.0232$.
+\end{exercise}
+
+\begin{exercise}
+Extend Result~\ref{prop:bayes-threshold} to the prior $\mathrm{Beta}(a_0,b_0)$ and find the threshold on $n$ for the attempt-once policy in terms of $\lambda$, $a_0$ and $b_0$ when both post-pull means straddle $\lambda$.
+\end{exercise}
+
+\begin{exercise}
+Explain why the optimal value in the last column of the table is bounded above by the value $\mathbb E\max(\theta,\lambda)\,n$ of an agent who knows $\theta$ in advance, compute that bound for $\lambda=\tfrac12$, and report the fraction of the bound attained at $n=50$.
+\end{exercise}
+

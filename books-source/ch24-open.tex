@@ -1,0 +1,45 @@
+% ch24-open.tex
+\chapter{Open Problems in Distinction and Continuation}\label{ch:open}
+\spec{Which precise questions remain unresolved?}
+{None.}
+{None.}
+{Approximate revision sufficiency, compositional obligation semantics, minimal provenance, and memory allocation under changing policy families, each stated precisely, together with the problems left open in earlier chapters.}
+{Everything.}
+
+None of the statements below is a theorem or a conjecture with a supporting argument. Each is a question whose answer the preceding chapters leave undetermined, stated so that a result, positive or negative, would be a definite contribution. For each the known partial results are recorded, with their locations, so that the open part is delimited.
+
+\begin{researchproblem}[Approximate revision sufficiency]\label{rp:approx-revision}
+For a finite class $\mathcal R$ of binary revisions on a finite set $X$ and the uniform distribution, let $k^{*}(\mathcal R,\varepsilon)$ be the least number of values of a representation $\sigma$ that is $(\varepsilon,\mathcal R,\mu)$-revision sufficient. Result~\ref{thm:worst-revision} gives $k^{*}(\mathcal R_2,\varepsilon)\ge n(1-2\varepsilon)$ for the class of all binary revisions and $k^{*}(\mathcal R_\le,\varepsilon)\le\lceil 1/(2\varepsilon)\rceil$ up to rounding for thresholds on a line; Result~\ref{prop:threshold-k} makes the threshold value exact, $k^{*}(\mathcal R_\le,\varepsilon)=\lceil n/(2\lfloor\varepsilon n\rfloor+1)\rceil$ among interval partitions. Determine $k^{*}(\mathcal R,\varepsilon)$, or tight bounds on it, in terms of a combinatorial parameter of $\mathcal R$ such as its VC dimension, and decide whether the dependence on $\varepsilon$ is $1/\varepsilon$ in general for classes of bounded VC dimension.
+\end{researchproblem}
+
+\begin{researchproblem}[Compositional obligation semantics]\label{rp:compositional}
+Result~\ref{thm:monitor} gives the minimal monitor for conjunctions of bounded-response obligations on disjoint alphabets. Research problem~\ref{rp:shared-clock} asks for the shared-clock case. More generally, determine the minimal monitor size for a conjunction $\Phi_1\wedge\Phi_2$ in terms of the minimal monitors of $\Phi_1$ and $\Phi_2$ and their shared alphabet. In particular, characterize the pairs for which it equals the product bound of Result~\ref{prop:product}, and the pairs for which it is strictly smaller.
+\end{researchproblem}
+
+\begin{researchproblem}[Minimal provenance for a query class]\label{rp:provenance}
+Result~\ref{thm:last-author} gives the minimal record for last-author audits and for last-author with author sets. For a class $\mathcal Q$ of audit queries defined by positive relational algebra over a lineage relation, determine the minimal maintainable record adequate for $\mathcal Q$ in terms of the structure of the queries, and compare it with the polynomial annotation of Result~\ref{prop:semirings}, which is adequate but in general not minimal.
+\end{researchproblem}
+
+\begin{researchproblem}[Memory allocation under changing policy families]\label{rp:allocation}
+A system holds a representation of at most $k$ values, and at each time $t$ a family $\Phi_t$ of policies is announced to be required next. Changing the representation costs the number of cases whose representation changes. The offline problem is to choose representations $\sigma_t$ with $\Phi_t\subseteq\Pol(\sigma_t)$, whenever $|X/\kappa(\Phi_t)|\le k$, minimizing total change cost; the online problem has $\Phi_t$ revealed at time $t$. Determine the competitive ratio of online algorithms for this problem, and decide whether the offline problem is polynomial or NP-hard in the convention of Result~\ref{thm:selection}.
+\end{researchproblem}
+
+\begin{researchproblem}[Sharp bounds for policy families]
+Research problem~\ref{rp:families} asks for the growth of the joint kernel when one admissible revision is added to a family induced by the states of a monitor, in terms of the transition structure of the monitor.
+\end{researchproblem}
+
+\begin{researchproblem}[Diagnosing joint obstructions]
+Result~\ref{prop:joint-obstruction} shows that the pair of emptiness bits for authorization and obligation is insufficient to decide admissibility when the two restrictions act on overlapping realization sets. Determine the minimal representation of the pair of restrictions that decides admissibility of a proposed continuation, as a function of the set system of realizations, and characterize the set systems for which a logarithmic number of bits suffices.
+\end{researchproblem}
+
+\begin{researchproblem}[Synthesis of congruent identity criteria for compensation]
+Result~\ref{thm:saga} shows that aborted sagas are restored exactly when the identity criterion is a congruence for the compensations. Given steps and compensations, determine the coarsest identity criterion that is a congruence for all of them and under which each per-step restoration holds, and decide the complexity of computing it for finite systems.
+\end{researchproblem}
+
+\begin{researchproblem}[Heterogeneous quotas]
+Result~\ref{thm:quota} gives the quota condition for a non-negative replicated balance with symmetric replicas. Determine the optimal allocation of quotas, and the rebalancing messages required to change them, when replicas have unequal rates of demand and unequal communication costs, and characterize the tradeoff between the number of rebalancing messages and the fraction of withdrawals refused.
+\end{researchproblem}
+
+\begin{researchproblem}[Interfaces with obligations]
+Result~\ref{thm:refinement} treats compatibility of deterministic interfaces and Chapter~\ref{ch:obligations} treats obligations of single components. Extend the interface theory so that the guarantee of a component includes bounded-response obligations on the actions it exchanges, and determine whether refinement remains a precongruence for composition.
+\end{researchproblem}

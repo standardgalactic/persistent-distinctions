@@ -1,0 +1,82 @@
+% flyxion-books.sty
+% Shared notation and result environments for
+%   Distinction and Continuation
+%   The Shape of Possibility
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{flyxion-books}[2026/10/17 shared notation and status-marked results]
+
+\RequirePackage{amsmath,amssymb,amsthm,mathtools}
+\RequirePackage{enumitem}
+\RequirePackage{booktabs,longtable,array}
+\RequirePackage[hidelinks]{hyperref}
+
+% ------------------------------------------------------------------
+% Common model: histories, physical state, retained representation
+% ------------------------------------------------------------------
+\newcommand{\Hist}{\mathcal{H}}          % prefix-closed set of histories
+\newcommand{\Events}{\mathsf{E}}         % event alphabet
+\newcommand{\PhysSp}{\mathcal{X}}        % physical state space
+\newcommand{\RepSp}{\Sigma}              % retained representations
+\newcommand{\Dec}{\mathcal{D}}           % decisions
+\newcommand{\phys}{x}                    % x(h): physical state of h
+\newcommand{\rep}{\sigma}                % sigma(h): retained representation of h
+\newcommand{\Pol}{\mathrm{Pol}}          % policies implementable from a representation
+\newcommand{\Reach}{\operatorname{Reach}}% physically executable continuations
+\newcommand{\Obl}{\operatorname{Obl}}    % obligations incurred by a history
+\newcommand{\Adm}{\operatorname{Adm}}    % admissible continuations
+\newcommand{\Ext}{\operatorname{Ext}}    % extensions of a history
+\newcommand{\Real}{\operatorname{Real}}  % realizations of a proposed continuation
+\newcommand{\concat}{\cdot}              % concatenation
+\newcommand{\prefixeq}{\preceq}          % prefix order
+\newcommand{\Viab}{\operatorname{Viab}}  % viability kernel
+\newcommand{\ind}{\mathbf{1}}            % indicator
+
+% The three obstructions, used identically in both volumes
+\newcommand{\ObsPhys}{\mathsf{O}_{\mathrm{phys}}}
+\newcommand{\ObsObl}{\mathsf{O}_{\mathrm{obl}}}
+\newcommand{\ObsRep}{\mathsf{O}_{\mathrm{rep}}}
+
+% ------------------------------------------------------------------
+% Result environments: one counter, three statuses.
+%   established : attributed to its mathematical source
+%   newresult   : new in these volumes, proved in full under stated assumptions
+%   obligation  : proposed statement whose proof is not yet secured
+% ------------------------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{result}{Result}[chapter]
+\newtheorem{established}[result]{Established result}
+\newtheorem{newresult}[result]{New result}
+\theoremstyle{definition}
+\newtheorem{obligation}[result]{Proof obligation}
+\newtheorem{conjecture}[result]{Conjecture}
+\newtheorem{definition}[result]{Definition}
+\newtheorem{example}[result]{Example}
+\newtheorem{counterexample}[result]{Counterexample}
+\newtheorem{exercise}[result]{Exercise}
+\newtheorem{researchproblem}[result]{Research problem}
+\theoremstyle{remark}
+\newtheorem{remark}[result]{Remark}
+
+\newcommand{\source}[1]{\par\noindent{\small\emph{Source:} #1}\par}
+\newcommand{\assumes}[1]{\par\noindent{\small\emph{Assumptions:} #1}\par}
+
+% Notation for equivalence relations, images, and satisfiability
+\newcommand{\Eq}{\operatorname{Eq}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\sat}{\operatorname{sat}}
+\newcommand{\Viable}{\operatorname{Viable}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+
+% Per-chapter specification block used in the skeletons
+\newcommand{\spec}[5]{%
+  \begin{quote}\small
+  \textbf{Question.} #1\par
+  \textbf{Established sources.} #2\par
+  \textbf{New results.} #3\par
+  \textbf{Proof obligations.} #4\par
+  \textbf{Depends on.} #5
+  \end{quote}}
+
+\setlength{\emergencystretch}{2em}
+\endinput

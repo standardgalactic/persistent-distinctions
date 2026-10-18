@@ -1,0 +1,152 @@
+% ch03-adequacy.tex
+\chapter{Orders of Informational Adequacy}\label{ch:adequacy}
+\spec{Why can two representations preserve different useful distinctions without either being universally superior?}
+{Preorders on representations; the refinement lattice; joint representations and common coarsenings.}
+{Absence of a most informative representation under a size bound (Result~\ref{prop:budget}).}
+{None.}
+{Chapter~\ref{ch:quotients}.}
+
+Chapter~\ref{ch:quotients} showed that a question is answered by a representation exactly when the representation identifies only cases the question identifies. This chapter compares representations with one another. The comparison is made through the questions they answer, and the main outcome is negative: for any set of cases large enough to be interesting, two representations of the same size can each answer a question the other cannot, and no representation of bounded size answers everything that any other representation of that size answers. A claim that a description is the best one is therefore always relative to a stated family of questions or to an unbounded budget.
+
+\section{The adequacy preorder}
+
+\begin{definition}[Adequacy preorder]\label{def:adequacy}
+For representations $r_1:X\to R_1$ and $r_2:X\to R_2$ of the same set of cases, write $r_1\sqsubseteq r_2$ if $r_1$ is answered by $r_2$, that is, if there is a function $f:r_2(X)\to R_1$ with $r_1=f\circ r_2$. We say that $r_1$ is a \emph{coarsening} of $r_2$ and that $r_2$ is \emph{at least as informative} as $r_1$.
+\end{definition}
+
+\begin{established}[Kernel description of adequacy]\label{prop:adequacy-kernel}
+For representations $r_1$ and $r_2$ of $X$:
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $r_1\sqsubseteq r_2$ if and only if $\ker r_2\subseteq\ker r_1$;
+  \item $\sqsubseteq$ is a preorder, and $r_1\sqsubseteq r_2\sqsubseteq r_1$ if and only if $\ker r_1=\ker r_2$, which holds if and only if there is a bijection $b:r_1(X)\to r_2(X)$ with $r_2=b\circ r_1$;
+  \item $r_1\sqsubseteq r_2$ if and only if every question answered by $r_1$ is answered by $r_2$.
+\end{enumerate}
+\end{established}
+\source{Elementary consequences of Result~\ref{thm:factorization}.}
+\begin{proof}
+(a) is Result~\ref{thm:factorization} with $r=r_2$ and $f=r_1$. For (b), reflexivity and transitivity follow from the inclusions in (a). If the kernels are equal, define $b(r_1(x))=r_2(x)$; this is well defined and injective because the kernels agree, and it is onto $r_2(X)$. Conversely a bijection $b$ with $r_2=b\circ r_1$ gives equal kernels. For (c), suppose $r_1\sqsubseteq r_2$ and $q=g\circ r_1$; then $q=(g\circ f)\circ r_2$ and $r_2$ answers $q$. Conversely, $r_1$ answers the question $q=r_1$, so if $r_2$ answers every question answered by $r_1$ it answers $r_1$, which is the statement $r_1\sqsubseteq r_2$.
+\end{proof}
+
+By (b), representations that are equivalent in this preorder differ only by a relabelling of their values, and the preorder on representations modulo this equivalence is the set $\Eq(X)$ ordered by reverse inclusion: the most informative representations are the injective ones, with the diagonal as kernel, and the least informative are the constant ones. By (c), the preorder is not an arbitrary choice of ranking. It is exactly the relation of one representation being able to serve every purpose that the other can serve.
+
+\section{Combining and comparing: joint representations and common coarsenings}
+
+\begin{established}[Joint representation]\label{prop:joint-rep}
+For representations $r_1$ and $r_2$ of $X$, the pairing $\langle r_1,r_2\rangle:x\mapsto(r_1(x),r_2(x))$ is a least upper bound of $r_1$ and $r_2$ for $\sqsubseteq$: it is at least as informative as each, and any representation at least as informative as both is at least as informative as it.
+\end{established}
+\source{Elementary; this is the join of Result~\ref{prop:lattice} read in the reverse order.}
+\begin{proof}
+We have $\ker\langle r_1,r_2\rangle=\ker r_1\cap\ker r_2$. A representation $r$ is an upper bound of $r_1$ and $r_2$ if and only if $\ker r\subseteq\ker r_1$ and $\ker r\subseteq\ker r_2$, that is, if and only if $\ker r\subseteq\ker\langle r_1,r_2\rangle$, which says $\langle r_1,r_2\rangle\sqsubseteq r$.
+\end{proof}
+
+\begin{established}[Common coarsening]\label{prop:common-coarsening}
+For representations $r_1$ and $r_2$ of $X$, the quotient map $\pi:X\to X/{(\ker r_1\vee\ker r_2)}$ onto the join of Result~\ref{prop:lattice} is a greatest lower bound of $r_1$ and $r_2$ for $\sqsubseteq$: it is a coarsening of both, and every common coarsening of $r_1$ and $r_2$ is a coarsening of it.
+\end{established}
+\source{Elementary; Result~\ref{prop:lattice}.}
+\begin{proof}
+A representation $r$ is a lower bound of $r_1$ and $r_2$ if and only if $\ker r_1\subseteq\ker r$ and $\ker r_2\subseteq\ker r$, that is, if and only if $\ker r_1\vee\ker r_2\subseteq\ker r$, which says $r\sqsubseteq\pi$.
+\end{proof}
+
+The representation $\pi$ records exactly the information on which $r_1$ and $r_2$ agree: it identifies two cases when one can be carried to the other by a chain of steps, each of which is invisible to $r_1$ or invisible to $r_2$.
+
+\begin{example}[A common coarsening]
+Let $X=\{1,2,3,4\}$ and let $r_1$ identify $1$ with $2$ and leave $3$ and $4$ separate, while $r_2$ identifies $2$ with $3$ and leaves $1$ and $4$ separate. The join of the kernels identifies $1,2,3$ and leaves $4$ alone, so the only question answered by both is whether a case is $4$. The pair $\langle r_1,r_2\rangle$ is injective on $X$, since $1,2,3,4$ receive four distinct pairs of values, and so it answers every question.
+\end{example}
+
+\section{Incomparable descriptions}
+
+\begin{established}[Adequacy and answerable questions]\label{prop:no-best}
+Two representations $r_1$ and $r_2$ are incomparable for $\sqsubseteq$ if and only if there is a question answered by $r_1$ and not by $r_2$, and a question answered by $r_2$ and not by $r_1$.
+\end{established}
+\source{Elementary consequence of Result~\ref{prop:adequacy-kernel}(c).}
+\begin{proof}
+If they are incomparable then $r_1\not\sqsubseteq r_2$ and $r_2\not\sqsubseteq r_1$. By Result~\ref{prop:adequacy-kernel}(c) the first failure supplies a question answered by $r_1$ and not by $r_2$, and the second supplies one in the other direction. Conversely, a question answered by $r_1$ and not by $r_2$ rules out $r_1\sqsubseteq r_2$, and the other question rules out $r_2\sqsubseteq r_1$.
+\end{proof}
+
+\begin{example}[Document: current text against held contents]\label{ex:doc-incomparable}
+Let $m=1$ and $C=\{0,1\}$ in Example~\ref{ex:document}. The representations $\tau$ and $\nu$ are incomparable. The empty history and $\mathrm{set}(1,1)\,\mathrm{set}(1,0)$ have the same current text and different held sets, so $\tau$ does not answer $\nu$, and the histories $\mathrm{set}(1,1)$ and $\mathrm{set}(1,1)\,\mathrm{set}(1,0)$ have the same held set and different current texts, so $\nu$ does not answer $\tau$.
+\end{example}
+
+\begin{example}[Account: balance against overdraft flag]\label{ex:bank-incomparable}
+In Example~\ref{ex:bank} the representations $\beta$ and $q_{\mathrm{neg}}$ are incomparable. The empty history and $\mathrm{w}(1)\,\mathrm{d}(1)$ have equal balances and different overdraft flags, and the empty history and $\mathrm{d}(1)$ have equal overdraft flags and different balances. Neither representation is a coarsening of the other, and the pair $\langle\beta,q_{\mathrm{neg}}\rangle$ is strictly above both.
+\end{example}
+
+Incomparability of this kind is not a pathology of particular examples. For any set of cases with at least three elements, $\Eq(X)$ is not a chain: Example~\ref{ex:M3} exhibits three pairwise incomparable relations. What matters for design is the next result, which shows that incomparability is forced as soon as the size of the representation is bounded.
+
+\begin{newresult}[No best representation under a size bound]\label{prop:budget}
+Let $X$ be a finite set with $n$ elements and let $2\le k<n$. Let $\mathcal R_k$ be the set of representations $r$ of $X$ with $|r(X)|\le k$, preordered by $\sqsubseteq$. Then $\mathcal R_k$ has no greatest element, and it has at least two maximal elements, up to equivalence, which are incomparable.
+\end{newresult}
+\assumes{$X$ is finite; the size of a representation is the number of values it takes; $2\le k<n$.}
+\begin{proof}
+A greatest element would be a representation $g\in\mathcal R_k$ with $r\sqsubseteq g$ for all $r\in\mathcal R_k$, that is, with $\ker g\subseteq\ker r$ for every such $r$. Let $x\ne y$ be elements of $X$. The representation that maps $x$ to one value and every other element to a second value lies in $\mathcal R_k$ because $k\ge2$, and its kernel does not contain $(x,y)$. Hence $\ker g$ does not contain $(x,y)$ either. Since $x$ and $y$ were arbitrary distinct elements, $\ker g$ is the diagonal, so $g$ is injective and $|g(X)|=n>k$, contradicting $g\in\mathcal R_k$. For the second claim, the quotient of $\mathcal R_k$ by equivalence is a finite nonempty partially ordered set, so every element lies below a maximal element. If there were only one maximal element, it would lie above every element of the finite poset and would be greatest, which has just been excluded. Two distinct maximal elements are incomparable, because a comparison would make the smaller one fail to be maximal.
+\end{proof}
+
+The result says that choosing a memory of bounded size is a choice among incomparable alternatives, each of which preserves some distinctions at the expense of others. Which one is correct is determined by the questions that will actually be asked, and by nothing internal to the representations themselves. It will be sharpened to a statement about the sizes required for specified families of questions in Chapters~5 and~6.
+
+\section{Adequacy relative to a family of questions}
+
+When the family of questions is fixed, the incomparability disappears.
+
+\begin{established}[Least adequate representation for a family]\label{prop:least-adequate}
+Let $\mathcal F=\{f_i\}_{i\in I}$ be a family of questions on $X$ and let $\kappa=\bigcap_i\ker f_i$. A representation $r$ answers every member of $\mathcal F$ if and only if $\ker r\subseteq\kappa$. Consequently the quotient map $\pi_\kappa$ is, up to equivalence, the least informative representation answering all of $\mathcal F$, and every representation answering all of $\mathcal F$ takes at least as many values as $\pi_\kappa$, in the sense that $|r(X)|\ge|X/\kappa|$ for cardinal numbers.
+\end{established}
+\source{Elementary; Results~\ref{prop:joint} and~\ref{prop:coarsening}.}
+\begin{proof}
+The characterization is Result~\ref{prop:joint}. By Result~\ref{prop:adequacy-kernel}(a), $\pi_\kappa\sqsubseteq r$ for every such $r$ and $\pi_\kappa$ answers $\mathcal F$, so it is a least element among answering representations. Since $\ker r\subseteq\kappa$, Result~\ref{prop:coarsening} gives a surjection from $X/{\ker r}$ onto $X/\kappa$, and $X/{\ker r}$ is in bijection with $r(X)$ by Result~\ref{prop:canonical}.
+\end{proof}
+
+\begin{remark}
+Results~\ref{prop:budget} and~\ref{prop:least-adequate} locate the problem exactly. For a fixed family there is a unique cheapest adequate representation up to relabelling, and the work of choosing it is a calculation of $\kappa$. For a fixed bound on size and an unspecified family there is no best choice. The interesting situations lie between these two: the family is not fixed but constrained, for instance by a stated set of policies that may later be revised, and the cost of an adequate representation changes as the family changes. That is the subject of Chapter~6 and, in its dynamic form, of Chapters~7 and~21.
+\end{remark}
+
+
+\section{Counting the maximal representations}\label{sec:maximal}
+
+Result~\ref{prop:budget} says that bounded representations have no greatest element and at least two maximal ones. The structure can be described exactly. A representation with at most $k$ values corresponds, up to relabelling, to a partition of $X$ into at most $k$ blocks, and the adequacy order is refinement of partitions.
+
+\begin{newresult}[Maximal bounded representations]\label{prop:maximal-count}
+Let $|X|=n$ and $2\le k<n$. The maximal elements of $\mathcal R_k$, up to equivalence, are exactly the partitions of $X$ into precisely $k$ blocks, and there are $S(n,k)$ of them, where $S$ denotes the Stirling number of the second kind. Any two are incomparable. Every question with at most $k$ answers is answered by some maximal element of $\mathcal R_k$.
+\end{newresult}
+\assumes{$X$ finite; representations of size at most $k$; the adequacy order of Definition~\ref{def:adequacy}.}
+\begin{proof}
+A partition $P$ with fewer than $k$ blocks has a block with at least two elements, because $k<n$ forces $P$ to have fewer blocks than elements. Splitting that block into two nonempty parts gives a strictly finer partition with at most $k$ blocks, which is strictly above $P$ in the adequacy order, so $P$ is not maximal. A partition $P$ with exactly $k$ blocks is maximal: a strictly finer partition has strictly more blocks, hence more than $k$, and does not lie in $\mathcal R_k$. Two different partitions with $k$ blocks are incomparable, since a refinement with the same number of blocks is equal. For the last claim, a question $f$ with at most $k$ answers has a partition $\ker f$ with at most $k$ blocks; by the first paragraph it is refined by a partition with exactly $k$ blocks, obtained by splitting blocks one at a time, and $f$ is answered by the finer partition by Result~\ref{prop:adequacy-kernel}.
+\end{proof}
+
+The count is large even for modest sets. For $n=4$ and $k=2$ there are $S(4,2)=7$ maximal two-valued descriptions; for $n=5$ and $k=2$, fifteen; for $n=6$ and $k=3$ there are $90$ among the $203$ partitions of a six-element set. Each is a distinct way of spending a budget of three values, and none dominates another. The last assertion of the result is the useful one for design: any single question with a small answer set can be served by a maximal description, but a maximal description serving that question also answers, for free, some further questions, and which further questions it answers is an accident of how the surplus blocks were cut. Choosing among the $90$ is therefore a choice about which further questions to favour, and the representation itself offers no guidance.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Let $X=\{1,2,3,4,5,6\}$. Give two representations with three values each that are incomparable for $\sqsubseteq$, and a third with three values that is incomparable to both. Compute their pairwise joins and common coarsenings.
+\end{exercise}
+
+\begin{exercise}
+Prove that $\sqsubseteq$ is a preorder but not a partial order on representations, and that its quotient by equivalence is order isomorphic to $\Eq(X)$ with the reverse of inclusion. Describe the most informative and least informative classes.
+\end{exercise}
+
+\begin{exercise}
+Show that Result~\ref{prop:budget} fails when $k=1$ and when $k\ge n$, and identify in each case what the greatest element is.
+\end{exercise}
+
+\begin{exercise}
+For the account of Example~\ref{ex:bank}, determine for each of $\beta$ and $q_{\mathrm{neg}}$ whether the representation $\rho(h)=\max(\beta(h),0)$ is comparable with it, and give a separating pair of histories for each direction of comparison that fails.
+\end{exercise}
+
+\begin{exercise}
+A family $\mathcal F$ is revised to $\mathcal F'=\mathcal F\cup\{g\}$ for a new question $g$. Show that the least adequate representation for $\mathcal F'$ is at least as informative as that for $\mathcal F$, and that the two are equivalent if and only if $\kappa\subseteq\ker g$, where $\kappa$ is the joint kernel of $\mathcal F$. Describe what this says about when a revision can be absorbed without changing the memory.
+\end{exercise}
+
+
+\begin{exercise}
+For $n=5$ and $k=2$ list the fifteen maximal elements of $\mathcal R_2$ by the size of their smaller block, and count how many of them answer a given question that separates one named case from the other four.
+\end{exercise}
+
+\begin{exercise}
+Prove the formula $S(n,k)=kS(n-1,k)+S(n-1,k-1)$ by classifying partitions into $k$ blocks according to where the last element lies, and use it to recompute $S(6,3)=90$.
+\end{exercise}
+
+\begin{exercise}
+Give a family of two questions on a set of six cases, each with three answers, such that no single maximal element of $\mathcal R_3$ answers both, and a family of two questions such that exactly one does. State what this says about the sufficiency of a bounded memory for a revised family of questions.
+\end{exercise}
+

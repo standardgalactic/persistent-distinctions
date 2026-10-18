@@ -1,0 +1,127 @@
+% ch20-interfaces.tex
+\chapter{Interfaces and Delegated Authority}\label{ch:interfaces}
+\spec{Which composition results hold, and under which compatibility conditions?}
+{Interface automata (de Alfaro and Henzinger); assume--guarantee contracts; capability systems and the take-grant model.}
+{Refinement preserves compatibility of composition (Result~\ref{thm:refinement}); the non-circular assume--guarantee rule holds under explicit alphabet conditions (Result~\ref{prop:assume-guarantee}); authority cannot be created by attenuating delegation (Result~\ref{prop:attenuation}).}
+{None.}
+{Chapters~\ref{ch:admissible} and~\ref{ch:obligations}.}
+
+A component interacts with its surroundings through an interface: the actions it offers, the actions it expects, and the order in which it will accept them. Composition theorems say when components whose interfaces fit can be assembled and when a replacement for one component can be dropped in without disturbing the others. Authority adds a second kind of interface, the rights that a component holds and may pass on. This chapter states the composition results with their hypotheses spelled out, because each of them fails without one.
+
+\section{Interface automata and compatibility}
+
+\begin{definition}[Interface automaton]\label{def:interface}
+An \emph{interface automaton} is a tuple $A=(S,s_0,I,O,\delta)$ with finite state set $S$, initial state $s_0$, disjoint finite sets $I$ of input actions and $O$ of output actions, and a partial deterministic transition function $\delta:S\times(I\cup O)\rightharpoonup S$. Write $\mathrm{in}(s)=\{a\in I:\delta(s,a)\text{ defined}\}$ and $\mathrm{out}(s)$ likewise. Two automata $A,B$ are \emph{composable} if $O_A\cap O_B=\varnothing$, $I_A\cap I_B=\varnothing$, and $(I_A\cup O_A)\cap(I_B\cup O_B)=(O_A\cap I_B)\cup(O_B\cap I_A)$.
+\end{definition}
+
+\begin{definition}[Product and compatibility]\label{def:compat}
+For composable $A,B$ the \emph{product} $A\|B$ has states $S_A\times S_B$, initial state $(s_0^A,s_0^B)$, and transitions: an action $a$ of $A$ that is not shared moves only the first component; an action of $B$ not shared moves only the second; a shared action $a\in(O_A\cap I_B)\cup(O_B\cap I_A)$ moves both, and is defined when it is defined in both. An input of one component that is not shared is supplied by an environment that is not modelled, and is not a transition of the product. A reachable state $(s,t)$ is an \emph{error state} if some shared action is an output of one component at its state and is not accepted by the other: $\mathrm{out}(s)\cap I_B\not\subseteq\mathrm{in}(t)$ or $\mathrm{out}(t)\cap I_A\not\subseteq\mathrm{in}(s)$. The automata are \emph{compatible} if $A\|B$ has no reachable error state.
+\end{definition}
+
+Compatibility says that in the composed system no component ever emits a message the other cannot accept. It is decided in time proportional to $|S_A||S_B|$ by exploring the product.
+
+\begin{definition}[Refinement]\label{def:refinement}
+An automaton $A'$ \emph{refines} $A$ with the same input and output sets if there is a relation $R\subseteq S_{A'}\times S_A$ with $(s_0',s_0)\in R$ and, whenever $(s',s)\in R$: $\mathrm{in}(s)\subseteq\mathrm{in}(s')$; $\mathrm{out}(s')\subseteq\mathrm{out}(s)$; and for every $a\in\mathrm{in}(s)\cup\mathrm{out}(s')$, $(\delta'(s',a),\delta(s,a))\in R$.
+\end{definition}
+
+A refinement accepts at least the inputs the original accepts and offers at most the outputs it offers, in matching states.
+
+\begin{newresult}[Refinement preserves compatibility]\label{thm:refinement}
+Let $A$ and $B$ be compatible and let $A'$ refine $A$ with $A'$ and $B$ composable. Then $A'$ and $B$ are compatible.
+\end{newresult}
+\assumes{Deterministic automata; the shared actions of $A'$ and $B$ are those of $A$ and $B$.}
+\begin{proof}
+We show by induction on the length of a path in $A'\|B$ that every reachable state $(s',t)$ has a state $s$ with $(s',s)\in R$ and $(s,t)$ reachable in $A\|B$. The initial state is related to $(s_0,t_0)$. Suppose $(s',t)$ is reached with a related state $s$. A move of $B$ on an unshared output leaves $s',s$ unchanged. A move of $A'$ on an unshared output $a\in\mathrm{out}(s')\subseteq\mathrm{out}(s)$ leads to related states, and $A\|B$ makes the same move. For a shared output $a$ of $A'$ at $s'$, $a\in\mathrm{out}(s)$, and since $(s,t)$ is not an error state, $B$ accepts $a$ at $t$, so $A\|B$ moves to $(\delta(s,a),\delta_B(t,a))$ and $(\delta'(s',a),\delta(s,a))\in R$. For a shared output $a$ of $B$ at $t$, compatibility of $A,B$ gives $a\in\mathrm{in}(s)\subseteq\mathrm{in}(s')$, so $A'$ accepts and the moves correspond. Now suppose $(s',t)$ were an error state of $A'\|B$. If $A'$ outputs a shared $a$ at $s'$ that $B$ does not accept at $t$, then $a\in\mathrm{out}(s)$ and $(s,t)$ would be an error state of $A\|B$. If $B$ outputs a shared $a$ at $t$ that $A'$ does not accept, then $a\in\mathrm{in}(s)\subseteq\mathrm{in}(s')$, a contradiction. Hence no error state is reachable.
+\end{proof}
+
+\begin{established}[Interface theories]
+For non-deterministic interface automata, refinement defined by alternating simulation is a preorder, is a precongruence for composition of compatible automata, and compatibility is preserved, as above.
+\end{established}
+\source{de Alfaro and Henzinger, ``Interface automata,'' ESEC/FSE 2001.}
+
+\section{Assume--guarantee composition}
+
+Let a \emph{component} $M$ over an alphabet $\Sigma_M$ be a prefix-closed set of finite words over $\Sigma_M$. The composition $M_1\|M_2$ is the set of words $t$ over $\Sigma_1\cup\Sigma_2$ with $t|_{\Sigma_i}\in M_i$, where $t|_{\Sigma}$ erases letters outside $\Sigma$. For a prefix-closed set $P$ over $\Sigma_P$ write $M\models P$ if $t|_{\Sigma_P}\in P$ for every $t\in M$.
+
+\begin{newresult}[A non-circular assume--guarantee rule]\label{prop:assume-guarantee}
+Let $A$ be a prefix-closed set over $\Sigma_A\subseteq\Sigma_1\cap\Sigma_2$ and $P$ a prefix-closed set over $\Sigma_P\subseteq\Sigma_1$. If
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item $M_1\|A\models P$, and
+  \item $M_2|_{\Sigma_A}\subseteq A$ (every behaviour of $M_2$ seen on the shared letters is allowed by the assumption),
+\end{enumerate}
+then $M_1\|M_2\models P$.
+\end{newresult}
+\assumes{The alphabet conditions $\Sigma_A\subseteq\Sigma_1\cap\Sigma_2$ and $\Sigma_P\subseteq\Sigma_1$.}
+\begin{proof}
+Let $t\in M_1\|M_2$ and $u=t|_{\Sigma_1}\in M_1$. Since $\Sigma_A\subseteq\Sigma_1$ and $\Sigma_A\subseteq\Sigma_2$, $u|_{\Sigma_A}=t|_{\Sigma_A}=(t|_{\Sigma_2})|_{\Sigma_A}\in M_2|_{\Sigma_A}\subseteq A$. So $u\in M_1\|A$ (taking the alphabet $\Sigma_1$), and (i) gives $u|_{\Sigma_P}\in P$. Because $\Sigma_P\subseteq\Sigma_1$, $t|_{\Sigma_P}=u|_{\Sigma_P}\in P$.
+\end{proof}
+
+Both alphabet conditions are needed. If $\Sigma_P\not\subseteq\Sigma_1$ the guarantee mentions letters that $M_1$ does not control and the argument breaks at the last step; if the assumption $A$ mentions letters outside $\Sigma_2$, then (ii) is a claim about behaviour that $M_2$ does not exhibit and cannot be discharged by $M_2$. Rules that assume the properties of each component about the other circularly require an additional argument by induction on the length of words, and are not valid in general for properties that are not safety properties.
+
+\section{Delegated authority}
+
+\begin{definition}[Delegation system]\label{def:delegation}
+Let $\mathcal P$ be a finite set of principals and $\mathrm{Rts}$ a set of rights. The \emph{authority state} is a function $\mathrm{Auth}:\mathcal P\to2^{\mathrm{Rts}}$. A \emph{delegation} $(p\to q,R)$ with $R\subseteq\mathrm{Auth}(p)$ updates $\mathrm{Auth}(q)$ to $\mathrm{Auth}(q)\cup R$. A system is \emph{attenuating} if the only way $\mathrm{Auth}$ changes is by delegations of this kind (rights may also be revoked).
+\end{definition}
+
+\begin{newresult}[Authority is not created by delegation]\label{prop:attenuation}
+In an attenuating system, if $r\in\mathrm{Auth}_t(q)$ then there are principals $p_0,\dots,p_k=q$ with $r\in\mathrm{Auth}_0(p_0)$ and delegations of $r$ from $p_{i-1}$ to $p_i$ occurring in order at times $t_1\le\dots\le t_k\le t$. In particular $\mathrm{Auth}_t(q)\subseteq\bigcup_p\mathrm{Auth}_0(p)$, and a principal that is not the target of a chain of delegations from a holder of $r$ never holds $r$.
+\end{newresult}
+\assumes{No operation creates a right; revocation only removes.}
+\begin{proof}
+Induction on $t$. At $t=0$ the claim is trivial with $k=0$. A step at time $t$ is a delegation $(p\to q',R)$ with $R\subseteq\mathrm{Auth}_{t-1}(p)$ or a revocation. A revocation removes rights and preserves the claim. After a delegation, a right $r\in R$ now held by $q'$ was held by $p$ at $t-1$, so by hypothesis there is a chain ending at $p$, and extending it by the delegation at time $t$ gives a chain ending at $q'$. Rights held by other principals are unchanged.
+\end{proof}
+
+The result is a safety property of the delegation graph and can be checked without running the system: whether a principal can ever obtain a right is a reachability question. It is also the reason capability systems are reasoned about by tracing references. A deputy that holds authority of its own and acts on a request from a caller under the caller's choice of target uses authority that it holds and the caller does not; the interface between caller and deputy must therefore specify which rights the request carries, which is a statement about the compatibility of the two interfaces in the sense of Definition~\ref{def:compat} and not only about the authority state.
+
+
+\section{Withholding a right: cuts in the permission graph}\label{sec:cuts}
+
+In an attenuating system the question whether a principal can ever obtain a right is a reachability question, and the question of how much policy it takes to prevent it is a cut question. Suppose delegation is constrained by a \emph{permission graph} $G$ on the principals, a directed graph in which an edge $p\to q$ means that $p$ is permitted to delegate to $q$, and that a right may be delegated only along edges of $G$. Let $H$ be the set of principals that hold the right $r$ initially.
+
+\begin{newresult}[The least number of permissions to withhold]\label{prop:cut}
+In an attenuating system with permission graph $G$, a principal $q\notin H$ can obtain $r$ at some time if and only if $q$ is reachable from $H$ in $G$. The least number of edges whose removal from $G$ prevents $q$ from ever obtaining $r$ equals the maximum number of pairwise edge-disjoint chains of permitted delegations from $H$ to $q$.
+\end{newresult}
+\assumes{Finite graph; rights are only delegated along permitted edges; no principal outside $H$ holds $r$ at the start; revocation is not used.}
+\begin{proof}
+If $q$ is reachable by a path, delegating $r$ along the path in order gives $q$ the right. Conversely by Result~\ref{prop:attenuation} any holder at time $t$ is the end of a chain of delegations from a member of $H$, and each delegation in the chain uses an edge of $G$, so $q$ is reachable. A set of edges whose removal makes $q$ unreachable from $H$ is an edge cut separating $H$ from $q$, and the minimum size of such a cut equals the maximum number of edge-disjoint paths from $H$ to $q$ by Menger's theorem (applied to the graph with a new source joined to every member of $H$).
+\end{proof}
+
+A small instance fixes the numbers. Let the principals be $h_1,h_2,a,b,c,d,e,q$, with $H=\{h_1,h_2\}$ and permitted delegations $h_1\to a$, $h_1\to b$, $h_2\to b$, $h_2\to c$, $a\to d$, $b\to d$, $b\to e$, $c\to e$, $d\to q$, $e\to q$ and $a\to q$. The target $q$ is reachable, and there are three edge-disjoint chains, namely $h_1\to a\to q$, $h_2\to b\to d\to q$ and $h_1\to b\to e\to q$. No set of two permissions blocks every chain, and the three permissions $h_1\to a$, $b\to d$ and $e\to q$ do; both facts have been confirmed by exhaustive search over edge subsets. The example shows the sense in which authority is a property of the graph and not of the principals. A policy that withholds the single delegation $d\to q$ removes one chain of the three and leaves $q$ able to obtain $r$, and no assessment of any individual principal reveals that two further permissions elsewhere are what separates $q$ from the right.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Construct two interface automata that are compatible and a refinement of one of them that is composable but loses compatibility because it drops an input, and identify which hypothesis of Definition~\ref{def:refinement} is violated.
+\end{exercise}
+
+\begin{exercise}
+Model a client that sends a request and waits for either a reply or an error, and a server that replies or errors after each request. Compute the product, verify compatibility, and then remove the server's error output from the client's inputs to produce an error state.
+\end{exercise}
+
+\begin{exercise}
+Give a counterexample to Result~\ref{prop:assume-guarantee} when the alphabet condition $\Sigma_P\subseteq\Sigma_1$ is dropped, with $P$ a safety property that the composition violates although (i) and (ii) hold.
+\end{exercise}
+
+\begin{exercise}
+Show that the compatibility check of Definition~\ref{def:compat} is a reachability search for an error state in the product, and state the number of states of the product of two automata with $m$ and $n$ states.
+\end{exercise}
+
+\begin{exercise}
+In a delegation system with revocation, show that Result~\ref{prop:attenuation} is no longer sufficient to infer that a principal currently holds a right from the existence of a chain, and state the additional condition on revocations under which the chain characterizes current authority.
+\end{exercise}
+
+
+\begin{exercise}
+In the example above find a second minimum cut of size three that uses only edges entering $q$ or leaving $H$, or prove that none exists. Determine the minimum cut if $q$ is replaced by $e$ as the target.
+\end{exercise}
+
+\begin{exercise}
+Prove the first statement of Result~\ref{prop:cut} when revocation is allowed but is only ever applied to rights held by the revoking principal's own delegates: show that reachability in $G$ is still necessary for obtaining $r$, and give an example in which it is not sufficient.
+\end{exercise}
+
+\begin{exercise}
+Suppose each permitted delegation additionally attenuates: the right delegated along edge $e$ is intersected with a mask $m_e\subseteq\mathrm{Rts}$. Show that the set of rights obtainable by $q$ is the union over chains of the intersection of the masks along the chain together with the initial holdings, and compute it for a chain of three edges with masks $\{r,s\}$, $\{s,t\}$, $\{s\}$.
+\end{exercise}
+

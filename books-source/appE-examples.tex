@@ -1,0 +1,55 @@
+% appE-examples.tex
+\chapter{Executable Examples}\label{app:examples}
+
+Three short programs reproduce computations of the text. Each is deterministic, uses only the Python standard library, and prints the numbers quoted below. They are meant to be read and modified, not used as software; the point of each is that a definition of the text becomes a few lines of code whose output can be compared with a hand calculation.
+
+\section{Continuation classes by partition refinement}
+
+The program \texttt{continuation.py} implements Moore's algorithm (Result~\ref{pc:moore}). It starts from the partition by the property and repeatedly separates states whose successors lie in different classes, until nothing changes. The first example is the bounded balance with an overdraft sink; the second is the family of two parities of Chapter~\ref{ch:adequacy}.
+
+\lstinputlisting[language=Python,caption={\texttt{continuation.py}}]{examples/continuation.py}
+
+Running it prints
+
+\lstinputlisting[caption={Output of \texttt{continuation.py}}]{examples/continuation.out}
+
+Every balance is its own class, as in the quotient of the account (Chapter~\ref{ch:quotients}): withdrawing from a balance $n$ leads to an overdraft after $n+1$ withdrawals, so balances differ in how many withdrawals they survive, and the property ``at least two on hand'' separates them. The sink is a class of its own. The two parities have two classes each but four jointly, which is the upper bound of the product in Result~\ref{pb:meet-join} attained.
+
+\section{The viability kernel by the counter algorithm}
+
+The program \texttt{kernel.py} implements the linear-time algorithm of Result~\ref{pr:kernel-alg} of Appendix~\ref{app:recap}: counters of alive actions at each state, and a queue of states whose counter reaches zero. The system is the vehicle of the second volume, positions $0,\dots,10$ with a charger at $0$ and a battery of $6$ units.
+
+\lstinputlisting[language=Python,caption={\texttt{kernel.py}}]{examples/kernel.py}
+
+\lstinputlisting[caption={Output of \texttt{kernel.py}}]{examples/kernel.out}
+
+Of $77$ states, $28$ are viable, and they are exactly the states with battery at least the distance to the charger. From the full battery at the charger, only positions up to $3=6/2$ can be reached without leaving the kernel.
+
+\section{A bounded-response monitor}
+
+The program \texttt{monitor.py} builds the monitor of Result~\ref{pc:monitor} for $k=3$ and minimizes it by the same refinement; the minimal automaton has $k+2=5$ states, so the construction is already minimal.
+
+\lstinputlisting[language=Python,caption={\texttt{monitor.py}}]{examples/monitor.py}
+
+\lstinputlisting[caption={Output of \texttt{monitor.py}}]{examples/monitor.out}
+
+The three test traces show the intended behaviour: an acknowledgement within three events is accepted, a fourth event without one is a violation, and a second request while one is outstanding does not reset the clock of the oldest.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Change the property in \texttt{continuation.py} to ``the balance is even'' and predict the number of classes before running it.
+\end{exercise}
+
+\begin{exercise}
+Modify \texttt{kernel.py} so that waiting costs no battery away from the charger. Predict the kernel and check it.
+\end{exercise}
+
+\begin{exercise}
+Extend \texttt{monitor.py} to two independent obligations with bounds $2$ and $3$ and verify that the product monitor has $4\cdot5=20$ states and is minimal.
+\end{exercise}
+
+\begin{exercise}
+Write a program that computes the joint kernel of a family of functions on a finite set and reports the number of classes; test it on the parities of Result~\ref{pb:meet-join}.
+\end{exercise}

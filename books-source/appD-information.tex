@@ -1,0 +1,85 @@
+% appD-information.tex
+\chapter{Information Theory}\label{app:info}
+
+The text counts the values of a representation; this appendix relates the count to the entropy of the representation and to what it preserves about a target quantity. All random variables are discrete with finite support, and logarithms are to base $2$.
+
+\section{Entropy and mutual information}
+
+For a random variable $X$ with law $p$, the \emph{entropy} is $H(X)=-\sum_xp(x)\log p(x)$, and for two variables $H(X,Y)$ is the entropy of the pair, $H(Y\mid X)=H(X,Y)-H(X)$ the conditional entropy, and $I(X;Y)=H(Y)-H(Y\mid X)$ the mutual information.
+
+\begin{established}[Basic properties]\label{pd:basic}
+(a) $0\le H(X)\le\log|\mathrm{supp}X|$, with equality on the right iff $X$ is uniform on its support. (b) $H(Y\mid X)=0$ iff $Y$ is almost surely a function of $X$. (c) $I(X;Y)=I(Y;X)\ge0$, with equality iff $X,Y$ are independent. (d) Chain rule: $H(X,Y)=H(X)+H(Y\mid X)$ and $I(X,Z;Y)=I(Z;Y)+I(X;Y\mid Z)$.
+\end{established}
+\source{Cover and Thomas, \emph{Elements of Information Theory}, Chapter~2.}
+
+\section{Data processing and sufficiency}
+
+\begin{newresult}[Data processing and equality]\label{pd:dpi}
+For a function $r$ and random variables $X,Y$: $I(r(X);Y)\le I(X;Y)$, with equality iff $I(X;Y\mid r(X))=0$, that is, iff $Y$ and $X$ are conditionally independent given $r(X)$.
+\end{newresult}
+\assumes{Finite supports.}
+\begin{proof}
+Since $r(X)$ is a function of $X$, $I(X;Y)=I(X,r(X);Y)$. By the chain rule, $I(X,r(X);Y)=I(r(X);Y)+I(X;Y\mid r(X))$. The second term is nonnegative, which gives the inequality, and it vanishes iff equality holds; it vanishes iff $X$ and $Y$ are conditionally independent given $r(X)$ by Result~\ref{pd:basic}(c) applied conditionally.
+\end{proof}
+
+In the statistical sense, $r$ is sufficient for $Y$ when $Y$ and $X$ are conditionally independent given $r(X)$; the result says this is exactly when $r$ loses no information about $Y$.
+
+\begin{newresult}[Deterministic sufficiency]\label{pd:det}
+If the target is a deterministic function $Y=f(X)$ then $r$ is sufficient in the sense of the first volume ($\ker r\subseteq\ker f$ on the support of $X$) iff $H(Y\mid r(X))=0$ iff $I(r(X);Y)=H(Y)$.
+\end{newresult}
+\assumes{$\Pr(X=x)>0$ for all $x$ in the support.}
+\begin{proof}
+By Result~\ref{pd:basic}(b), $H(Y\mid r(X))=0$ iff $Y$ is a function of $r(X)$ almost surely; with full support this holds iff $f$ is constant on each fibre of $r$, that is, $\ker r\subseteq\ker f$. And $I(r(X);Y)=H(Y)-H(Y\mid r(X))$.
+\end{proof}
+
+\section{Counting and entropy}
+
+\begin{newresult}[Bits of a representation]\label{pd:bits}
+If a representation $r$ takes $m$ values then $H(r(X))\le\log m$ for every law of $X$, and the number of bits of any fixed-length code for $r(X)$ is at least $\lceil\log m\rceil$ for the worst-case law. For a variable-length prefix code, the expected length $L$ satisfies $H(r(X))\le L<H(r(X))+1$ for the best code (Shannon).
+\end{newresult}
+\assumes{Finite support; the last statement is Shannon's source coding theorem.}
+\begin{proof}
+The first inequality is Result~\ref{pd:basic}(a). A fixed-length binary code with $\ell$ bits has at most $2^\ell$ codewords, so $2^\ell\ge m$. The last statement is Shannon's theorem for symbol codes (Cover and Thomas, Theorem~5.4.1).
+\end{proof}
+
+The count of values and the entropy therefore measure different things: the first is the worst case, the second is the average under a particular law of usage. A system whose events have a skewed law needs far fewer bits on average than its worst case, and the first volume's counts are conservative in this sense.
+
+\section{Fano's inequality and limits on recovery}
+
+\begin{established}[Fano]\label{pd:fano}
+If $\hat Y=g(Z)$ is an estimate of $Y$ from $Z$, with error probability $P_e=\Pr(\hat Y\ne Y)$ and $Y$ taking $M$ values, then $H(Y\mid Z)\le h(P_e)+P_e\log(M-1)$, where $h$ is the binary entropy.
+\end{established}
+\source{Fano (1961); Cover and Thomas, Theorem~2.10.1.}
+
+\begin{newresult}[A discarded distinction cannot be recovered]\label{pd:recover}
+Suppose $r(X)$ is a coarsening that identifies $M_0\ge2$ equally likely values of a target $Y$ (that is, $Y$ is uniform on $M_0$ values given $r(X)$). Then every estimator of $Y$ from $r(X)$ has error probability at least $1-1/M_0$.
+\end{newresult}
+\assumes{Uniform conditional law.}
+\begin{proof}
+The error probability of any estimator is at least $1-\max_y\Pr(Y=y\mid r(X))=1-1/M_0$, since a guess from a uniform distribution on $M_0$ values is correct with probability at most $1/M_0$. (Fano gives the weaker bound $P_e\ge(\log M_0-1)/\log(M_0-1)$.)
+\end{proof}
+
+This is the quantitative form of the corollary on non-recovery in Chapter~\ref{ch:quotients}: once the representation merges two cases, no computation can tell them apart better than chance.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute the entropy of the uniform law on four values and of the law $(1/2,1/4,1/8,1/8)$, and give an optimal prefix code for the second.
+\end{exercise}
+
+\begin{exercise}
+Let $X$ be uniform on $\{0,\dots,7\}$ and $r(x)=x\bmod2$, $Y=\lfloor x/4\rfloor$. Compute $I(r(X);Y)$ and $I(X;Y)$ and decide whether $r$ is sufficient for $Y$.
+\end{exercise}
+
+\begin{exercise}
+Prove from Result~\ref{pd:dpi} that if $r'=g\circ r$ then $I(r'(X);Y)\le I(r(X);Y)$.
+\end{exercise}
+
+\begin{exercise}
+Find a law of $X$ on $\{1,\dots,m\}$ for which a representation with $m$ values has entropy as small as $\epsilon>0$, and explain why this does not contradict the lower bound of Chapter~\ref{ch:adequacy} on the number of values.
+\end{exercise}
+
+\begin{exercise}
+In Result~\ref{pd:recover} take $M_0=4$ and compute the Fano bound and the exact error probability. Which is larger?
+\end{exercise}

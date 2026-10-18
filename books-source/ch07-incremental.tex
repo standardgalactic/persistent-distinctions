@@ -1,0 +1,186 @@
+% ch07-incremental.tex
+\chapter{Incremental Sufficiency and Minimization}\label{ch:incremental}
+\spec{Why can answering a question once require less memory than maintaining the answer under arbitrary future updates, and how is the minimal maintaining memory computed?}
+{The Myhill--Nerode theorem and the minimal deterministic machine; Moore's partition-refinement algorithm and Hopcroft's improvement.}
+{A comparison of one-shot and update-maintainable sufficiency that is exact for every family of future events, with unbounded gaps (Result~\ref{thm:gap}).}
+{None.}
+{Chapters~\ref{ch:quotients}, \ref{ch:histories}, and~\ref{ch:fixed}.}
+
+The previous chapters ask whether a representation can answer a question about a history that has already occurred. A system that is operating does not hold a finished history. It holds a representation and receives one event at a time, and it must produce the next representation from the current one and the event, without returning to the history. Whether a representation can be kept up to date in this way is a different property from whether it answers the question, and the two properties can separate sharply. A single bit may answer a question about every history and nevertheless be impossible to maintain with any finite memory. This chapter makes the difference exact, proves that it can be arbitrarily large, and describes the procedure that computes the least memory that does maintain a given answer.
+
+Throughout this chapter the history set is $\Events^{*}$, so that every sequence of events can occur. Section~\ref{sec:restrict} remarks on the general case.
+
+\section{Maintaining an answer under updates}
+
+\begin{definition}[Maintainable representation]\label{def:maintainable}
+A representation $r:\Events^{*}\to R$ is \emph{maintainable} if there is a function $u:R\times\Events\to R$, an \emph{update function}, with $r(ha)=u(r(h),a)$ for every history $h$ and event $a$. For a set $F\subseteq\Events^{*}$ of words closed under concatenation and containing $\varepsilon$ (a \emph{submonoid}), the representation is \emph{$F$-maintainable} if $r(hw)$ depends only on $r(h)$ and $w$ for every $w\in F$, that is, if $r(h)=r(h')$ implies $r(hw)=r(h'w)$ for all $w\in F$.
+\end{definition}
+
+The update function reads the new event and the current representation and nothing else. An $F$-maintainable representation is the same requirement when the only updates that will ever occur are the words of $F$; for example, if only deposits will ever occur, $F$ is the set of finite sequences of deposits.
+
+\begin{established}[Maintainability is a congruence property]\label{prop:maintainable}
+A representation $r$ is maintainable if and only if $\ker r$ is a right congruence, that is, $h\mathrel{\ker r}h'$ implies $ha\mathrel{\ker r}h'a$ for every event $a$. It is then $\Events^{*}$-maintainable in the sense of Definition~\ref{def:maintainable}.
+\end{established}
+\source{Standard; Nerode (1958).}
+\begin{proof}
+If $r(ha)=u(r(h),a)$ and $r(h)=r(h')$ then $r(ha)=u(r(h'),a)=r(h'a)$. Conversely, if $\ker r$ is a right congruence then $u(r(h),a)=r(ha)$ is well defined on $r(\Events^{*})\times\Events$, and extends arbitrarily to $R\times\Events$. Invariance under a word $w=a_1\cdots a_k$ follows by applying the congruence property $k$ times.
+\end{proof}
+
+\section{The continuation congruence}
+
+For a property $P:\Events^{*}\to D$ and a submonoid $F$, define
+\[
+h\approx^{F}_{P}h'\quad\Longleftrightarrow\quad P(hw)=P(h'w)\ \text{ for all } w\in F.
+\]
+When $F=\Events^{*}$ this is the continuation equivalence $\approx_P$ of Definition~\ref{def:continuation-equiv}, since every history has every word as an extension.
+
+\begin{newresult}[Myhill--Nerode for families of future events]\label{thm:nerode-family}
+Let $F\subseteq\Events^{*}$ be a submonoid and $P$ a property.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\approx^{F}_P$ is an equivalence relation contained in $\ker P$, and it is $F$-invariant.
+  \item Every $F$-invariant equivalence relation contained in $\ker P$ is contained in $\approx^{F}_P$.
+  \item A representation is $F$-maintainable and answers $P$ if and only if $\ker r$ is an $F$-invariant equivalence contained in $\ker P$. The least number of values of such a representation is $|\Events^{*}/{\approx^{F}_P}|$, attained by the quotient map.
+  \item If $F\subseteq F'$ then ${\approx^{F'}_P}\subseteq{\approx^{F}_P}\subseteq\ker P$, so the least memory grows as the family of future events grows.
+\end{enumerate}
+\end{newresult}
+\assumes{$F$ is a submonoid of $\Events^{*}$. For $F=\Events^{*}$ the statement is the Myhill--Nerode theorem for properties of histories.}
+\begin{proof}
+(a) Reflexivity, symmetry, and transitivity hold because they hold for equality in $D$. Taking $w=\varepsilon\in F$ shows ${\approx^{F}_P}\subseteq\ker P$. If $h\approx^{F}_P h'$ and $u\in F$, then for every $w\in F$ we have $uw\in F$ and so $P(huw)=P(h'uw)$, which says $hu\approx^{F}_Ph'u$. (b) Let $\sim$ be $F$-invariant with ${\sim}\subseteq\ker P$ and let $h\sim h'$. For each $w\in F$ we have $hw\sim h'w$, so $P(hw)=P(h'w)$. Hence $h\approx^{F}_Ph'$. (c) The first statement is the definition of $F$-maintainability together with Result~\ref{thm:sufficiency}. If $r$ is $F$-maintainable and answers $P$ then $\ker r\subseteq{\approx^{F}_P}$ by (b), so $|r(\Events^{*})|\ge|\Events^{*}/{\approx^{F}_P}|$ by Result~\ref{prop:coarsening}; and by (a) the quotient map of $\approx^{F}_P$ attains this. (d) A larger set $F'$ imposes more conditions in the definition of the relation.
+\end{proof}
+
+\section{One-shot and maintained sufficiency}
+
+\begin{definition}[One-shot and maintained size]\label{def:sizes}
+For a property $P$ and a submonoid $F$, let $s_{\mathrm{one}}(P)=|\Events^{*}/\ker P|$, the least number of values of any representation that answers $P$, and let $s_F(P)=|\Events^{*}/{\approx^{F}_P}|$, the least number of values of an $F$-maintainable representation that answers $P$. Write $s_{\mathrm{inc}}(P)=s_{\Events^{*}}(P)$.
+\end{definition}
+
+By Result~\ref{thm:nerode-family} we have $s_{\mathrm{one}}(P)\le s_F(P)\le s_{\mathrm{inc}}(P)$ for every submonoid $F$. The following theorem states when the inequalities are equalities and shows that they can be as strict as one pleases.
+
+\begin{newresult}[The gap between answering once and maintaining]\label{thm:gap}
+Let $P$ be a property with $s_{\mathrm{one}}(P)$ finite.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item For a submonoid $F$, $s_F(P)=s_{\mathrm{one}}(P)$ if and only if $\ker P$ is $F$-invariant, that is, if and only if $P(h)=P(h')$ implies $P(hw)=P(h'w)$ for all $w\in F$.
+  \item For every $n\ge1$ there is a property $P_n$ over a three-event alphabet with $s_{\mathrm{one}}(P_n)=2$ and $s_{\mathrm{inc}}(P_n)=n+1$.
+  \item There is a property over a two-event alphabet with $s_{\mathrm{one}}=2$ and $s_{\mathrm{inc}}=\infty$.
+\end{enumerate}
+\end{newresult}
+\assumes{(a) requires $s_{\mathrm{one}}(P)<\infty$. For (b), the alphabet is $\{\mathrm{tick},\mathrm{alarm},\mathrm{reset}\}$; for (c), $\{\mathrm{d},\mathrm{w}\}$ with unit amounts.}
+\begin{proof}
+(a) If $\ker P$ is $F$-invariant then it is an $F$-invariant equivalence contained in $\ker P$, so ${\ker P}\subseteq{\approx^{F}_P}\subseteq{\ker P}$ by Result~\ref{thm:nerode-family}, and the two quotients coincide. Conversely, suppose $s_F(P)=s_{\mathrm{one}}(P)$. Since ${\approx^{F}_P}\subseteq\ker P$ the quotient by $\approx^{F}_P$ maps onto the quotient by $\ker P$, and both are finite of the same size, so the map is a bijection and ${\approx^{F}_P}=\ker P$. By Result~\ref{thm:nerode-family}(a), $\ker P$ is $F$-invariant.
+
+(b) Let $c(h)$ be the number of alarms in $h$ since the last reset, and let $P_n(h)=\mathbf 1[c(h)\ge n]$. Both verdicts occur, so $s_{\mathrm{one}}(P_n)=2$. For a word $w$ with no reset, $c(hw)=c(h)+a(w)$ with $a(w)$ the number of alarms in $w$, and for a word $w$ containing a reset, $c(hw)$ does not depend on $h$. Since $c(h)+a\ge n$ if and only if $\min(c(h),n)+a\ge n$ for $a\ge0$, the residual of $h$ is determined by $\min(c(h),n)$. Conversely suppose $j=\min(c(h),n)<j'=\min(c(h'),n)$, so $j<n$. If $j'=n$ the empty word separates $h$ from $h'$. Otherwise $j'=c(h')<n$ and the word $w=\mathrm{alarm}^{\,n-j'}$ gives $c(hw)=j+n-j'<n$ and $c(h'w)=n$, so $P_n(hw)=0\ne1=P_n(h'w)$. Therefore $\approx_{P_n}$ has exactly the classes of $\min(c,n)\in\{0,\dots,n\}$, and $s_{\mathrm{inc}}(P_n)=n+1$.
+
+(c) Over events $\mathrm d$ and $\mathrm w$ with unit amounts let $P=q_{\mathrm{neg}}$. As in Result~\ref{prop:account}, $h\approx_Ph'$ if and only if $q_{\mathrm{neg}}(h)=q_{\mathrm{neg}}(h')=1$ or both are $0$ with equal balance, because the word $\mathrm w^{\,b'}$ plays the role of the withdrawal of $b'$. There are infinitely many classes, one for each $b\in\NN$ together with $\bot$, so $s_{\mathrm{inc}}(P)=\infty$ while $s_{\mathrm{one}}(P)=2$.
+\end{proof}
+
+The theorem reduces the comparison to a single condition. A one-bit answer is maintainable with one bit exactly when its verdicts are preserved by the future events in $F$, in the sense that two histories with the same verdict continue to receive the same verdict. Otherwise the memory must record whatever distinguishes the histories in some future. In the account, the verdict ``never overdrawn'' is preserved by deposits and not by withdrawals, so the single flag is maintainable if only deposits will ever occur and fails to be maintainable otherwise.
+
+\begin{example}[Restricting the updates]\label{ex:restrict-updates}
+Let $F=\mathrm D^{*}$ be the finite sequences of deposits in the account of Example~\ref{ex:bank}. A deposit cannot create a negative prefix, since $m(w)=0$ for $w\in\mathrm D^{*}$, so $q_{\mathrm{neg}}(hw)=q_{\mathrm{neg}}(h)$ for $w\in F$ and $h\approx^{F}_{q_{\mathrm{neg}}}h'$ if and only if $q_{\mathrm{neg}}(h)=q_{\mathrm{neg}}(h')$. Thus $s_F=2=s_{\mathrm{one}}$: a single bit is maintainable for the family of deposit-only futures, while $s_{\mathrm{inc}}=\infty$ for the family of all futures.
+\end{example}
+
+The two possibilities correspond to two questions a designer can ask. If the answer is only ever needed at the present, one-shot sufficiency is the right measure, and the memory can be as small as the number of verdicts. If the answer must be available after each of a stream of events, the maintained size is the right measure, and it is determined by the family of events that the system must be able to absorb. The difference is the cost of readiness for futures that have not occurred.
+
+\begin{established}[Finite maintenance and regularity]\label{prop:regular}
+Let $\Events$ be finite and let $P:\Events^{*}\to D$ have finitely many values. The following are equivalent: (i) $s_{\mathrm{inc}}(P)<\infty$; (ii) $P$ is computed by a finite machine with an output at each state, that is, $P=\mathrm{out}\circ\delta^{*}(s_0,\cdot)$ for a finite complete deterministic $(S,s_0,\Events,\delta)$ and $\mathrm{out}:S\to D$; (iii) $P^{-1}(d)$ is a regular language for every $d\in D$.
+\end{established}
+\source{Myhill (1957), Nerode (1958); see Hopcroft and Ullman.}
+\begin{proof}
+(i)$\Rightarrow$(ii): the machine whose states are the classes of $\approx_P$, with transition $[h]\xrightarrow{a}[ha]$ and output $P(h)$, is well defined by Result~\ref{thm:nerode-family}. (ii)$\Rightarrow$(iii): each $P^{-1}(d)$ is accepted by the machine with accepting set $\mathrm{out}^{-1}(d)$. (iii)$\Rightarrow$(i): each $P^{-1}(d)$ has a Nerode congruence of finite index by the Myhill--Nerode theorem; the relation $\approx_P$ is the intersection of these finitely many congruences, since two histories have the same residual for $P$ exactly when they have the same residual for each indicator $\mathbf 1_{P^{-1}(d)}$, and a finite intersection of finite-index equivalences has finite index.
+\end{proof}
+
+Result~\ref{thm:gap}(c) shows in this light that no finite machine over two events maintains the bit $q_{\mathrm{neg}}$, although the bit is a function of the history with two values. The deficiency is not in the property but in the update structure: after a withdrawal the new verdict depends on a quantity, the balance, which the bit does not carry and which is unbounded.
+
+\section{Computing the minimal maintaining memory}\label{sec:moore}
+
+When a finite machine for the property is given, the least memory is obtained by merging states that have the same behaviour. The following algorithm and its correctness are classical.
+
+\begin{definition}[Moore machine]\label{def:moore}
+A \emph{Moore machine} is a tuple $M=(S,s_0,\Events,\delta,\mathrm{out})$ with a finite set $S$ of states, a total transition function $\delta:S\times\Events\to S$, and an output function $\mathrm{out}:S\to D$. The \emph{behaviour} of a state $s$ is the function $b_s:\Events^{*}\to D$ with $b_s(w)=\mathrm{out}(\delta^{*}(s,w))$.
+\end{definition}
+
+\begin{established}[Moore's partition refinement]\label{thm:moore}
+Let $M$ be a Moore machine with $n$ states. Define $\equiv_0=\ker\mathrm{out}$ and, for $i\ge0$, $s\equiv_{i+1}t$ if and only if $s\equiv_it$ and $\delta(s,a)\equiv_i\delta(t,a)$ for every $a\in\Events$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $s\equiv_it$ if and only if $b_s(w)=b_t(w)$ for every word $w$ of length at most $i$.
+  \item The sequence stabilizes at some $i\le n-1$, and the stable relation $\equiv$ satisfies $s\equiv t$ if and only if $b_s=b_t$.
+  \item The quotient of the reachable part of $M$ by $\equiv$ is a Moore machine computing the same function $P_M=\mathrm{out}\circ\delta^{*}(s_0,\cdot)$ with exactly $|\Events^{*}/{\approx_{P_M}}|$ states, which is the least possible number of states of any machine computing $P_M$.
+  \item Each round can be carried out in time $O(n|\Events|)$ by sorting transition signatures, so the minimal machine is obtained in time $O(n^{2}|\Events|)$. Hopcroft's algorithm achieves $O(n|\Events|\log n)$.
+\end{enumerate}
+\end{established}
+\source{Moore, ``Gedanken-experiments on sequential machines'' (1956); Hopcroft, ``An $n\log n$ algorithm for minimizing states in a finite automaton'' (1971).}
+\begin{proof}
+(a) For $i=0$ the statement is the definition. If it holds for $i$, then $s\equiv_{i+1}t$ says that the behaviours agree on words of length at most $i$ and that the successors $\delta(s,a)$ and $\delta(t,a)$ have behaviours that agree on words of length at most $i$ for every $a$, which together say that $b_s$ and $b_t$ agree on all words of length at most $i+1$. (b) The relations are decreasing, ${\equiv_{i+1}}\subseteq{\equiv_i}$. If $\equiv_{i+1}=\equiv_i$ then $\equiv_{i+2}=\equiv_{i+1}$, because each is obtained from the previous by the same rule, so the sequence is constant from that point. Before stabilization each step strictly increases the number of classes, which lies between $1$ and $n$, so stabilization occurs by index $n-1$. By (a), the stable relation is the intersection over all $i$, which is equality of behaviours. (c) For a reachable state $s=\delta^{*}(s_0,h)$ the behaviour $b_s$ is the residual $(P_M)_h$, so $h\approx_{P_M}h'$ if and only if their states have equal behaviour, that is, if and only if their states are $\equiv$-equivalent. The classes of $\approx_{P_M}$ therefore correspond to the classes of $\equiv$ on reachable states, and minimality is Result~\ref{prop:nerode-system}(b). (d) Each round recomputes classes by comparing the pair consisting of the current class and the tuple of successor classes, which can be done by one pass of radix sorting; the bound on the number of rounds is (b).
+\end{proof}
+
+\begin{example}[Merging states]
+Let $\Events=\{a\}$ and let $M$ have states $0,\dots,5$ with $\delta(i,a)=\min(i+1,5)$, initial state $0$, and $\mathrm{out}(i)=\mathbf 1[i\ge3]$. Then $\equiv_0$ has classes $\{0,1,2\}$ and $\{3,4,5\}$. In the next round $2$ separates from $0$ and $1$ because $\delta(2,a)=3$ lies in the other class, giving $\{0,1\},\{2\},\{3,4,5\}$, and in the round after, $1$ separates from $0$. The relation then stabilizes at $\{0\},\{1\},\{2\},\{3,4,5\}$, so the minimal machine has four states, the same as $\approx_{P_n}$ for $n=3$ restricted to words over $\{\mathrm{alarm}\}$.
+\end{example}
+
+\section{Families and the general history set}\label{sec:restrict}
+
+\begin{established}[Maintaining a family]\label{prop:family-nerode}
+For a family $\Phi=\{\pi_i\}_{i\in I}$ of properties of $\Events^{*}$, the least number of values of a maintainable representation sufficient for $\Phi$ is $|\Events^{*}/\bigcap_i{\approx_{\pi_i}}|$. The bounds of Result~\ref{prop:family-bounds} hold with $\approx_{\pi_i}$ in place of $\ker\pi_i$.
+\end{established}
+\source{Results~\ref{thm:nerode-family} and~\ref{prop:family-bounds}.}
+\begin{proof}
+Apply Result~\ref{thm:nerode-family} to the property $x\mapsto(\pi_i(x))_i$. The residual of the tuple at $h$ is the tuple of residuals, so $\approx_{(\pi_i)_i}=\bigcap_i\approx_{\pi_i}$.
+\end{proof}
+
+When the history set $\Hist$ is not all of $\Events^{*}$, a representation must also determine which events are possible, since otherwise it cannot know which updates it must perform. This is the requirement $\ker r\subseteq\{(h,h'):\Ext(h)=\Ext(h')\}$ built into the definition of continuation equivalence in Definition~\ref{def:continuation-equiv}, and Results~\ref{prop:nerode} and~\ref{prop:nerode-system} give the same conclusions in that setting. Physical constraints therefore enter the memory requirement twice: they remove futures that need not be accommodated, and they impose that the representation encode what remains possible.
+
+
+\section{A rate limit: one-shot against maintained memory}\label{sec:rate-intro}
+
+A rate limit is the simplest rule in which the answer to the present question is a single bit and the memory needed to keep that bit correct under further events grows without bound in a parameter of the rule. Take the events $\mathrm{use}$ and $\mathrm{idle}$ and the history set $\Hist_w$ of words in which any two uses are at least $w$ steps apart, that is, at most one use occurs in any $w$ consecutive steps. The set is prefix-closed, and the question asked of a history is whether a further use is permitted, $Q(h)=[h\,\mathrm{use}\in\Hist_w]$. Only two verdicts occur, so $s_{\mathrm{one}}(Q)=2$.
+
+\begin{newresult}[A single-use rate limit]\label{prop:rate-one}
+For every $w\ge2$ the continuation equivalence of the history set $\Hist_w$ has exactly $w$ classes, given by the number $\ell(h)$ of events since the last use, capped at $w-1$, with the value $w-1$ also assigned to histories with no use. The one-shot size of $Q$ is $2$ and the maintained size is $w$, so the ratio is unbounded as $w$ grows. In particular no maintainable representation of $Q$ over $\Hist_w$ has fewer than $w$ values, and the counter $\min(\ell,w-1)$ attains the bound.
+\end{newresult}
+\assumes{The history set is $\Hist_w$, so the representation must also determine which extensions are possible (Definition~\ref{def:continuation-equiv}); $w\ge2$.}
+\begin{proof}
+A use after $h$ is possible exactly when its position exceeds the position of the last use by at least $w$, that is, when $\ell(h)\ge w-1$, where $\ell(h)$ is the number of events after the last use (and $\ell=\infty$ if there is none). After a further idle event $\ell$ increases by one, and after a use it becomes $0$. So $\Ext(h)$ depends only on $c(h)=\min(\ell(h),w-1)$, and $c$ is updated by $c\mapsto\min(c+1,w-1)$ for idle and $c\mapsto0$ for use; the equivalence given by $c$ is therefore a right congruence contained in the continuation equivalence, with at most $w$ classes. To see that the classes are separated, let $c(h)=j<c(h')=j'$ with $j\le w-2$. The word $\mathrm{idle}^{\,w-2-j}\,\mathrm{use}$ is an extension of $h'$, because after the idles the counter of $h'$ is at least $j'+w-2-j\ge w-1$, and it is not an extension of $h$, because after the idles the counter of $h$ equals $w-2$. Hence $\Ext(h)\ne\Ext(h')$. Finally $Q$ is a function of $\Ext$, so the equivalence is the continuation equivalence of $Q$ on $\Hist_w$ and $s_{\mathrm{inc}}(Q)=w$.
+\end{proof}
+
+The result puts numbers on the remark of Chapter~\ref{ch:histories} that the minimal system must retain what remains possible. A rate limit of $w$ steps requires $\log_2 w$ bits of clock even though every question the system is asked is a yes or no. The clock cannot be replaced by any smaller description that remains correct under all further events; it can be replaced by a smaller one only if the future events are restricted, for instance to sequences with no idles, in the sense of Result~\ref{thm:gap}(a). For a limit of $k$ uses in $w$ steps the count of classes is $\binom{w}{k}$ for $1\le k<w$, a figure that has been confirmed here by exhaustive computation for $w\le6$ and that is proved, with the normal form that realizes it, in Chapter~7 of the second volume. The case $k=1$ above is the part that belongs to the theory of what must be retained, since it needs nothing beyond the continuation equivalence, and the general case, which is a question about the structure of the dynamics, is left to that chapter.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Construct a maintainable representation of the monitor of Example~\ref{ex:monitor} that answers ``at least $n$ alarms are outstanding'', and give its update function explicitly. State its number of values.
+\end{exercise}
+
+\begin{exercise}
+Prove that your representation answers the question and that no maintainable representation answering it has fewer values, using Result~\ref{thm:nerode-family}.
+\end{exercise}
+
+\begin{exercise}
+Show that the one-bit representation $q_{\mathrm{neg}}$ of the account answers the question of whether an overdraft has occurred and is not maintainable, by exhibiting histories $h,h'$ and an event $a$ with $q_{\mathrm{neg}}(h)=q_{\mathrm{neg}}(h')$ and $q_{\mathrm{neg}}(ha)\ne q_{\mathrm{neg}}(h'a)$. Determine the smallest event alphabet over which this failure occurs.
+\end{exercise}
+
+\begin{exercise}
+The threshold of the monitor is revised from $n$ to $n'>n$. Determine the least number of values of a maintainable representation sufficient for both thresholds, using Result~\ref{prop:family-nerode}, and compare it with the least number for each threshold alone. Describe in words what the memory of the first system lacks when the revision arrives.
+\end{exercise}
+
+\begin{exercise}
+Run Moore's algorithm on the machine with states $\{0,\dots,6\}$, events $\{a,b\}$, $\delta(i,a)=\min(i+1,6)$, $\delta(i,b)=0$, and output $\mathbf 1[i\ge4]$. List the relations $\equiv_0,\equiv_1,\dots$ until stabilization and give the number of states of the minimal machine. Explain why the answer agrees with $s_{\mathrm{inc}}(P_4)$.
+\end{exercise}
+
+\begin{exercise}
+In the account with all deposit and withdrawal amounts, let $F=\mathrm D^{*}$ and let $P(h)=\mathbf 1[\beta(h)\ge k]$. Compute $\approx^{F}_P$ and $s_F(P)$, and show that $s_F(P)$ is infinite although $s_{\mathrm{one}}(P)=2$. Explain why this does not contradict Example~\ref{ex:restrict-updates}.
+\end{exercise}
+
+
+\begin{exercise}
+For $w=4$ list the four classes of Result~\ref{prop:rate-one} by a representative history each, and give for every pair of classes a shortest separating extension. Run Moore's algorithm of Result~\ref{thm:moore} on the machine whose states are the counter values and confirm that it does not merge any states.
+\end{exercise}
+
+\begin{exercise}
+Replace the rule by a lifetime cap of $m$ uses with no clock. Compute the continuation equivalence of the resulting history set and its number of classes, and show that the maintained size is $m+1$ while the one-shot size of the question ``is another use permitted?'' remains $2$.
+\end{exercise}
+
+\begin{exercise}
+Combine the single-use rate limit of window $w$ with the lifetime cap of $m$ uses. Show that the number of classes is $(m-1)w+2$ for $m\ge1$, and confirm the value $5$ for $w=3$, $m=2$ by enumerating histories. Explain why the combination is cheaper than the product $w(m+1)$ of the two separate counts.
+\end{exercise}
+

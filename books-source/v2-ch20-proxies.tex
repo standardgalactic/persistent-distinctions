@@ -1,0 +1,156 @@
+% v2-ch20-proxies.tex
+\chapter{Proxies and the Deformation of Possibility}\label{ch:proxies}
+\spec{When does optimizing a proxy transfer to the intended objective, and what happens when the transfer fails?}
+{The proxy-error bound for discounted MDPs (Puterman); taxonomies of Goodhart effects (Manheim and Garrabrant).}
+{The sup-norm bound is tight (Example~\ref{ex:tight}); an on-policy refinement that charges the error on the occupancy of the two policies compared (Result~\ref{thm:onpolicy}); average error does not control transfer (Example~\ref{ex:mean}); a constrained version in which both objective and constraint are proxied, with the loss measured against a tightened budget and bounded by concavity (Result~\ref{thm:cmdp-proxy}); restriction to a viability domain separates safety from value (Result~\ref{prop:safe-proxy}).}
+{None.}
+{Chapters~\ref{ch:mdp} and~\ref{ch:admcost}.}
+
+An objective that cannot be measured directly is replaced by one that can. The replacement is a proxy, and the question is how much of what is gained under the proxy is gained under the original. The standard answer is a bound in terms of the largest discrepancy; its range of validity is narrow, and outside that range optimization changes which states are visited, which is a deformation of the set of futures that the system actually explores.
+
+\section{The uniform bound and its sharpness}
+
+\begin{established}[Proxy transfer under a uniform error bound]\label{prop:proxy}
+In a discounted MDP with discount $\gamma\in[0,1)$, let $R$ and $R'$ be reward functions with $\sup_{s,a}|R(s,a)-R'(s,a)|\le\varepsilon$. If $\pi'$ is optimal for $R'$ and $\pi^{*}$ is optimal for $R$, then $V_R^{\pi'}\ge V_R^{\pi^{*}}-\tfrac{2\varepsilon}{1-\gamma}$ at every state.
+\end{established}
+\source{A standard perturbation bound for discounted dynamic programming; see Puterman, \emph{Markov Decision Processes}.}
+\begin{proof}
+For every policy $\pi$ and state $s$, $|V_R^{\pi}(s)-V_{R'}^{\pi}(s)|\le\sum_{t\ge0}\gamma^{t}\varepsilon=\varepsilon/(1-\gamma)$. Therefore $V_R^{\pi'}\ge V_{R'}^{\pi'}-\tfrac{\varepsilon}{1-\gamma}\ge V_{R'}^{\pi^{*}}-\tfrac{\varepsilon}{1-\gamma}\ge V_R^{\pi^{*}}-\tfrac{2\varepsilon}{1-\gamma}$.
+\end{proof}
+
+\begin{example}[The constant is attained]\label{ex:tight}
+One state, two actions $a,b$ (each returning to the state), $R(a)=\varepsilon$, $R(b)=-\varepsilon$, $R'(a)=R'(b)=0$. Then $\sup|R-R'|=\varepsilon$, every policy is optimal for $R'$, and the policy that always plays $b$ has $V_R=-\varepsilon/(1-\gamma)$ while $V_R^{\pi^*}=\varepsilon/(1-\gamma)$, a loss of exactly $2\varepsilon/(1-\gamma)$. With $R'(b)=\eta>0$ for small $\eta$ the proxy has a strict optimum $b$ and the error is $\varepsilon+\eta$, so the loss $2\varepsilon/(1-\gamma)$ is approached by strict optima. The bound cannot be improved in general.
+\end{example}
+
+\section{Transfer is governed by the error on the policies compared}
+
+The uniform bound charges the error at every state-action pair, including pairs that neither policy visits. A refinement charges only what the two policies do. For a policy $\pi$ and an initial distribution $\mu$ write $\nu^{\pi}(s,a)=(1-\gamma)\sum_{t\ge0}\gamma^{t}\Pr_\mu^\pi(s_t=s,a_t=a)$ for its normalized occupancy measure, so that $V_R^\pi(\mu)=\frac1{1-\gamma}\sum_{s,a}\nu^\pi(s,a)R(s,a)$, and set $e(\pi)=\sum_{s,a}\nu^\pi(s,a)\,|R(s,a)-R'(s,a)|$.
+
+\begin{newresult}[On-policy proxy bound]\label{thm:onpolicy}
+With $\pi'$ optimal for $R'$ and $\pi^*$ optimal for $R$ from the initial distribution $\mu$,
+\[
+V_R^{\pi^*}(\mu)-V_R^{\pi'}(\mu)\ \le\ \frac{e(\pi')+e(\pi^*)}{1-\gamma}\ \le\ \frac{2\varepsilon}{1-\gamma}.
+\]
+The first term charges the proxy for the error on the states the proxy-optimal policy visits, and the second for the error on the states the true optimum visits. The bound is attained when both terms are positive in the pattern of Example~\ref{ex:tight}, and the loss is $0$ when $R'=R$ on the support of both occupancy measures, whatever $R'$ does elsewhere.
+\end{newresult}
+\assumes{Finite state and action sets; $\pi',\pi^*$ optimal from $\mu$ for the respective rewards.}
+\begin{proof}
+By the occupancy formula, $|V_R^\pi(\mu)-V_{R'}^\pi(\mu)|\le e(\pi)/(1-\gamma)$ for every $\pi$. Then
+\[
+V_R^{\pi'}\ge V_{R'}^{\pi'}-\tfrac{e(\pi')}{1-\gamma}\ge V_{R'}^{\pi^*}-\tfrac{e(\pi')}{1-\gamma}\ge V_R^{\pi^*}-\tfrac{e(\pi^*)+e(\pi')}{1-\gamma}.
+\]
+Since $e(\pi)\le\varepsilon$ for every $\pi$, the second inequality of the statement follows. If $R=R'$ on the supports of $\nu^{\pi'}$ and $\nu^{\pi^*}$ then both $e$ vanish.
+\end{proof}
+
+The deformation is visible in the first term. The policy $\pi'$ is selected by the proxy, so it is drawn toward the pairs where $R'$ exceeds $R$, and $e(\pi')$ is larger than the error that a fixed reference policy would suffer. The error is evaluated on a distribution that the optimization itself has moved.
+
+\begin{example}[Mean error does not control transfer]\label{ex:mean}
+One state and actions $a_0,a_1,\dots,a_n$ with $R(a_0)=1$, $R(a_k)=0$ for $k\ge1$, and $R'(a_0)=0$, $R'(a_1)=2$, $R'(a_k)=0$ for $k\ge2$. The average of $|R-R'|$ over the $n+1$ actions is $3/(n+1)\to0$, but $\sup|R-R'|=2$, and the proxy-optimal policy plays $a_1$ forever with $V_R=0$ against $V_R^{\pi^*}=1/(1-\gamma)$, the largest loss any policy pair can have in this system. Under the uniform distribution over actions, the proxy is nearly exact; under the optimizer it is wrong in the one place that matters.
+\end{example}
+
+\section{Constrained problems with proxied constraints}
+
+\begin{definition}[Constrained MDP and its proxy]\label{def:cmdp}
+A \emph{constrained MDP} has a reward $R$, a cost $C\ge0$, a budget $d$, and the problem $\max_\pi V_R^\pi(\mu)$ subject to $V_C^\pi(\mu)\le d$, with optimal value $f(d)$ (taken over randomized stationary policies, equivalently over occupancy measures; $-\infty$ if infeasible). A \emph{proxy} is a pair $R',C'$ with $\sup|R-R'|\le\varepsilon_R$ and $\sup|C-C'|\le\varepsilon_C$. Write $\eta=\varepsilon_C/(1-\gamma)$ and $\rho=\varepsilon_R/(1-\gamma)$.
+\end{definition}
+
+The function $f$ is concave and nondecreasing on its domain $[d_{\min},\infty)$, where $d_{\min}=\min_\pi V_C^\pi(\mu)$: the feasible occupancy measures form a polytope that depends linearly on $d$, and the optimal value of a linear program is concave in its right-hand side.
+
+\begin{newresult}[Proxy transfer for constrained problems]\label{thm:cmdp-proxy}
+Let $\pi'$ solve the proxy problem with the tightened budget,
+\[
+\max_\pi V_{R'}^\pi(\mu)\quad\text{subject to}\quad V_{C'}^\pi(\mu)\le d-\eta .
+\]
+Then:
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\pi'$ is feasible for the true problem: $V_C^{\pi'}(\mu)\le d$.
+  \item $V_R^{\pi'}(\mu)\ge f(d-2\eta)-2\rho$.
+  \item If $d-2\eta\ge a>d_{\min}$, then $f(d)-f(d-2\eta)\le 2\eta\,\dfrac{f(a)-f(d_{\min})}{a-d_{\min}}$, hence $V_R^{\pi'}(\mu)\ge f(d)-2\rho-2\eta\,\dfrac{f(d-2\eta)-f(d_{\min})}{d-2\eta-d_{\min}}$.
+\end{enumerate}
+Without tightening, $V_{C'}^{\pi}\le d$ does not imply $V_C^\pi\le d$, and the true constraint can be violated by up to $\eta$.
+\end{newresult}
+\assumes{Finite system; $d-2\eta>d_{\min}$ for the statement of (b) and (c) to be non-vacuous.}
+\begin{proof}
+(a) $V_C^{\pi'}\le V_{C'}^{\pi'}+\eta\le d$, as $|V_C^\pi-V_{C'}^\pi|\le\eta$ for every $\pi$ (the argument of Result~\ref{prop:proxy}).
+
+(b) Let $\pi^\circ$ attain $f(d-2\eta)$, so $V_C^{\pi^\circ}\le d-2\eta$. Then $V_{C'}^{\pi^\circ}\le d-2\eta+\eta=d-\eta$, so $\pi^\circ$ is feasible for the tightened proxy problem and $V_{R'}^{\pi'}\ge V_{R'}^{\pi^\circ}$. Hence $V_R^{\pi'}\ge V_{R'}^{\pi'}-\rho\ge V_{R'}^{\pi^\circ}-\rho\ge V_R^{\pi^\circ}-2\rho=f(d-2\eta)-2\rho$.
+
+(c) For a concave function the slope of the chord over $[d-2\eta,d]$ is at most the slope of the chord over $[d_{\min},a]$ whenever $a\le d-2\eta$, because chord slopes of a concave function decrease as the interval moves right. The second inequality combines this with (b) and monotonicity of the difference quotient at $a=d-2\eta$.
+\end{proof}
+
+The loss has two parts, the objective error $2\rho$ and the price $f(d)-f(d-2\eta)$ of the safety margin demanded by the constraint error. The second part is the cost of not knowing the constraint exactly, and it is bounded by the marginal value of budget at the tightened level, the quantity a Lagrange multiplier measures when one exists. If the constraint is binding with a large multiplier, a small error in its measurement is expensive; if the constraint is slack, the tightening is free.
+
+\begin{example}[A binding constraint with a steep marginal value]\label{ex:steep}
+One state, actions $a$ (reward $1$, cost $1$) and $b$ (reward $0$, cost $0$), $\gamma=\tfrac12$, so $V_C^\pi=2p$ and $V_R^\pi=2p$ when $a$ is played with probability $p$. With $d=1$ one has $f(1)=1$, $f(d)=d$ in general for $d\in[0,2]$, so the marginal value is $1$. With $\varepsilon_C=0.1$, $\eta=0.2$ and exact rewards, the tightened problem has budget $0.8$ and yields value $0.8=f(d)-\eta$; (b) gives $f(d-2\eta)=0.6$ and the bound is conservative by $0.2$, because the true loss is only $\eta$. Without tightening, a proxy that underestimates the cost by $\varepsilon_C$ permits $p=0.5+0.05\cdot2$, violating the true constraint by $0.2$.
+\end{example}
+
+\section{Safety need not depend on the proxy}
+
+The constraint in Result~\ref{thm:cmdp-proxy} is statistical, with a budget on an expected cost. A hard constraint, in the sense of a viability domain, behaves differently, and the difference is the reason to separate the two in the design of a system.
+
+\begin{newresult}[Hard safety is independent of the proxy]\label{prop:safe-proxy}
+Let $K$ be a viability domain of a finite MDP, in the sense that every $s\in K$ has an action whose successor distribution is supported in $K$, and let $\mathcal M_K$ be the MDP restricted to $K$ and to such actions. For any reward $R'$ let $\pi'$ be optimal for $R'$ in $\mathcal M_K$. Then (i) every trajectory of $\pi'$ started in $K$ stays in $K$ almost surely, whatever $R'$ is, and (ii) if $\sup|R-R'|\le\varepsilon$ then $\pi'$ loses at most $2\varepsilon/(1-\gamma)$ against the best $K$-restricted policy for $R$.
+\end{newresult}
+\assumes{Finite state and action sets.}
+\begin{proof}
+(i) is the definition of $\mathcal M_K$: every action available in it has successors in $K$. (ii) is Result~\ref{prop:proxy} applied to $\mathcal M_K$.
+\end{proof}
+
+The proxy therefore affects the value obtained within $K$ but cannot move the system outside it. What it can still do is choose among the options inside $K$ in a way that shrinks later options, a loss of possibility that the bound of (ii) does not see when the true reward does not value the options; Chapter~\ref{ch:admcost} bounds this loss for the preserved kernel and Chapter~\ref{ch:fallback} for the regions of recoverable states.
+
+
+\section{Selection among many options: the winner's overstatement}\label{sec:winner}
+
+The bounds of the previous sections concern the worst proxy of a given size. For a proxy that is noisy but unbiased in a precise sense the loss under selection can be computed exactly. Let there be $n$ options with true values $U_1,\dots,U_n$ independent standard normal, and let the proxy score of option $i$ be $P_i=U_i+\sigma Z_i$ with $Z_i$ independent standard normal noise. The optimizer chooses $I=\arg\max_iP_i$. Write $m_n=\mathbb E\max_{i\le n}U_i$ for the expected maximum of $n$ standard normal variables, so that an optimizer who sees $U$ obtains $m_n$.
+
+\begin{newresult}[Selection on a noisy proxy]\label{prop:winner}
+The true value obtained by the proxy-optimal choice is $\mathbb E\,U_I=m_n/\sqrt{1+\sigma^2}$, and the proxy value it reports is $\mathbb E\,P_I=\sqrt{1+\sigma^2}\,m_n$. Therefore the optimizer obtains the fraction $1/\sqrt{1+\sigma^2}$ of the attainable value for every $n$, and the proxy overstates the value it delivers by the factor exactly $1+\sigma^2$, independently of $n$. The absolute shortfall $m_n\bigl(1-1/\sqrt{1+\sigma^2}\bigr)$ and the absolute overstatement $m_n\sigma^2/\sqrt{1+\sigma^2}$ both grow without bound with $n$, at the rate $m_n\sim\sqrt{2\ln n}$.
+\end{newresult}
+\assumes{Independent Gaussian values and noise.}
+\begin{proof}
+The pairs $(U_i,P_i)$ are jointly Gaussian with $\operatorname{Var}P_i=1+\sigma^2$ and $\operatorname{Cov}(U_i,P_i)=1$, so $\mathbb E[U_i\mid P_1,\dots,P_n]=P_i/(1+\sigma^2)$ by independence across options. The index $I$ is a function of $P_1,\dots,P_n$, hence $\mathbb E\,U_I=\mathbb E\,\mathbb E[U_I\mid P]=\mathbb E\,P_I/(1+\sigma^2)$. The proxies $P_i$ are independent $\mathcal N(0,1+\sigma^2)$, so $\mathbb E\,P_I=\mathbb E\max_iP_i=\sqrt{1+\sigma^2}\,m_n$. Dividing gives $\mathbb E\,U_I=m_n/\sqrt{1+\sigma^2}$, and the ratio of the proxy value to the true value is $1+\sigma^2$. The asymptotics of $m_n$ are those of the maximum of Gaussian variables.
+\end{proof}
+
+The identity was checked by simulation and numerical integration over four pool sizes ($n=2,10,100,1000$) and three noise levels ($\sigma=0.5,1,2$); the simulated true values agreed with the formula to within $0.01$ in every case (for example, at $\sigma=1$ the formula gives $1.088$, $1.773$ and $2.292$ for $n=10,100,1000$, the simulations $1.089$, $1.773$ and $2.292$). At $\sigma=1$ the oracle values $m_n$ are $1.539$, $2.506$ and $3.241$ for the three sizes, so the proxy-optimal choice delivers about $71\%$ of the oracle, while the proxy reports $2.176$, $3.546$ and $4.584$, which are twice what is delivered. Two features need emphasis. The captured fraction does not improve as the search widens, because the extra options come with extra noise in the same proportion; and the overstatement grows with the width of the search, so that the larger the pool the more convincing the proxy figure is and the less it means. The mean error of the proxy is zero, and it is the selection that creates the loss: this is the sense in which Example~\ref{ex:mean} says that a small average error does not control transfer, here in a case where the average error vanishes exactly.
+
+The relation to Result~\ref{thm:onpolicy} is that the Gaussian proxy has unbounded uniform error, so the uniform bound is vacuous, while the on-policy signed error of the selected option is exactly the overstatement $\mathbb E(P_I-U_I)=m_n\sigma^2/\sqrt{1+\sigma^2}$: the error is evaluated on the distribution that the optimization has moved, and it is larger there than on a randomly chosen option, where it is zero in expectation.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Verify Example~\ref{ex:tight} with $\gamma=\tfrac12$ and $\varepsilon=\tfrac14$ by computing all three values explicitly.
+\end{exercise}
+
+\begin{exercise}
+In Example~\ref{ex:mean} compute $e(\pi')$ and $e(\pi^*)$ and check Result~\ref{thm:onpolicy}.
+\end{exercise}
+
+\begin{exercise}
+Construct a two-state example in which $\sup|R-R'|$ is large but $e(\pi')=e(\pi^*)=0$, so that the proxy transfers exactly.
+\end{exercise}
+
+\begin{exercise}
+Prove that $f$ is concave by showing that a convex combination of feasible occupancy measures for budgets $d_1,d_2$ is feasible for the combined budget.
+\end{exercise}
+
+\begin{exercise}
+Show that the tightening $\eta$ in Result~\ref{thm:cmdp-proxy} can be replaced by $\varepsilon_C^{\mathrm{on}}(\pi)/(1-\gamma)$ evaluated on the occupancy of the policy being certified, and explain why this makes the tightened problem nonlinear.
+\end{exercise}
+
+\begin{exercise}
+For $n=2$ compute $m_2=1/\sqrt\pi\approx0.5642$ and verify Result~\ref{prop:winner} at $\sigma=1$ by computing $\mathbb E\,U_I$ directly from the joint density of $(P_1,P_2)$.
+\end{exercise}
+
+\begin{exercise}
+Replace the Gaussian values by values in $\{0,1\}$ with $\Pr[U_i=1]=p$ and a proxy that equals $U_i$ with probability $1-q$ and is resampled independently otherwise. Compute the true value of the proxy-optimal choice among $n$ options, with ties broken uniformly, and find the limit as $n\to\infty$.
+\end{exercise}
+
+\begin{exercise}
+Show that if the optimizer screens the pool to its top $k$ options by the proxy and then measures the true value of those $k$ exactly at a cost $c$ each, the expected true value and the expected cost can be computed from the order statistics of $P$, and say when screening is worthwhile compared with Result~\ref{prop:winner}.
+\end{exercise}
+
+\begin{exercise}
+Relate Result~\ref{prop:winner} to the Pandora problem of Chapter~\ref{ch:domain}: show that inspecting an option corresponds to replacing a proxy by the true value at a cost, and compute the reservation value for an option whose proxy is $P_i=p$ and whose true value has conditional distribution $\mathcal N(p/(1+\sigma^2),\sigma^2/(1+\sigma^2))$.
+\end{exercise}
+

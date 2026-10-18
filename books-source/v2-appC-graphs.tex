@@ -1,0 +1,82 @@
+% v2-appC-graphs.tex
+\chapter{Graph Algorithms}\label{app:graphs}
+
+The algorithms used throughout the volume, with the running times quoted in the text. Graphs are finite and directed, $G=(V,E)$ with $n=|V|$, $m=|E|$.
+
+\section{Components and shortest paths}
+
+\begin{established}[Strongly connected components]\label{c:scc}
+The strongly connected components of $G$, and the acyclic condensation graph on them, are computed in time $O(n+m)$.
+\end{established}
+\source{Tarjan (1972).}
+
+\begin{established}[Shortest paths]\label{c:sp}
+Single-source shortest paths: breadth-first search in $O(n+m)$ for unit weights; Dijkstra's algorithm in $O(m+n\log n)$ for nonnegative weights; Bellman--Ford in $O(nm)$ for arbitrary weights without negative cycles; all pairs by Floyd--Warshall in $O(n^3)$.
+\end{established}
+\source{Dijkstra (1959); Bellman (1958); Ford (1956); Floyd (1962); Warshall (1962); see Cormen, Leiserson, Rivest and Stein.}
+
+The weighted costs of Chapters~\ref{ch:irreversibility} and~\ref{ch:revision} use the second statement; the quasi-metric property of the return cost is the triangle inequality of shortest-path distances.
+
+\section{Computing the viability kernel}
+
+Let a finite system be given by states $X$ and a relation $E\subseteq X\times U\times X$ (a nondeterministic transition), and a constraint set $C\subseteq X$. For the deterministic case $|E|=|X||U|$.
+
+\begin{newresult}[Linear-time kernel]\label{c:kernel}
+The viability kernel $\mathrm{Viab}(C)$ is computed in time $O(|X|+|E|)$ by the following counter algorithm. Maintain for each state--action pair $(x,u)$ a flag \emph{alive}, initially true if all successors of $(x,u)$ lie in $C$ and false otherwise; maintain for each state $x\in C$ the number $c(x)$ of alive actions at $x$. Place in a queue every state of $C$ with $c(x)=0$. While the queue is nonempty, remove $x$, mark $x$ \emph{dead}, and for each pair $(y,u)$ with $x$ a successor of $(y,u)$ and $(y,u)$ alive, set $(y,u)$ not alive and decrement $c(y)$, queuing $y$ if $c(y)$ reaches $0$ and $y$ is not yet queued. The states of $C$ never marked dead form the kernel.
+\end{newresult}
+\assumes{Finite system; the controller chooses the action and nature the successor (the nondeterministic case is the robust kernel).}
+\begin{proof}
+\emph{Soundness.} Let $S$ be the set of surviving states. Every $x\in S$ has an alive action: $c(x)>0$ at termination. An alive action has all its successors in $C$ and in $S$ (a successor marked dead would have killed the pair), so $S$ is a viability domain contained in $C$, hence $S\subseteq\mathrm{Viab}(C)$ by the maximality in Result~\ref{thm:kernel}.
+
+\emph{Completeness.} Let $x$ be marked dead; we show $x\notin\mathrm{Viab}(C)$ by induction on the order of marking. When $x$ is queued, every action at $x$ either has a successor outside $C$ or a successor that was marked dead earlier, hence outside $\mathrm{Viab}(C)$ by induction. So no action at $x$ keeps all successors in $\mathrm{Viab}(C)$, and $x\notin\mathrm{Viab}(C)$ (a state of the kernel needs such an action).
+
+\emph{Time.} Each pair is examined once when it is set not alive, and each state is dequeued once; the predecessor lists are built in $O(|X|+|E|)$.
+\end{proof}
+
+The algorithm also gives the kernel's \emph{rank}: recording the dequeue time of each dead state gives the least number of steps within which an adversary can force a violation, the quantity used for the lookahead of Chapter~\ref{ch:admcost}.
+
+\section{Closure and hardness}
+
+\begin{established}[Horn closure]\label{c:horn}
+The closure of a set of facts under a set of Horn rules $(c,P)$ (derive $c$ when all of $P$ are derived) is computed in time linear in the total size of the rules.
+\end{established}
+\source{Dowling and Gallier (1984).}
+
+This is the algorithm behind the capability closure of Chapter~\ref{ch:domain}; it is the same as Result~\ref{c:kernel} with counters of unsatisfied premises.
+
+\begin{established}[Classical hardness]\label{c:np}
+SET COVER and VERTEX COVER are NP-complete, and VERTEX COVER has a polynomial-time $2$-approximation (take both ends of every edge of a maximal matching).
+\end{established}
+\source{Karp (1972); Garey and Johnson, \emph{Computers and Intractability}.}
+
+The reductions of Chapters~\ref{ch:fallback} and~\ref{ch:architecture} start from these problems.
+
+\section{Worked example of the kernel algorithm}
+
+\begin{example}[Tracing the counter algorithm]\label{c:ex-trace}
+States $\{1,2,3,4\}$, constraint $C=\{1,2,3\}$, state $4\notin C$. Actions: at $1$, $a\to2$; at $2$, $a\to3$ and $b\to4$; at $3$, $a\to4$. The flags: $(1,a)$ true, $(2,a)$ true, $(2,b)$ false, $(3,a)$ false. The counts are $c(1)=1$, $c(2)=1$, $c(3)=0$. State $3$ is queued. Removing $3$ clears $(2,a)$, so $c(2)=0$ and $2$ is queued; removing $2$ clears $(1,a)$, so $c(1)=0$ and $1$ is queued. All of $1,2,3$ are removed and the kernel is empty. The removal order $3,2,1$ is the order of exit steps: from state $3$ the adversary wins in $1$ step, from $2$ in $2$, from $1$ in $3$.
+\end{example}
+
+\begin{newresult}[Shortest exit and the rank function]\label{c:rank}
+For the robust kernel with disturbance, let $\mathrm{rk}(x)$ be the step of the iteration of Result~\ref{c:kernel} at which $x$ is removed ($\infty$ for kernel states). Then $\mathrm{rk}(x)\le|C|$ and, for $\mathrm{rk}(x)<\infty$, the adversary can force a violation within $\mathrm{rk}(x)$ steps against any strategy, and not within $\mathrm{rk}(x)-1$ steps against the best strategy.
+\end{newresult}
+\assumes{Finite system.}
+\begin{proof}
+The first and second claims are the induction in the proof of Result~\ref{c:kernel}. For the third: if $x$ survived $k-1$ iterations, where $k=\mathrm{rk}(x)$, then there is an action all of whose successors survived $k-2$ iterations, hence by induction the controller can avoid violation for $k-1$ steps.
+\end{proof}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Run Tarjan's algorithm by hand on the graph with edges $1\to2,2\to3,3\to1,3\to4,4\to5,5\to4$ and list the components in the order in which they are completed.
+\end{exercise}
+\begin{exercise}
+Give a graph on which Dijkstra's algorithm with a negative edge returns a wrong distance.
+\end{exercise}
+\begin{exercise}
+Show that the counter algorithm of Result~\ref{c:kernel} specializes, for deterministic systems with one action per state, to the removal of all states from which $C^c$ is reachable.
+\end{exercise}
+\begin{exercise}
+Write the Horn rules for the capability closure with three capabilities $c_1,c_2,c_3$ where $c_3$ needs both others and $c_2$ needs $c_1$, and compute the closure of $\{c_1\}$.
+\end{exercise}

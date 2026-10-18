@@ -1,0 +1,198 @@
+% v2-ch13-robust.tex
+\chapter{Robustness Under Uncertainty}\label{ch:robust}
+\spec{Which guarantees survive disturbances and model uncertainty, and under which assumptions?}
+{Robust viability and invariance; chance constraints (Pr\'ekopa); Gaussian deterministic equivalents (Charnes and Cooper).}
+{The robust kernel is the greatest fixed point of the robust predecessor operator for arbitrary state spaces (Result~\ref{thm:robust-kernel}); it shrinks as the disturbance set grows and can vanish abruptly (Results~\ref{prop:robust-monotone} and~\ref{prop:scalar-robust}); chance constraints have deterministic equivalents for Gaussian margins and compose by Boole's inequality (Results~\ref{thm:gauss} and~\ref{prop:boole}); with unbounded full-support noise no policy can remain in a bounded region forever with positive probability (Result~\ref{prop:no-forever}); an unknown constant parameter can be strictly easier than a time-varying one (Result~\ref{prop:learning}).}
+{None.}
+{Chapters~\ref{ch:viability} and~\ref{ch:mdp}.}
+
+A guarantee is a statement about all the circumstances in some class, and the class is part of the guarantee. A system that keeps its constraint against every disturbance of size at most one has said nothing about a disturbance of size two; a system that keeps it with probability $0.99$ at each step has said nothing about the probability of keeping it for a year. This chapter lists the main classes, proves for each what can be asserted, and shows where each assertion stops.
+
+\section{Four kinds of guarantee}
+
+The guarantees that appear in practice differ in what they assume about the disturbance and in what they promise.
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item \emph{Robust} (certain) guarantee: the constraint holds for every disturbance sequence in a stated set. This is viability against an adversary.
+  \item \emph{Almost-sure} guarantee: the constraint holds with probability one. For finite supports this is a robust guarantee against the support (Chapter~\ref{ch:mdp}).
+  \item \emph{Chance} guarantee: the constraint holds with at least a stated probability, over a stated horizon.
+  \item \emph{Expected} guarantee: a cost or violation measure has bounded expectation (Chapter~\ref{ch:mdp}).
+\end{enumerate}
+Each is weaker than the one before in the sense that a policy that meets (i) over a set containing the support meets (ii), (iii), and (iv) in the corresponding forms, and none is strictly more realistic than another: the choice is a statement about what is known of the disturbance.
+
+\section{Robust viability}
+
+Consider a system $x_{t+1}=f(x_t,u_t,w_t)$ with $u_t\in F(x_t)$ chosen by a controller and $w_t\in\mathcal W(x_t,u_t)$ chosen by an adversary, where $\mathcal W$ assigns a nonempty set to each state and action. Both choose after seeing the history: $u_t$ may depend on $x_0,\dots,x_t$, and $w_t$ may depend on everything. Given a constraint set $K$ define the \emph{robust predecessor}
+\[
+\operatorname{Pre}_{\mathrm{rob}}(Z)=\{x:\exists u\in F(x)\ \forall w\in\mathcal W(x,u):\ f(x,u,w)\in Z\}.
+\]
+A state is \emph{robustly viable} if some policy keeps $x_t\in K$ for all $t$ against every adversary.
+
+\begin{newresult}[The robust kernel]\label{thm:robust-kernel}
+Let $\mathcal V$ be the greatest set with $\mathcal V\subseteq K\cap\operatorname{Pre}_{\mathrm{rob}}(\mathcal V)$ (it exists by monotonicity of the operator, as the union of all such sets). Then a state is robustly viable if and only if it lies in $\mathcal V$. This holds for arbitrary state spaces and disturbance sets.
+\end{newresult}
+\assumes{Policies may depend on the history; the adversary may choose any $w_t\in\mathcal W(x_t,u_t)$.}
+\begin{proof}
+($\Leftarrow$) From $x_0\in\mathcal V$ the controller chooses at each state of $\mathcal V$ an action $u$ with $f(x,u,w)\in\mathcal V$ for all $w\in\mathcal W(x,u)$; the state then stays in $\mathcal V\subseteq K$ forever, whatever the adversary does. ($\Rightarrow$) Let a policy keep the state in $K$ against every adversary, and let $S$ be the set of states $x_t$ that occur at some time $t$ for some adversary. Then $x_0\in S\subseteq K$. For $s\in S$ fix a history at which $s$ occurs, and let $u$ be the action the policy takes there. Every $w\in\mathcal W(s,u)$ is an admissible next disturbance, so $f(s,u,w)$ occurs one step later for some adversary and lies in $S$. Hence $s\in\operatorname{Pre}_{\mathrm{rob}}(S)$, so $S\subseteq K\cap\operatorname{Pre}_{\mathrm{rob}}(S)$ and $S\subseteq\mathcal V$.
+\end{proof}
+
+For a finite system with disturbance set the support of the transition law, this is the almost-sure kernel of Result~\ref{thm:as-kernel}; with a singleton disturbance set it is the viability kernel of Chapter~\ref{ch:viability}.
+
+\begin{newresult}[Larger disturbance sets shrink the kernel]\label{prop:robust-monotone}
+If $\mathcal W(x,u)\subseteq\mathcal W'(x,u)$ for all $x,u$ then the robust kernel for $\mathcal W'$ is contained in the robust kernel for $\mathcal W$.
+\end{newresult}
+\assumes{Same $f,F,K$.}
+\begin{proof}
+$\operatorname{Pre}'_{\mathrm{rob}}(Z)\subseteq\operatorname{Pre}_{\mathrm{rob}}(Z)$ for every $Z$, since a condition required of all $w$ in a larger set is required of all $w$ in a smaller one. The operator $Z\mapsto K\cap\operatorname{Pre}_{\mathrm{rob}}(Z)$ is monotone, so the greatest fixed point of the smaller operator contains that of the larger.
+\end{proof}
+
+The cost of robustness is the difference of kernels, and it need not be gradual.
+
+\begin{newresult}[A threshold for tolerable disturbance]\label{prop:scalar-robust}
+Consider the system of Example~\ref{ex:scalar}, $x_{t+1}=2x_t+u_t+w_t$ with $|u_t|\le1$, $|w_t|\le\delta$, and $K=[-3,3]$. For $0\le\delta\le\tfrac12$ the robust kernel is $[-(1-\delta),\,1-\delta]$. For $\delta>\tfrac12$ it is empty. The kernel therefore shrinks continuously to the interval $[-\tfrac12,\tfrac12]$ as $\delta\uparrow\tfrac12$ and is empty immediately beyond it.
+\end{newresult}
+\assumes{As stated.}
+\begin{proof}
+For a given $x$ the best action minimizes $\max_{|w|\le\delta}|2x+u+w|=\min_{|u|\le1}|2x+u|+\delta=\max(2|x|-1,0)+\delta$. Let $\mathcal W_0$ be any set with $\mathcal W_0\subseteq K\cap\operatorname{Pre}_{\mathrm{rob}}(\mathcal W_0)$, assumed nonempty, and let $a=\sup_{x\in\mathcal W_0}|x|\le3$. Every $x\in\mathcal W_0$ must have $\max(2|x|-1,0)+\delta\le a$, which gives $\delta\le a$ and $2|x|-1+\delta\le a$. Taking the supremum over $x$ in the second inequality gives $2a-1+\delta\le a$, so $a\le1-\delta$, and then $\delta\le a\le1-\delta$ forces $\delta\le\tfrac12$. So for $\delta>\tfrac12$ no nonempty such set exists, and for $\delta\le\tfrac12$ every such set lies in $[-(1-\delta),1-\delta]$. Conversely this interval is a fixed point: for $|x|\le1-\delta$ we have $\max(2|x|-1,0)+\delta\le\max(1-2\delta,0)+\delta=1-\delta$ when $\delta\le\tfrac12$. By Result~\ref{thm:robust-kernel} it is the kernel.
+\end{proof}
+
+At $\delta=\tfrac12$ the system can still keep $[-\tfrac12,\tfrac12]$ invariant; for any larger disturbance the controller cannot cancel the growth of the state at the equilibrium, and the whole kernel disappears at once. This is the usual shape of a stability threshold, and it means that a safety margin cannot be estimated by watching the kernel shrink: the kernel can look comfortable until a parameter crosses a boundary.
+
+\section{Chance constraints}
+
+A chance constraint requires $\Pr[g(x)\le0]\ge1-\varepsilon$ for a risk level $\varepsilon\in(0,1)$. For a single linear constraint on a Gaussian quantity the requirement has a closed form.
+
+\begin{established}[Gaussian deterministic equivalent]\label{thm:gauss}
+If $x\sim\mathcal N(\mu,\Sigma)$, $a\ne0$ and $\varepsilon\in(0,1)$, then
+\[
+\Pr[a^{\mathsf T}x\le b]\ge1-\varepsilon\iff a^{\mathsf T}\mu+\Phi^{-1}(1-\varepsilon)\sqrt{a^{\mathsf T}\Sigma a}\le b,
+\]
+where $\Phi$ is the standard normal distribution function. For $\varepsilon<\tfrac12$ the right-hand side is a convex (second-order cone) constraint in $(\mu,\Sigma^{1/2})$.
+\end{established}
+\source{Charnes and Cooper (1959); Pr\'ekopa, \emph{Stochastic Programming} (1995).}
+\begin{proof}
+$a^{\mathsf T}x\sim\mathcal N(a^{\mathsf T}\mu,a^{\mathsf T}\Sigma a)$, so $\Pr[a^{\mathsf T}x\le b]=\Phi\bigl((b-a^{\mathsf T}\mu)/\sigma\bigr)$ with $\sigma^2=a^{\mathsf T}\Sigma a$ (positive since $\Sigma$ is positive definite), and $\Phi$ is increasing.
+\end{proof}
+
+The closed form is the reason Gaussian margins are common in practice. The margin $\Phi^{-1}(1-\varepsilon)\sigma$ grows with the standard deviation, not with the variance, and with the risk level logarithmically.
+
+Constraints over several steps are combined by Boole's inequality.
+
+\begin{newresult}[Allocating risk over a horizon]\label{prop:boole}
+If $\Pr[A_t^{c}]\le\varepsilon_t$ for $t=1,\dots,T$, where $A_t$ is the event that the constraint holds at time $t$, then $\Pr[\bigcap_{t\le T}A_t]\ge1-\sum_t\varepsilon_t$. If the failures are independent events of probability exactly $p$ then $\Pr[\bigcap_{t\le T}A_t]=(1-p)^T$, so keeping it at least $1-\varepsilon$ requires $p\le1-(1-\varepsilon)^{1/T}\le\varepsilon/T$, and the constraint on the per-step risk gets tighter in proportion to the horizon.
+\end{newresult}
+\assumes{As stated.}
+\begin{proof}
+Boole's inequality gives $\Pr[\bigcup_tA_t^c]\le\sum_t\Pr[A_t^c]$. For independent failures $\Pr[\bigcap A_t]=\prod(1-p)=(1-p)^T$, and $(1-p)^T\ge1-\varepsilon$ is equivalent to $p\le1-(1-\varepsilon)^{1/T}$. By Bernoulli's inequality $(1-\varepsilon/T)^{T}\ge1-\varepsilon$, so $p=\varepsilon/T$ suffices, and $1-(1-\varepsilon)^{1/T}\le\varepsilon/T$ because $(1-\varepsilon)^{1/T}\ge1-\varepsilon/T$ by concavity of $t\mapsto t^{1/T}$.
+\end{proof}
+
+Boole's inequality is conservative when failures are positively correlated and tight when they are disjoint. The per-step allocation $\varepsilon_t$ may be unequal: a schedule with $\sum\varepsilon_t<\infty$, such as $\varepsilon_t=\varepsilon\,2^{-t}$, controls the probability of ever failing over an infinite horizon, at the price of margins that grow without bound as $t\to\infty$.
+
+\begin{newresult}[No forever-safety under unbounded noise]\label{prop:no-forever}
+Let $x_{t+1}=f(x_t,u_t)+w_t$ where $u_t$ takes values in a bounded set, $f$ is bounded on $K\times U$ with $K$ bounded, and the $w_t$ are independent of the past and identically distributed with $\Pr[|w_t|>R]>0$ for every $R$. Then there is $q>0$ such that for every policy and every initial state, $\Pr[x_1,\dots,x_T\in K]\le(1-q)^{T}$. In particular $\Pr[x_t\in K\ \text{for all }t]=0$.
+\end{newresult}
+\assumes{As stated; Gaussian noise satisfies the tail assumption.}
+\begin{proof}
+Let $M=\sup_{K\times U}|f|$, $D=\sup_{x\in K}|x|$, $R=M+D$ and $q=\Pr[|w_t|>R]>0$. On the event $\{x_t\in K\}$, if $|w_t|>R$ then $|x_{t+1}|\ge|w_t|-|f(x_t,u_t)|>R-M=D$, so $x_{t+1}\notin K$. The action $u_t$ depends only on $x_0,\dots,x_t$, hence on $w_0,\dots,w_{t-1}$, and is independent of $w_t$, so $\Pr[x_{t+1}\notin K\mid x_0,\dots,x_t]\ge q$ on $\{x_t\in K\}$. Hence $\Pr[x_1,\dots,x_{T}\in K]\le(1-q)\Pr[x_1,\dots,x_{T-1}\in K]$ and by induction $\le(1-q)^T$.
+\end{proof}
+
+The consequence is a division of labour among the guarantees. Certain guarantees over infinite horizons are available only for disturbances with bounded support, as in Result~\ref{prop:scalar-robust}. With unbounded noise the achievable statements are finite-horizon chance constraints, bounds on the expected time to violation, or constraints that are enforced by a mechanism that can reset the system (Chapter~\ref{ch:history-state}); a claim of lasting safety under Gaussian noise with a bounded constraint set is a claim about a finite horizon in disguise.
+
+\section{Model uncertainty}
+
+Disturbances vary from step to step. Parametric uncertainty is different: a parameter $\theta\in\Theta$ is unknown but fixed, and the controller can learn from the states it observes. A guarantee against a time-varying parameter is a guarantee against a fixed one, but not conversely.
+
+\begin{newresult}[Constant parameters are easier than varying ones]\label{prop:learning}
+Let $x_{t+1}=f(x_t,u_t,\theta_t)$ with $\theta_t\in\Theta$. Let $\mathcal V_{\mathrm{var}}$ be the robust kernel when the adversary chooses $\theta_t$ freely at each step and $\mathcal V_{\mathrm{const}}$ the set of states from which a history-dependent policy keeps the state in $K$ for every constant sequence $\theta_t\equiv\theta$. Then $\mathcal V_{\mathrm{var}}\subseteq\mathcal V_{\mathrm{const}}$, and the inclusion can be strict.
+\end{newresult}
+\assumes{History-dependent policies.}
+\begin{proof}
+A policy that keeps the state in $K$ against all sequences keeps it against constant sequences. For strictness take finite states $s_0,s_1,s_2,\mathrm{bad}$, with $K$ everything except bad and $\Theta=\{1,2\}$, and actions $\{1,2\}$. From $s_0$ every action leads to $s_\theta$. From $s_j$ ($j=1,2$) action $k$ leads to $s_k$ if $\theta=k$ and to bad otherwise. Under a constant parameter $\theta$ the controller, on observing $s_\theta$, plays $\theta$ forever, and the state stays in $\{s_0,s_1,s_2\}$ forever. Against a time-varying adversary, whatever action $k$ is played at $s_j$ the adversary chooses $\theta\ne k$ and reaches bad. So $\mathcal V_{\mathrm{var}}=\varnothing$ and $\mathcal V_{\mathrm{const}}=\{s_0,s_1,s_2\}$.
+\end{proof}
+
+The controller in the example learns the parameter from the state it reaches, so its information is a belief, in the sense of Chapter~\ref{ch:pomdp}, over $\Theta$: initially the support $\Theta$, afterwards a singleton. The sufficient representation for feasibility is therefore the pair of the current state and the set of parameters consistent with the history.
+
+
+\section{The price of not knowing the distribution}\label{sec:cantelli}
+
+The Gaussian margin of Result~\ref{thm:gauss} depends on the distribution being Gaussian. When only the mean and variance of the constrained quantity are known, the guarantee has to hold for every distribution with those two moments, and the margin is larger.
+
+\begin{established}[Distribution-free chance constraint]\label{thm:cantelli}
+Let $Y$ have mean $\mu$ and variance $\sigma^2$, and let $\varepsilon\in(0,1)$. Then $\Pr[Y\le b]\ge1-\varepsilon$ for every distribution with these moments if and only if $b\ge\mu+\sigma\sqrt{(1-\varepsilon)/\varepsilon}$.
+\end{established}
+\source{Cantelli (1928); El Ghaoui, Oks and Oustry (2003); Calafiore and El Ghaoui (2006).}
+\begin{proof}
+For $b>\mu$ Cantelli's inequality gives $\Pr[Y>b]\le\sigma^2/(\sigma^2+(b-\mu)^2)$, which is at most $\varepsilon$ exactly when $(b-\mu)^2\ge\sigma^2(1-\varepsilon)/\varepsilon$. The bound cannot be improved. The two-point distribution that places mass $\varepsilon$ at $\mu+\sigma\sqrt{(1-\varepsilon)/\varepsilon}$ and mass $1-\varepsilon$ at $\mu-\sigma\sqrt{\varepsilon/(1-\varepsilon)}$ has mean $\mu$, variance $\sigma^2$ and $\Pr[Y\ge b]=\varepsilon$ when $b$ is the upper atom. If $(b-\mu)^2<\sigma^2(1-\varepsilon)/\varepsilon$, moving the upper atom to a point slightly above $b$ and adjusting the masses to keep the mean and variance gives a distribution with $\Pr[Y>b]>\varepsilon$, so no smaller margin works for all distributions with this mean and variance.
+\end{proof}
+
+The margins in units of $\sigma$ for several risk levels are as follows (values computed and rounded).
+\begin{center}
+\begin{tabular}{rcc}
+\toprule
+$\varepsilon$ & Gaussian $\Phi^{-1}(1-\varepsilon)$ & Distribution-free $\sqrt{(1-\varepsilon)/\varepsilon}$\\
+\midrule
+$0.1$ & $1.282$ & $3.000$\\
+$0.05$ & $1.645$ & $4.359$\\
+$0.01$ & $2.326$ & $9.950$\\
+$0.001$ & $3.090$ & $31.607$\\
+\bottomrule
+\end{tabular}
+\end{center}
+At $\varepsilon=0.05$ the distribution-free margin is $2.65$ times the Gaussian one, and at $\varepsilon=0.001$ it is about ten times as large. The difference is the price of ignorance of the shape of the disturbance, and the table shows that the price rises steeply with the demanded confidence: a designer who asserts a rare-event guarantee on the strength of two moments is asserting a very conservative one, and a designer who adopts the Gaussian margin has made a distributional assumption that is the entire content of the claim.
+
+\section{A horizon allocation in numbers}\label{sec:horizon-numbers}
+
+Result~\ref{prop:boole} says how the per-step risk must be reduced. For a total risk of $\varepsilon=0.05$ over $T=10$ independent steps, the exact per-step bound is $p=1-0.95^{1/10}=0.00512$, slightly looser than the Boole allocation $\varepsilon/T=0.005$, and the corresponding Gaussian margins are $\Phi^{-1}(1-p)=2.568\sigma$ and $\Phi^{-1}(1-0.005)=2.576\sigma$, against $1.645\sigma$ for a single step. Ten steps cost about one additional standard deviation of margin, and the increase is logarithmic in the horizon, which is why Gaussian chance constraints over moderate horizons are affordable and why the Boole allocation is a reasonable approximation when failures are close to independent.
+
+\begin{newresult}[Exit time under bounded Gaussian noise]\label{prop:survival}
+Let $x_{t+1}=ax_t+w_t$ with $|a|<1$, $w_t\sim\mathcal N(0,1)$ independent, and $K=[-L,L]$. Let $P$ be the sub-Markov operator on $K$ with kernel $p(x,y)=\phi(y-ax)$ for $y\in K$. Then $P$ has a simple eigenvalue $\lambda_*\in(0,1)$ equal to its spectral radius, with a positive eigenfunction, and for every initial state $x_0\in K$ the survival probability satisfies $\Pr[x_1,\dots,x_T\in K]=c(x_0)\lambda_*^{T}(1+o(1))$ with $c(x_0)>0$. The exit time $\tau$ is asymptotically geometric: $\Pr[\tau>T+1\mid\tau>T]\to\lambda_*$.
+\end{newresult}
+\assumes{The kernel is strictly positive and continuous on $K\times K$.}
+\begin{proof}
+The kernel $p(x,y)$ is continuous and strictly positive on the compact square $K\times K$, so $P$ is a compact, strictly positive operator on $C(K)$. The Krein--Rutman theorem (the infinite-dimensional Perron--Frobenius theorem) gives a simple positive eigenvalue $\lambda_*$ equal to the spectral radius, with a strictly positive eigenfunction $e$ and a positive left eigenmeasure $\nu$, and all other eigenvalues have strictly smaller modulus. Hence $P^{T}\mathbf 1\sim\lambda_*^{T}\,e\,\nu(\mathbf 1)/\nu(e)$, which is the asserted form with $c=e(x_0)\nu(\mathbf 1)/\nu(e)$. Since $P$ is dominated by a Markov kernel with strict loss, $\lambda_*<1$.
+\end{proof}
+
+For $a=\tfrac12$, $L=3$ and $x_0=0$, a quadrature of the operator on a grid of $1201$ points gives the survival probabilities $0.9973$, $0.9659$, $0.9261$, $0.8513$, $0.6612$, $0.4339$, $0.1869$ at $T=1,5,10,20,50,100,200$, and the dominant eigenvalue $\lambda_*\approx0.9916$, so the expected exit time is about $1/(1-\lambda_*)\approx119$ steps. A system that violates its constraint with probability $0.27\%$ at the first step is therefore expected to violate it within about a hundred steps, and the survival probability after two hundred is under one in five. The numbers show the content of Result~\ref{prop:no-forever}: the per-step risk is small, the horizon is long, and the product is not.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+Compute the robust kernel for the system of Result~\ref{prop:scalar-robust} with $K=[-1/2,1/2]$ and $\delta=1/4$.
+\end{exercise}
+
+\begin{exercise}
+For the Gaussian constraint $\Pr[x\le5]\ge0.95$ with $x\sim\mathcal N(\mu,4)$, find the largest $\mu$, using $\Phi^{-1}(0.95)\approx1.645$.
+\end{exercise}
+
+\begin{exercise}
+Show that for the time-varying disturbance $|w_t|\le\delta$ in Result~\ref{prop:scalar-robust} and the constant unknown $w_t\equiv\theta$ with $|\theta|\le\delta$, the two kernels coincide, and explain why learning $\theta$ after the first step does not enlarge the kernel.
+\end{exercise}
+
+\begin{exercise}
+In Result~\ref{prop:no-forever} replace the Gaussian noise by noise uniform on $[-1,1]$ and show by example that a policy may remain in a bounded set forever with probability one, which of the assumptions has failed.
+\end{exercise}
+
+\begin{exercise}
+Construct a risk schedule $\varepsilon_t$ with $\sum_t\varepsilon_t=\varepsilon$ and compute the margin $\Phi^{-1}(1-\varepsilon_t)\sigma$ for $\varepsilon_t=\varepsilon2^{-t}$, showing it grows without bound.
+\end{exercise}
+
+\begin{exercise}
+Verify the entries of the margin table for $\varepsilon=0.1$ and $\varepsilon=0.01$, and construct the two-point distribution of Result~\ref{thm:cantelli} explicitly for $\mu=0$, $\sigma=1$, $\varepsilon=0.1$.
+\end{exercise}
+
+\begin{exercise}
+For $\varepsilon=0.05$ and $T=20$ compute the exact per-step risk $1-(1-\varepsilon)^{1/T}$ and the Boole allocation $\varepsilon/T$, and the corresponding Gaussian margins, using $\Phi^{-1}(0.9975)\approx2.807$.
+\end{exercise}
+
+\begin{exercise}
+In Result~\ref{prop:survival} show that if $a=0$ the survival probability is exactly $q^{T}$ with $q=\Pr[|w|\le L]$, and that $\lambda_*=q$ in that case. Compute $q$ for $L=3$.
+\end{exercise}
+
+\begin{exercise}
+Show that the eigenvalue $\lambda_*$ of Result~\ref{prop:survival} increases with $L$ and tends to $1$ as $L\to\infty$, and explain what this says about the relation between margin and expected time to violation.
+\end{exercise}
+
+\begin{exercise}
+Explain why a controller that has learned a constant disturbance parameter after one step (Result~\ref{prop:learning}) improves the guarantee against that parameter but not against the unbounded noise of Result~\ref{prop:no-forever}.
+\end{exercise}
+

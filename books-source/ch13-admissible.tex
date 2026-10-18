@@ -1,0 +1,136 @@
+% ch13-admissible.tex
+\chapter{Admissible Transitions}\label{ch:admissible}
+\spec{How are physical executability, authorization, and satisfaction of obligations separated?}
+{Guarded and labelled transition systems.}
+{A three-way decomposition of admissibility, consistent with Definition~\ref{def:obstructions} (Result~\ref{prop:stepwise}); a four-way refinement of the normative obstruction in which responsibility is not additive (Result~\ref{prop:joint-obstruction}); one-step admissibility is not maintainable (Example~\ref{ex:not-maintainable}).}
+{None.}
+{Chapters~\ref{ch:common} and~\ref{ch:histories}.}
+
+Chapter~\ref{ch:common} defined admissibility through two sets, the continuations that can physically be executed and the realizations that satisfy the obligations in force, and distinguished the obstructions that arise when either is empty. Practical systems distinguish a third condition. A continuation can be physically possible and compatible with every commitment and still be one that the actor has no standing to perform. This chapter separates the three conditions, shows that the separation is consistent with the earlier definition, and shows that the separation is not merely bookkeeping: when two normative restrictions act together, neither can be held responsible for an obstruction that they jointly produce.
+
+\section{Three conditions on histories}
+
+Let $\Hist\subseteq\Events^{*}$ be a prefix-closed set of histories as in Chapter~\ref{ch:common}.
+
+\begin{definition}[Executable, authorized, and compliant histories]\label{def:three-sets}
+Three prefix-closed sets $\mathcal P,\mathcal U,\mathcal O\subseteq\Hist$ are given.
+\begin{itemize}[nosep]
+  \item $\mathcal P$ is the set of \emph{physically executable} histories: $h\in\mathcal P$ if every step of $h$ could be carried out. The set $\Reach(\phys(h))$ of Chapter~\ref{ch:common} is $\{w: h\concat w\in\mathcal P\}$ for $h\in\mathcal P$.
+  \item $\mathcal U$ is the set of \emph{authorized} histories: $h\in\mathcal U$ if the actor was entitled to perform every step of $h$.
+  \item $\mathcal O$ is the set of \emph{obligation-compliant} histories: $h\in\mathcal O$ if no obligation incurred along $h$ has been irrevocably violated.
+\end{itemize}
+The \emph{admissible} histories are $\mathcal A=\mathcal P\cap\mathcal U\cap\mathcal O$. A word $w$ is an \emph{admissible realization} after $h\in\mathcal A$ if $h\concat w\in\mathcal A$.
+\end{definition}
+
+Prefix closure of $\mathcal O$ reflects the form in which obligations enter the formal development: an obligation whose breach is detected on a finite history is a safety property in the sense of Definition~\ref{def:safety-liveness}, and $\mathcal O$ is its set of non-violating histories. An obligation that is a liveness property cannot be violated by any finite history, and Result~\ref{prop:viable} says to replace $\mathcal O$ by the viable histories, those from which the obligation can still be met.
+
+\begin{newresult}[Admissibility is stepwise, and each condition is independent]\label{prop:stepwise}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\mathcal A$ is prefix closed, and for $h\in\mathcal A$ an event $a$ satisfies $h\concat a\in\mathcal A$ if and only if $a\in\Adm_1(h):=P_1(h)\cap U_1(h)\cap O_1(h)$, where $P_1(h)=\{a:ha\in\mathcal P\}$, $U_1(h)=\{a:ha\in\mathcal U\}$, and $O_1(h)=\{a:ha\in\mathcal O\}$.
+  \item A word $w$ is an admissible realization after $h\in\mathcal A$ if and only if every event of $w$ is admissible at the history reached just before it.
+  \item Each of the three conditions can be the only one that fails: for every nonempty alphabet that contains at least one event there are systems in which exactly $\mathcal P$, exactly $\mathcal U$, or exactly $\mathcal O$ excludes an event that the other two permit.
+\end{enumerate}
+\end{newresult}
+\assumes{$\mathcal P,\mathcal U,\mathcal O$ are prefix closed and contain the empty history.}
+\begin{proof}
+(a) An intersection of prefix-closed sets is prefix closed. For $h\in\mathcal A$ we have $h\in\mathcal P\cap\mathcal U\cap\mathcal O$, so $ha\in\mathcal A$ if and only if $ha$ is in each of the three sets, which is the stated condition. (b) By induction on $|w|$ using (a). (c) Take $\mathcal P=\mathcal U=\mathcal O=\Hist$ except for removing the single history $a$ and all its extensions from one of the three sets. In each case $a$ is excluded by exactly that set.
+\end{proof}
+
+The decomposition is consistent with Definition~\ref{def:obstructions}. Authorization is a normative restriction on the same footing as obligation: the admissible realizations of Chapter~\ref{ch:common}, those satisfying every restriction in force, are the realizations that lie in $\mathcal U\cap\mathcal O$. What the decomposition adds is the ability to say which restriction an obstruction comes from.
+
+\section{The normative obstruction has four forms}
+
+Fix $h\in\mathcal A$ and a proposed continuation $c$. Let $R=\Real(h,c)$ be the set of realizations in $c$ that are physically executable, and let $A=\{w\in R: h\concat w\in\mathcal U\}$ and $B=\{w\in R: h\concat w\in\mathcal O\}$. Then $\Adm(h,c)=A\cap B$. The obstruction $\ObsObl$ of Definition~\ref{def:obstructions} holds when $R\ne\varnothing$ and $A\cap B=\varnothing$.
+
+\begin{newresult}[Four forms of the normative obstruction]\label{prop:joint-obstruction}
+Suppose $R\ne\varnothing$ and $A\cap B=\varnothing$. Exactly one of the following holds.
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item $A=\varnothing$ and $B\ne\varnothing$ (an authorization obstruction);
+  \item $A\ne\varnothing$ and $B=\varnothing$ (an obligation obstruction proper);
+  \item $A=\varnothing$ and $B=\varnothing$ (both restrictions exclude every realization);
+  \item $A\ne\varnothing$, $B\ne\varnothing$, and $A\cap B=\varnothing$ (a \emph{joint} obstruction).
+\end{enumerate}
+All four occur. In case (iv), removing either restriction alone makes an admissible continuation available, and neither restriction taken by itself leaves the proposed continuation obstructed. Consequently the pair of bits $(\mathbf 1[A\ne\varnothing],\mathbf 1[B\ne\varnothing])$ is not sufficient for the question whether $\Adm(h,c)\ne\varnothing$.
+\end{newresult}
+\assumes{$R$ is finite, or at least the sets $A$ and $B$ are given as subsets of $R$.}
+\begin{proof}
+The four cases are the four combinations of the two emptiness conditions, with the combination $A\ne\varnothing\ne B$, $A\cap B\ne\varnothing$ excluded by hypothesis. They occur: let $c=\{w_1,w_2\}$ with both realizations physically executable and choose $A,B$ as follows: $(\varnothing,\{w_1\})$ for (i); $(\{w_1\},\varnothing)$ for (ii); $(\varnothing,\varnothing)$ for (iii); $(\{w_1\},\{w_2\})$ for (iv). In case (iv), dropping the authorization requirement leaves $B=\{w_2\}\ne\varnothing$, and dropping the obligation requirement leaves $A=\{w_1\}\ne\varnothing$. For the last statement compare case (iv) with the situation $A=B=\{w_1\}$: both give the bit pair $(1,1)$, yet $\Adm(h,c)$ is empty in the first and not in the second.
+\end{proof}
+
+\begin{example}[Releasing a record]
+A clinic holds a patient record. The proposed continuation is to release it, either to an auditor ($w_1$) or to the patient's representative ($w_2$). Only the auditor is authorized to receive it under the clinic's role assignments, and a legal hold on the record permits release only to the representative. Each restriction alone leaves a recipient available; together they leave none. The clinic cannot answer ``is there an admissible release?'' by consulting an authorization service that reports ``yes, someone may receive it'' and a compliance service that reports ``yes, a recipient is permitted by the hold''. The two answers are correct and the conjunction is false. The information that resolves the question is the set of recipients allowed by each, and not whether the sets are empty.
+\end{example}
+
+The result is the first instance, in the normative setting, of a pattern from Part~II: separate summaries that each answer their own question cannot in general answer the combined question (Result~\ref{thm:composition}), and a representation for the combination must retain the finer structure of the parts.
+
+\section{One-step admissibility is not maintainable}
+
+The sets $\Adm_1(h)$ describe what may be done next. One might hope that they form a state: that the pair of the history and its admissible next events suffices to continue. They do not.
+
+\begin{example}[Same next events, different futures]\label{ex:not-maintainable}
+Let $\Events=\{s,t,a,c,d\}$ and let $\mathcal A$ be the prefix closure of $\{sac,\,tad\}$. Then $\Adm_1(s)=\Adm_1(t)=\{a\}$, so the map $h\mapsto\Adm_1(h)$ does not separate $s$ from $t$. After the event $a$ the sets are $\Adm_1(sa)=\{c\}$ and $\Adm_1(ta)=\{d\}$. Hence $\ker\Adm_1$ is not a right congruence, and $\Adm_1$ is not a maintainable representation in the sense of Definition~\ref{def:maintainable}. The coarsest maintainable representation that determines admissibility of every continuation is the Nerode quotient of $\mathcal A$ from Result~\ref{prop:nerode-system}, which separates $s$ from $t$.
+\end{example}
+
+The example explains why Chapter~\ref{ch:obligations} turns to monitors. A monitor is a state that is maintainable, in the sense that its next value is a function of its current value and the event, and from which admissibility of all continuations can be read. The next-event sets are only one projection of it.
+
+
+\section{Counting joint obstructions and minimal conflicts}\label{sec:conflicts}
+
+Result~\ref{prop:joint-obstruction} shows that the joint obstruction exists. Two further facts show how much of the normative obstruction it accounts for and how far the failure of additive responsibility extends when more than two restrictions are in force.
+
+\begin{newresult}[Counting the forms of the obstruction]\label{prop:count-forms}
+Let $|R|=r$ and consider all pairs $(A,B)$ of subsets of $R$ with $A\cap B=\varnothing$, which are the configurations in which a proposed continuation with $r$ physically executable realizations is obstructed. There are $3^{r}$ such pairs, of which $3^{r}-2^{r+1}+1$ are joint obstructions, case (iv) of Result~\ref{prop:joint-obstruction}. The proportion of joint obstructions tends to $1$ as $r$ grows. Among the $(2^{r}-1)^{2}$ configurations in which both restrictions leave something permitted, so that the bit pair is $(1,1)$, exactly $3^{r}-2^{r+1}+1$ are obstructed.
+\end{newresult}
+\assumes{$R$ finite with $r$ elements; $A$ and $B$ are arbitrary subsets of $R$, taken to be the sets permitted by the authorization and by the obligations.}
+\begin{proof}
+A disjoint pair assigns to each element of $R$ one of three states, in $A$, in $B$, or in neither, so there are $3^{r}$ pairs. The pairs with $A=\varnothing$ number $2^{r}$ (the choices of $B$), those with $B=\varnothing$ number $2^{r}$, and the pair with both empty is counted twice, so the number with at least one set empty is $2^{r+1}-1$ and the number of joint obstructions is $3^{r}-2^{r+1}+1$. The ratio to $3^{r}$ tends to $1$ since $2^{r+1}/3^{r}\to0$. The last statement counts the pairs of nonempty sets: there are $(2^{r}-1)^{2}$ of them and the disjoint ones are exactly the joint obstructions.
+\end{proof}
+
+For $r=4$ there are $81$ disjoint pairs, of which $50$ are joint obstructions, and $225$ configurations with both sets nonempty, so a bit pair $(1,1)$ hides a joint obstruction in $50$ of $225$ configurations, slightly more than one in five. For $r=10$ the proportion of joint obstructions among the obstructed configurations is $1-2^{11}/3^{10}+3^{-10}\approx0.965$. In a system with many alternative realizations, the typical way for a continuation to be blocked is not that one restriction excludes everything but that the restrictions together have no common permitted realization.
+
+\begin{newresult}[Minimal conflicts of arbitrary size]\label{prop:minimal-conflict}
+For restrictions with permitted sets $A_1,\dots,A_k\subseteq R$ call a set $J\subseteq\{1,\dots,k\}$ a \emph{conflict} if $\bigcap_{i\in J}A_i=\varnothing$, and a \emph{minimal conflict} if no proper subset is a conflict. For every $k\ge2$ there is a configuration with $|R|=k$ whose only minimal conflict is $\{1,\dots,k\}$. The minimal conflicts of any configuration form an antichain, so there are at most $\binom{k}{\lfloor k/2\rfloor}$ of them.
+\end{newresult}
+\assumes{$R$ and the index set are finite; the sets $A_i$ are the realizations permitted by restriction $i$.}
+\begin{proof}
+Let $R=\{1,\dots,k\}$ and $A_i=R\setminus\{i\}$. Any $k-1$ of the sets omit a single element, and the element omitted by the missing set is in all of them, so they intersect; the whole family has empty intersection because each element of $R$ is omitted by one set. So the only conflict is the full index set, which is therefore the only minimal conflict. Minimal conflicts form an antichain by definition, and Sperner's theorem bounds the size of an antichain of subsets of a $k$-element set by $\binom{k}{\lfloor k/2\rfloor}$.
+\end{proof}
+
+The second result says that the obstruction can be attributable to no proper subset of the restrictions: every restriction is necessary to the conflict, and none is individually responsible. For the clinic of the earlier example, add a third restriction, a patient consent, and let the permitted recipients be the auditor and the representative (authorization), the representative and the court (hold), and the auditor and the court (consent). Each pair of restrictions leaves a recipient, and the three together leave none. A designer who tests the restrictions two at a time finds all the pairs satisfiable and concludes that the system is consistent. The failure of additivity of responsibility is thus not a feature of pairs; it extends to every size.
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}
+For the account of Example~\ref{ex:bank}, with a rule that withdrawals above a limit require a second approval, identify the sets $\mathcal P$, $\mathcal U$, and $\mathcal O$, state which of them excludes a withdrawal exceeding the balance, a withdrawal exceeding the limit without approval, and a withdrawal in a month in which a report is pending, and compute $\Adm_1$ after the history of Example~\ref{ex:masking}.
+\end{exercise}
+
+\begin{exercise}
+Give a system in which case (iv) of Result~\ref{prop:joint-obstruction} occurs with $|R|=4$ and with $A$ and $B$ each of size $2$. Show that when $|R|=3$ no pair of two-element sets $A,B\subseteq R$ is disjoint, and find the largest $|A|+|B|$ that case (iv) allows for a given $|R|$.
+\end{exercise}
+
+\begin{exercise}
+Prove that if $A$ and $B$ are required to be nested ($A\subseteq B$ or $B\subseteq A$) then case (iv) cannot occur. Give a natural reason why authorization and compliance might be nested in a particular institution, and a reason they would not be.
+\end{exercise}
+
+\begin{exercise}
+Show that $\mathcal A$ need not be the set of viable histories of Result~\ref{prop:viable} even when $\mathcal P$, $\mathcal U$, and $\mathcal O$ are each pruned. Construct an example in which an admissible history has no admissible extension.
+\end{exercise}
+
+\begin{exercise}
+For the system of Example~\ref{ex:not-maintainable} compute the Nerode system of $\mathcal A$ and count its states. Then add the event $b$ with $\Adm_1(h)\ni b$ for all $h$, leading to a history from which nothing is admissible, and recompute.
+\end{exercise}
+
+
+\begin{exercise}
+Verify the counts of Result~\ref{prop:count-forms} for $r=3$ by listing the $27$ disjoint pairs, the $15$ with at least one empty set, and the $12$ joint obstructions.
+\end{exercise}
+
+\begin{exercise}
+Construct a configuration of four restrictions on $R=\{1,\dots,4\}$ whose minimal conflicts are exactly $\{1,2\}$ and $\{3,4\}$, and one whose minimal conflicts are exactly $\{1,2,3\}$ and $\{2,3,4\}$. Determine in each case which single restrictions can be removed to restore an admissible realization.
+\end{exercise}
+
+\begin{exercise}
+Prove that the antichain bound of Result~\ref{prop:minimal-conflict} is attained: for $k=4$ exhibit a configuration with $\binom42=6$ minimal conflicts, each of size two.
+\end{exercise}
+
