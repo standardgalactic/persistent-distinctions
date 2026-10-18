@@ -102,7 +102,7 @@ A store holds $n$ records and answers the question ``is record $k$ present?'' fo
 
 
 \begin{exercise}
-Show that Result~\ref{prop:packing} fails for the family of parities of overlapping blocks. Take $x\in\{0,1\}^{4}$ and the three questions $x_1\oplus x_2$, $x_2\oplus x_3$, $x_1\oplus x_3$, and show that three binary derived cells are needed for depth one while a single four-valued cell suffices. Explain how the dependence among the questions, which makes the third a function of the other two, enters the count and why the bound $\lfloor\log_2 s\rfloor$ per cell no longer holds.
+Show that Result~\ref{prop:packing} fails for the family of parities of overlapping blocks. Take $x\in\{0,1\}^{4}$ and the three questions $x_1\oplus x_2$, $x_2\oplus x_3$, $x_1\oplus x_3$, and show that three binary derived cells are needed for depth one while a single four-valued cell suffices. Explain how the dependence among the questions, which makes the third a function of the other two, enters the count and why the bound $\lfloor\log_2 s\rfloor$ per cell no longer holds.\label{ex:overlap-parity}
 \end{exercise}
 
 \begin{exercise}
@@ -110,6 +110,6 @@ Prove the lower bound on the raw retrieval depth for one block parity in Result~
 \end{exercise}
 
 \begin{exercise}
-Suppose derived cells must be maintained: each write to an original cell must update every derived cell that depends on it. Compute the number of derived-cell updates per write for the packed index of Result~\ref{prop:packing} with $s=4$, and compare with the unpacked index. Explain why packing reduces the number of cells without reducing the update work.
+Suppose derived cells must be maintained: each write to an original cell must update every derived cell that depends on it. Compute the number of derived-cell updates per write for the packed index of Result~\ref{prop:packing} with $s=4$, and compare with the unpacked index. Explain why packing reduces the number of cells without reducing the update work.\label{ex:update-work}
 \end{exercise}
 

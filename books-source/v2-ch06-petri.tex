@@ -79,7 +79,7 @@ Result~\ref{thm:upward} says that the set of markings from which a goal can be c
 \begin{established}[Backward coverability]\label{thm:backward}
 For $u\in\mathbb N^P$ and a transition $t$, the least marking $m$ with $m\xrightarrow{t}m'$ and $m'\ge u$ is $\operatorname{pb}(t,u)=\mathrm{Pre}(t)+\max\bigl(0,\ u-\mathrm{Post}(t)\bigr)$, with maximum taken componentwise. Define $B_0=\{g\}$ and $B_{k+1}=\min\bigl(B_k\cup\{\operatorname{pb}(t,u):u\in B_k,\ t\in T\}\bigr)$. Then $B_k$ is the basis of the set of markings from which $g$ can be covered by at most $k$ firings, the sequence stabilizes after finitely many steps, and the limit is the basis of the set of markings from which a marking $\ge g$ is reachable.
 \end{established}
-\source{Abdulla, \v{C}er\={a}ns, Jonsson and Tsay (1996); Esparza, Finkel and Mayr (also for the general framework of well-structured systems).}
+\source{Abdulla, \v{C}er\={a}ns, Jonsson and Tsay (1996); Finkel and Schnoebelen, ``Well-structured transition systems everywhere!'' \emph{Theoretical Computer Science} 256 (2001), for the general framework of well-structured systems.}
 \begin{proof}
 The two conditions $m\ge\mathrm{Pre}(t)$ and $m-\mathrm{Pre}(t)+\mathrm{Post}(t)\ge u$ together say $m\ge\mathrm{Pre}(t)$ and $m\ge\mathrm{Pre}(t)+u-\mathrm{Post}(t)$,
 which is $m\ge\operatorname{pb}(t,u)$. Let $U_k$ be the set of markings above some element of $B_k$. Then $U_0\subseteq U_1\subseteq\cdots$ is an increasing chain of upward-closed sets, and $U_k$ is exactly the set of markings from which $g$ is covered in at most $k$ firings. If the chain were strictly increasing forever, each step would add a new minimal element not above any earlier one, giving an infinite sequence in $\mathbb N^P$ with no element above an earlier one, which Dickson's lemma (Result~\ref{thm:dickson}) forbids. So $U_k=U_{k+1}$ for some $k$, and then $U_k$ is closed under predecessors and equals the limit.
@@ -136,7 +136,7 @@ Run the backward algorithm by hand for the net of Example~\ref{ex:two-coins} wit
 \end{exercise}
 
 \begin{exercise}
-Build the Karp--Miller tree for the net with places $A,B$, initial marking $(1,0)$, and two transitions $t_1:A\mapsto A+B$ and $t_2:B\mapsto A$. Identify the unbounded places.
+Build the Karp--Miller tree for the net with places $A,B$, initial marking $(1,0)$, and two transitions $t_1:A\mapsto A+B$ and $t_2:B\mapsto A$. Identify the unbounded places.\label{ex2:km}
 \end{exercise}
 
 \begin{exercise}
@@ -148,6 +148,6 @@ For the rover net, add a transition that leaks a battery token with no input (th
 \end{exercise}
 
 \begin{exercise}
-Show that the set of markings from which a given marking $g$ is exactly reachable is not in general upward closed, by an example in a one-place net.
+Show that the set of markings from which a given marking $g$ is exactly reachable is not in general upward closed, by an example in a one-place net.\label{ex2:one-place}
 \end{exercise}
 

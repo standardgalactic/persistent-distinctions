@@ -1,0 +1,142 @@
+% v2-appH-hints.tex
+\chapter{Hints and Solutions to Selected Exercises}\label{app:hints2}
+
+This appendix gives hints, and in several cases complete solutions, for a selection of exercises. Each numerical claim was checked by computation before it was written down. Exercises are cited by reference so that the numbering of the main text can change without affecting the appendix.
+
+\section*{Chapter 1}
+
+\textbf{Exercise~\ref{ex2:min-refine}.} Let the representation have ten values, nine of which are pure fibres and one of which is mixed. Then $m=1$ and the least sufficient refinement has $10+1=11$ values, whereas doubling every value would give $20$. The count is $|\rep(\Hist)|+m$ and $m\le|\rep(\Hist)|$ with equality exactly when every fibre is mixed, so $2|\rep(\Hist)|$ is attained only in that case.
+
+\section*{Chapter 2}
+
+\textbf{Exercise~\ref{ex2:paths}.} Use the recurrence $N_j=\sum_{i<j}e_{ij}N_i$ with $N_1=1$. Then $N_2=2$, $N_3=1$, $N_4=e_{24}N_2+e_{34}N_3=2+1=3$ and $N_5=3N_4=9$.
+
+\section*{Chapter 3}
+
+\textbf{Exercise~\ref{ex2:line-kernel}.} For $N=4$ and $V=3$ the iteration removes every state that cannot brake to rest inside $[0,4]$. The stopping displacements from speed $0,1,2,3$ are $0,1,3,6$, and a speed of $3$ needs a displacement of $6>4$, so no state with $|v|=3$ survives. The kernel has $17$ states: $(0,0),(0,1),(0,2)$; $(1,-1),(1,0),(1,1),(1,2)$; $(2,-1),(2,0),(2,1)$; $(3,-2),(3,-1),(3,0),(3,1)$; $(4,-2),(4,-1),(4,0)$. These are exactly the states with $x+v(v+1)/2\le4$ when $v\ge0$ and $x-|v|(|v|+1)/2\ge0$ when $v\le0$, in agreement with Result~\ref{prop:stopping}.
+
+\textbf{Exercise~\ref{ex2:wide-control}.} With control $u\in\{-2,\dots,2\}$ the vehicle brakes fastest by taking $u=-2$ until the speed is at most $2$ and finishing with a step of size one or two, so the least stopping displacement from speed $v\ge0$ is $v+(v-2)+(v-4)+\cdots$ over the positive terms. It is $0,1,2,4$ for $v=0,1,2,3$. The kernel is the set of $(x,v)$ with $x+d(v)\le N$ for $v\ge0$ and $x-d(|v|)\ge0$ for $v\le0$, where $d$ is this displacement. For $N=4$, $V=3$ it has $21$ states, which a direct iteration confirms.
+
+\textbf{Exercise~\ref{ex2:circular}.} On the circle there is no boundary to exit, and the constraint $|v|\le V$ is preserved by taking $u=0$, so every one of the $(N+1)(2V+1)$ states is in the kernel (for $N=4$, $V=3$ this is $35$). With the forbidden position $x=3$ the vehicle must be able to avoid landing on $3$ forever; for $N=4$ and $V=3$ the kernel has $22$ states, all with $x\ne3$, and it is smaller than the set of $28$ states with $x\ne3$ because states whose velocity forces the next position onto $3$ for every admissible control are removed, as are the states that can only reach those.
+
+\section*{Chapter 4}
+
+\textbf{Exercise~\ref{ex2:supports}.} The sets are defined by $W_{n+1}=W_n\cap\{x:\exists a\ \mathrm{supp}\,P(x,a)\subseteq W_n\}$ with $W_0=K$, and membership of $x$ in the second set depends on $P(x,a)$ only through the set of successors of positive probability. Replacing each law by another with the same support leaves every $W_n$ unchanged by induction on $n$, and $W^{*}=\bigcap_nW_n$ inherits this. Probabilities enter only through values and chance constraints, never through the almost-sure kernel.
+
+\textbf{Exercise~\ref{ex2:bc-ruin}.} If exposures at times $i=1,2,\dots$ are independent and the $i$th is fatal with probability $p_i<1$, the policy survives all of them with probability $\prod_i(1-p_i)$, which is at most $\exp(-\sum_ip_i)$ because $1-p\le e^{-p}$. The product therefore tends to $0$ when $\sum_ip_i=\infty$. Conversely, if $\sum_ip_i<\infty$ and every $p_i<1$ the product is positive. In the divergent case the events ``exposure $i$ is fatal'' are independent with divergent probability sum, so by the second Borel--Cantelli lemma infinitely many of them occur almost surely, which gives ruin with probability one by another route.
+
+\section*{Chapter 5}
+
+\textbf{Exercise~\ref{ex2:sensor}.} With a single action and an unchanged state, the predictive vector of the empty word is $(1,1)$, and that of the word $o_H$ is $(Z(o_H\mid H),Z(o_H\mid L))=(0.8,0.3)$. The two vectors are independent, so $Q=\mathbb R^{2}$, the belief has $\dim Q-1=1$ free parameter, and no coarser representation predicts. The unnormalized posterior after $o_H,o_H,o_L$ from the uniform prior is $0.5\cdot0.8\cdot0.8\cdot0.2=0.064$ for $H$ and $0.5\cdot0.3\cdot0.3\cdot0.7=0.0315$ for $L$, so $b(H)=0.064/0.0955=128/191\approx0.670$.
+
+\textbf{Exercise~\ref{ex2:identical-rows}.} If states $1$ and $2$ have identical transition rows and identical observation probabilities then, for every action sequence and observation sequence, the probability of the observations is the same from state $1$ as from state $2$, so every predictive vector $q_w$ has equal first and second coordinates and $(e_1-e_2)\cdot q_w=0$. Hence $e_1-e_2\in Q^{\perp}$. Two beliefs $b$ and $b+t(e_1-e_2)$ then give the same prediction for every future, yet are distinct beliefs, so the belief map separates histories that no future separates and is not minimal on any set that contains both.
+
+\textbf{Exercise~\ref{ex2:support-coarse}.} The support $\{s:b(s)>0\}$ is a function of the belief, so its kernel contains the kernel of the belief map and the support is a coarsening. Two beliefs have the same support exactly when they put positive mass on the same states. It is not sufficient for expected reward: with $R(s,a)=s$ on $S=\{0,1\}$ the beliefs $(0.9,0.1)$ and $(0.1,0.9)$ have the same support $\{0,1\}$ and expected rewards $0.1$ and $0.9$.
+
+\section*{Chapter 6}
+
+\textbf{Exercise~\ref{ex2:km}.} From $(1,0)$ only $t_1$ is enabled and it gives $(1,1)$, which exceeds the ancestor $(1,0)$ in the second place, so the second component is replaced by $\omega$ to give $(1,\omega)$. From $(1,\omega)$ the transition $t_2$ gives $(2,\omega)$, which exceeds the ancestor $(1,\omega)$ in the first place, giving $(\omega,\omega)$. From $(\omega,\omega)$ both transitions give markings covered by it. Both places are unbounded.
+
+\textbf{Exercise~\ref{ex2:one-place}.} Take one place $p$ and the single transition that produces a token without consuming one. The markings from which $g=2$ is exactly reachable are $0,1,2$, which is not upward closed, since $3$ cannot reach $2$.
+
+\section*{Chapter 7}
+
+\textbf{Exercise~\ref{ex2:window-count}.} For $w=4$ and $k=2$ the histories $\mathrm u\mathrm u\mathrm o\mathrm o$ and $\mathrm o\mathrm o\mathrm u\mathrm u$ (with $\mathrm u$ a use and $\mathrm o$ a step without use) both have two uses in the last four steps. The continuation $\mathrm u$ is allowed after the first, because the earliest use leaves the window and the last four steps are $\mathrm u\mathrm o\mathrm o\mathrm u$, and not after the second, whose last four steps would be $\mathrm o\mathrm u\mathrm u\mathrm u$. So the count does not separate histories that continuations separate, and it is not sufficient.
+
+\section*{Chapter 8}
+
+\textbf{Exercise~\ref{ex2:eswaran}.} The graph has two sources, $a$ and $e$, and two sinks, $d$ and $f$, and no isolated vertex, so the minimum number of added edges is $\max(2,2)=2$. The edges $d\to e$ and $f\to a$ suffice: they give the cycle $a\to b\to d\to e\to f\to a$ and the path $a\to c\to d$, so every vertex reaches every other.
+
+\section*{Chapter 9}
+
+\textbf{Exercise~\ref{ex2:no-repeat}.} Take a shortest plan to the capability. If an action occurs twice, its second occurrence gains nothing, because in a monotone system a gained capability is never lost and so every capability it gains is already present. Deleting that occurrence leaves the capability sets at every later step unchanged, so the shortened plan is still executable, which contradicts minimality. In Example~\ref{ex:training} with the skill modelled by a count, the same action raises the count each time it is taken, the count is not a set of capabilities that is already present after the first use, and repetition is therefore necessary.
+
+\textbf{Exercise~\ref{ex2:depth-formula}.} Write $\mathrm{Cl}_n$ for the capabilities present after round $n$, with $\mathrm{Cl}_0=C$ and $\mathrm{Cl}_{n}=\mathrm{Cl}_{n-1}\cup\bigcup\{\mathrm{gain}(a):\mathrm{req}(a)\subseteq\mathrm{Cl}_{n-1}\}$, and $d(c)$ for the least $n$ with $c\in\mathrm{Cl}_n$. A capability $c\notin C$ lies in $\mathrm{Cl}_n$ exactly when some action with $c\in\mathrm{gain}(a)$ has all its requirements in $\mathrm{Cl}_{n-1}$, that is, when $\max_{c'\in\mathrm{req}(a)}d(c')\le n-1$ for some such $a$. Minimizing over $a$ and adding one to the least such $n$ gives the formula, and a capability that no action gains has an empty minimum and depth $\infty$.
+
+\textbf{Exercise~\ref{ex2:config-graph}.} A configuration is a subset of the capabilities, so there are at most $2^{|\mathrm{Cap}|}$ vertices. In a monotone system every edge leads from a configuration to one that contains it, so a directed cycle forces all configurations on it to be equal. Every strongly connected component therefore consists of a single configuration, with a self-loop when an action changes nothing.
+
+\section*{Chapter 10}
+
+\textbf{Exercise~\ref{ex2:reservation}.} The reservation value $z$ of an option solves $\mathbb E[(X-z)^{+}]=c$. For $X_1\in\{4,6\}$ and $c=0.5$ one has $\tfrac12(6-z)=\tfrac12$ on $[4,6]$, so $z_1=5$. For $X_2\in\{0,10\}$ one has $\tfrac12(10-z)=\tfrac12$, so $z_2=9$. For the deterministic option $X_3=5$ the reservation value is $5-0.5=4.5$. The order is $X_2,X_1,X_3$, with values $9$, $5$ and $4.5$.
+
+\section*{Chapter 11}
+
+\textbf{Exercise~\ref{ex2:cubic}.} The characteristic polynomial is $f(\lambda)=\lambda^{3}-\lambda^{2}-1$. Evaluating, $f(1.46)\approx-0.0195<0$ and $f(1.47)\approx0.0156>0$, and $f$ is increasing for $\lambda>1$, so the unique real root lies between $1.46$ and $1.47$; it is about $1.4656$.
+
+\section*{Chapter 12}
+
+\textbf{Exercise~\ref{ex2:nine-task}.} With three workers the list rule starts $T_1,T_2,T_3$ at $0$; at time $2$ the worker freed starts $T_4$ and the other idles because nothing else is ready; at time $3$ the worker freed by $T_1$ starts $T_9$, which ends at $12$; the tasks $T_5,\dots,T_8$ occupy two workers from $4$ to $12$. With four workers $T_1,\dots,T_4$ start at $0$, the three workers freed at $2$ take $T_5,T_6,T_7$, the worker freed at $3$ takes $T_8$ because it precedes $T_9$ in the list, and $T_9$ starts at $6$ and ends at $15$. No schedule finishes before $12$, since $T_1$ and $T_9$ form a chain of length $3+9=12$. A priority order that places $T_9$ immediately after $T_1$ gives $12$ on four workers: $T_9$ starts at $3$, and $T_8$ starts at $6$ and ends at $10$.
+
+\textbf{Exercise~\ref{ex2:abcd}.} The paths are $a\to d$ of length $6$, $b\to d$ of length $7$ and $c$ of length $1$, so $L=7$, and $E=2+3+1+4=10$. For $p=2$ the lower bound is $\max(L,E/p)=7$ and the greedy upper bound is $E/p+(1-1/p)L=5+3.5=8.5$. The schedule that runs $b$ then $d$ on one worker and $a$ then $c$ on the other finishes at $7$, so the lower bound is attained.
+
+\section*{Chapter 13}
+
+\textbf{Exercise~\ref{ex2:a-zero}.} With $a=0$ the next state is $w_t$, independent of the present state, so the event $\{x_1,\dots,x_T\in K\}$ is the intersection of $T$ independent events of probability $q=\Pr[|w|\le L]$, and the survival probability is $q^{T}$ for every $x_0$. The operator $P$ has kernel $\phi(y)$ independent of $x$, hence rank one, with eigenfunction $\mathbf 1$ and eigenvalue $\int_{-L}^{L}\phi=q$, so $\lambda_*=q$. For $L=3$ one gets $q=\operatorname{erf}(3/\sqrt2)\approx0.99730$.
+
+\textbf{Exercise~\ref{ex2:lambda-mono}.} Enlarging $L$ enlarges the operator entrywise on the old interval, and the spectral radius of a positive operator does not decrease when the operator is increased, so $\lambda_*$ is nondecreasing in $L$. A lower bound is the least row sum, $\lambda_*\ge\inf_{x\in K}\int_K\phi(y-ax)\,dy\ge\Phi(L(1-|a|))-\Phi(-L(1-|a|))$, which tends to $1$. The expected time to violation is of order $1/(1-\lambda_*)$, so it grows without bound as the margin $L$ grows, and for Gaussian noise it grows very quickly because $1-\lambda_*$ decays like a Gaussian tail.
+
+\section*{Chapter 14}
+
+\textbf{Exercise~\ref{ex2:corridor-4}.} For $L=4$ and $k=3$ the response is performed on the step at which the counter is last positive, and a pending state $(p,c)$ is viable exactly when $c\ge p+1$: $p$ moves to reach the dock and one step for the upload. The pending states in $\mathcal V$ with $c\le3$ are $(0,1),(0,2),(0,3),(1,2),(1,3),(2,3)$, and \texttt{sample} is admissible exactly at the positions $0,1,2$, where the counter $k=3$ satisfies $3\ge p+1$. An exhaustive iteration of the kernel over the product confirms the list.
+
+\textbf{Exercise~\ref{ex2:order-b}.} Order (b) requires $c_1-1\ge2L-p+2$, that is $c_1\ge2L-p+3$. If $c_1\le k_1\le L+1$ this would need $2L-p+3\le L+1$, that is $p\ge L+2$, which is impossible since $p\le L$. So under that bound on the counter only order (a) is ever used.
+
+\textbf{Exercise~\ref{ex2:least-k2}.} After \texttt{sample} at position $1$ with $k_1=3$ the state is $(1;3,0)$, and \texttt{alarm} leads to $(1;2,k_2)$. Order (a) needs $c_1-1=2\ge p+1=2$, which holds, and $k_2\ge p+L+2=6$. Order (b) needs $c_1-1\ge2L-p+2=7$, which fails. So the least deadline is $k_2=6$, and an iteration over all deadlines up to $8$ confirms that $(1;2,k_2)$ is in the kernel exactly for $k_2\ge6$. The general pattern is that the second deadline must cover the time spent discharging the first duty and travelling to the second site, $k_2\ge p+L+2$, whenever the first duty has no slack for the other order.
+
+\textbf{Exercise~\ref{ex2:compliant-count}.} A coordinate takes the values $0,1,\dots,k_i$, and the compliant product has $\prod_i(k_i+1)$ vectors; for $r$ obligations of deadline $2$ this is $3^{r}$. In the disjoint fragment these vectors are pairwise distinguishable, because a vector differs from another in some coordinate and a word that discharges every other obligation and lets that one expire separates them, so the minimal monitor, with its single violation sink, has $\prod_i(k_i+1)+1$ states and no smaller monitor exists.
+
+\section*{Chapter 15}
+
+\textbf{Exercise~\ref{ex:hold}.} For $V=1$ the brake \texttt{hold} reaches the same successor as an existing control from every state: it coincides with $u=-1$ when $v=1$, with $u=0$ when $v=0$ and with $u=+1$ when $v=-1$. The successor sets are therefore unchanged and Result~\ref{prop:line-w2} applies, so $W_2=\varnothing$. For $N=6$ and $V=2$ the iteration also ends in the empty set, as it does for all $N\le20$ and $V\le3$ that were tried. The reason is that a state of $W_2$ needs two successors that themselves have two successors in $W_2$, and every state that drifts toward a wall eventually has a successor set whose only members are states already removed; an extra successor at a single velocity does not break the chain, because the states it produces face the same requirement one step later.
+
+\section*{Chapter 16}
+
+\textbf{Exercise~\ref{ex2:wheel}.} The minimal supports of $\mathrm{Req}=\{\texttt{nav}\}$ become $\{\texttt{nav},\texttt{pos},\texttt{wheel}\}$ of load $2$, $\{\texttt{nav},\texttt{pos},\texttt{gps}\}$ and $\{\texttt{nav},\texttt{pos},\texttt{imu},\texttt{odo}\}$ of load $3$, and $\{\texttt{nav},\texttt{map},\texttt{lidar}\}$ of load $4$. The region $\mathrm{FB}(\Gamma)$ is empty for $\Gamma<2$ and grows at the break points $\Gamma=2,3,4$. Taking $P$ to be the five primitives, the least number of faults that defeats every support of load at most $\Gamma$ is $1$ at $\Gamma=2$ (the wheel), $3$ at $\Gamma=3$ (the wheel, \texttt{gps} and one of \texttt{imu}, \texttt{odo}) and $4$ at $\Gamma=4$ (adding \texttt{lidar}), so the fault tolerance $t=\tau_P(\Gamma)-1$ is $0$, $2$ and $3$. Without the wheel the corresponding tolerances at $\Gamma=3,4$ are $1$ and $2$.
+
+\section*{Chapter 17}
+
+\textbf{Exercise~\ref{ex2:latency}.} The function $f(\ell)=c_{\mathrm m}/\ell+ah\ell$ has $f'(\ell)=-c_{\mathrm m}/\ell^{2}+ah$, which vanishes at $\ell^{*}=\sqrt{c_{\mathrm m}/(ah)}$, and $f$ is convex on $\ell>0$, so $\ell^{*}$ minimizes it. A convex function restricted to the integers has its minimizer at $\lfloor\ell^{*}\rfloor$ or $\lceil\ell^{*}\rceil$ when $\ell^{*}$ is admissible, and the better of the two is found by evaluating $f$. If $\ell^{*}>\ell_{\max}$ then $f$ is decreasing on $(0,\ell_{\max}]$, so the constrained minimizer is $\ell_{\max}$.
+
+\section*{Chapter 18}
+
+\textbf{Exercise~\ref{ex2:hub}.} A strongly connected graph on $n$ states needs at least $n$ edges, and a directed cycle has exactly $n$ and is strongly connected, so the minimal interface presents $n$ steps. Its longest shortest path, from a state to the state just behind it on the cycle, uses $n-1$ presented steps. The star through a hub has an edge from each of the $n-1$ other states to the hub and one back, which is $2(n-1)=2n-2$ steps, and its longest shortest path is $2$ steps, from one leaf through the hub to another. The cycle minimizes the number of presented steps and the star minimizes the path length.
+
+\section*{Chapter 19}
+
+\textbf{Exercise~\ref{ex2:weighted-six}.} By Result~\ref{prop:quorum} the weighted depth is the sum of the $q=4$ smallest costs, here $1+1+2+3=7$. The fifth cost, $5$, differs from the fourth, $3$, so exactly one capture set attains it, namely the four cheapest parties. The other $\binom{6}{4}-1=14$ sets cost at least $1+1+2+5=9$.
+
+\textbf{Exercise~\ref{ex2:veto}.} Every nonadmitting rule is some $r_S$ with $1\in S$ and $|S|\ge q$, so any cheapest path pays $c_1$ and then the cheapest $q-1$ other parties, and the weighted depth is $c_1+$ the sum of the $q-1$ smallest costs among parties $2,\dots,n$. The quorum depth is the sum of the $q$ smallest costs overall. If $c_1\le c_{(q)}$, party $1$ may be taken among the $q$ smallest and the two values agree. If $c_1>c_{(q)}$, the quorum depth equals the sum of the $q-1$ smallest others plus $c_{(q)}$, which is strictly less than that sum plus $c_1$. With ties at $c_{(q)}$ the two depths still agree, so the statement holds when ``among the $q$ smallest'' is read up to ties.
+
+\section*{Chapter 20}
+
+\textbf{Exercise~\ref{ex2:bernoulli-proxy}.} The proxy has the same marginal law as $U_i$, with $\Pr[P_i=1]=p$. Given $P_i=1$, the true value is $1$ with probability $\bigl[(1-q)p+qp^{2}\bigr]/p=1-q+qp$, and given $P_i=0$ it is $1$ with probability $qp(1-p)/(1-p)=qp$. If at least one proxy equals $1$, which has probability $1-(1-p)^{n}$, the proxy-optimal choice has true value $1-q+qp$; otherwise it is chosen among proxies equal to $0$ and has true value $qp$. The expected true value is $\bigl(1-(1-p)^{n}\bigr)(1-q+qp)+(1-p)^{n}qp$, which tends to $1-q+qp$ as $n\to\infty$.
+
+\section*{Chapter 21}
+
+\textbf{Exercise~\ref{ex2:bandit-11}.} With a uniform prior, a safe arm of known mean $\lambda=0.7$ and a horizon of $n=11$, dynamic programming over (successes, failures, pulls remaining) gives an optimal value of $865/112\approx7.723$ against $11\cdot0.7=7.7$ for never exploring, a gain of $13/560\approx0.0232$. The optimal policy pulls the untested arm first; after a first failure it switches to the safe arm for good (so do the states with one and two successes followed by one failure), and after a run of successes it keeps pulling the untested arm. After three or more successes followed by a failure the computation still recommends pulling, so the stopping rule is a threshold on the posterior mean that depends on the pulls remaining and not a rule that stops at the first failure.
+
+\textbf{Exercise~\ref{ex2:oracle-bound}.} An agent who knows $\theta$ in advance earns $\max(\theta,\lambda)$ per pull, and any policy that does not know $\theta$ can be simulated by the informed agent, so its value is at most $n\,\mathbb E\max(\theta,\lambda)$. With a uniform prior and $\lambda=\tfrac12$, $\mathbb E\max(\theta,\tfrac12)=\tfrac14+\tfrac38=\tfrac58$, so the bound at $n=50$ is $31.25$. The optimal Bayesian value at $n=50$ computed by dynamic programming is about $30.35$, which is $97.1\%$ of the bound.
+
+\section*{Chapter 22}
+
+\textbf{Exercise~\ref{ex2:lcm-bits}.} By Result~\ref{prop:lcm} the shared representation of properties of moduli $m_1,\dots,m_r$ needs $\log_2\operatorname{lcm}(m_1,\dots,m_r)$ bits, so adding $P_{r+1}$ costs
+\[
+\log_2\frac{\operatorname{lcm}(m_1,\dots,m_{r+1})}{\operatorname{lcm}(m_1,\dots,m_r)}
+\]
+bits. This is zero if and only if the two least common multiples are equal, that is, if and only if $m_{r+1}$ divides $\operatorname{lcm}(m_1,\dots,m_r)$.
+
+\textbf{Exercise~\ref{ex2:ski-27}.} Let the strategy buy at the start of day $k$ with probability $p_k$, so that a season of length $s$ costs $s$ if $s<k$ and $k-1+B=k+2$ if $s\ge k$, and the clairvoyant pays $\min(s,3)$. Taking $p_k\propto(2/3)^{3-k}$ gives $(p_1,p_2,p_3)=(4,6,9)/19$. The expected costs for $s=1,2,3$ are $27/19$, $54/19$ and $81/19$, which are $27/19$ times the clairvoyant costs $1,2,3$, so the ratio is the same for every season length and equals $\bigl(1-(2/3)^{3}\bigr)^{-1}=27/19\approx1.42$. This is smaller than the deterministic ratio $2-1/B=5/3\approx1.67$.
+
+\section*{Chapter 23}
+
+\textbf{Exercise~\ref{ex2:path-price}.} The flexibility price is the weight of a minimum vertex cover of the intervention graph. A path on $n$ vertices has $n-1$ edges, and a maximum matching has $\lfloor n/2\rfloor$ edges; by K\H{o}nig's theorem the minimum vertex cover equals the maximum matching in a bipartite graph, and a path is bipartite, so the price is $\lfloor n/2\rfloor$ with unit gains. An optimal commitment set is every second vertex starting from the second. For a cycle of length $n$ the minimum vertex cover has $\lceil n/2\rceil$ vertices.
+
+\textbf{Exercise~\ref{ex2:bipartite}.} Build the flow network with a source joined to each vertex of the first part with capacity equal to its weight, each vertex of the second part joined to a sink with capacity equal to its weight, and every edge of the graph given infinite capacity from first part to second part; the minimum cut is a minimum weight vertex cover. For the stated graph the minimum cover weighs $6$, attained by $\{4,5\}$ (weight $5+1$), by $\{1,2,5\}$ (weight $3+2+1$) and by other covers of the same weight, and an exhaustive check over all subsets confirms that no cover is cheaper.
+
+\section*{Chapter 24}
+
+\textbf{Exercise~\ref{ex2:thr-three}.} For $p=0.2$ and $\varepsilon=0.05$ the least $q$ with $\Pr[\mathrm{Bin}(x,0.2)\le q]\ge0.95$ is as follows. At $x=1$ the probabilities are $0.8$ for $q=0$ and $1$ for $q=1$, so $q=1$ and the threshold is $2$. At $x=2$ they are $0.64$ and $0.96$, so $q=1$ and the threshold is $3$. At $x=3$ they are $0.512$, $0.896$ and $0.992$, so $q=2$ and the threshold is $5$, in agreement with the table.
+
+\textbf{Exercise~\ref{ex2:thr-ten}.} For $x=10$ the cumulative probabilities at $q=4,5,6$ are $0.9672$, $0.9936$ and $0.9991$. The threshold is therefore $10+5=15$ for $\varepsilon=0.01$ and $10+6=16$ for $\varepsilon=0.001$, against $20$ for the worst case. The saving is $25\%$ and $20\%$ respectively.
+
+\textbf{Exercise~\ref{ex2:boole-ten}.} The Boole allocation uses the level $0.05/10=0.005$ per excursion, and the exact independent allocation uses $1-0.95^{1/10}\approx0.005116$. At $x=10$ the cumulative probability first reaches the required $0.995$ at $q=6$ in both cases, since $\Pr[\mathrm{Bin}(10,0.2)\le5]=0.99363$ falls just short of $0.995$ and $\Pr[\mathrm{Bin}(10,0.2)\le6]=0.99914$ exceeds it. The required battery is $16$ under either allocation. The realized failure probability per excursion is $0.00086$, so the failure probability over ten excursions is about $0.0086$, well below the budget of $0.05$, which shows how much slack the discrete distribution leaves at this scale.

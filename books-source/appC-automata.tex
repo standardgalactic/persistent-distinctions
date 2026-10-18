@@ -51,7 +51,7 @@ Let $\Events\supseteq\{\mathsf{req},\mathsf{ack}\}$ and let the property be: aft
 Correctness is by induction on the trace: the state is the age of the oldest unanswered request, and a request of age $k$ followed by a non-$\mathsf{ack}$ event is exactly a violation. For minimality, states $i<j$ in $\{0,\dots,k\}$ are separated: if $i\ge1$, the continuation $(\text{idle})^{k+1-j}$ leads $j$ to $\bot$ (age $k+1$) while it leads $i$ to a state of age $i+k+1-j\le k$ and so not to $\bot$; if $i=0$, idling keeps $0$ at $0$ and sends $j\ge1$ to $\bot$ after $k+1-j$ steps. State $\bot$ is separated from the others by the empty continuation under the accepting set $\{0,\dots,k\}$. So there are $k+2$ distinct classes, and Result~\ref{pc:moore} shows the automaton is minimal.
 \end{proof}
 
-The runnable check in Appendix~\ref{app:examples} confirms $5=k+2$ states for $k=3$. The result is the reason a monitor for $m$ independent obligations with bounds $k_1,\dots,k_m$ has $\prod(k_i+2)$ states in the product, and why Chapter~\ref{ch:obligations} insists on finding the structure that avoids the product.
+The runnable check in Appendix~\ref{app:examples} confirms $5=k+2$ states for $k=3$. For $m$ independent obligations with bounds $k_1,\dots,k_m$ the product of the separate monitors has $\prod(k_i+2)$ states, but the violation states of the factors merge into one sink and the minimal monitor has $\prod(k_i+1)+1$; Chapter~\ref{ch:obligations} proves this count and explains why it is the right measure of the cost of independence.
 
 \section*{Exercises}
 \addcontentsline{toc}{section}{Exercises}
@@ -69,7 +69,7 @@ Show that ``a request is eventually answered'' ($\mathsf G(\mathsf{req}\to\maths
 \end{exercise}
 
 \begin{exercise}
-Compute the number of states of the product monitor for two independent bounded-response obligations with bounds $2$ and $3$, and the number of minimal states if both are triggered by the same request and answered by the same acknowledgement.
+Compute the number of states of the product of the two separate monitors for two bounded-response obligations with bounds $2$ and $3$ on disjoint events, and the number of states of the minimal monitor for their conjunction. Then compute the number of minimal states if both are triggered by the same request and answered by the same acknowledgement, and explain why it is the smaller of the two counts.
 \end{exercise}
 
 \begin{exercise}

@@ -3,7 +3,7 @@
 \spec{How are systems modelled in which actions create, destroy, or transform the available actions?}
 {Control systems with state-dependent action sets; delete-free planning (Bylander); Horn closure.}
 {When actions only add capabilities the reachable capability sets have a unique maximum, the closure, computed in time linear in the size of the rules (Result~\ref{thm:closure}); shortest acquisition plans have length at most the number of capabilities (Result~\ref{prop:short-plan}); nominal, eventual, and current menus are nested and the gaps between them are measurable (Result~\ref{prop:three-menus}); when actions also remove capabilities, reachability is PSPACE-complete.}
-{Reachability for endogenous action spaces with both gains and losses under restricted structure.}
+{None. The obligation of the outline is discharged for the restricted structure in which no relevant capability is lost (Result~\ref{prop:irrelevant-loss}); deletions of relevant capabilities remain PSPACE-hard by Result~\ref{thm:bylander}.}
 {Chapters~\ref{ch:reach} and~\ref{ch:history-state}.}
 
 In the systems of the previous chapters the menu of actions was part of the specification: at each state the controller chooses among actions that are there. A great deal of what matters in practice does not have this form. A tool must be acquired before it can be used, a skill trained before it can be exercised, a permission granted before a request can be filed, and each of these acquisitions is itself the result of acting. The action space is then a state variable. This chapter gives a model for it, proves what can be said when acquisitions only accumulate, and separates what is nominally listed, what can eventually be done, and what can be done now.
@@ -67,6 +67,21 @@ For capability systems in which actions may lose capabilities, deciding whether 
 
 The established result shows that the monotone case is exceptional in two ways: closure removes the order of actions from the question of reachability, and with deletions the order matters and the problem becomes a search in a space of configurations of size $2^{|\mathrm{Cap}|}$. A consumable capability (a tool lost by use, a permission that expires) is a loss. If the capability may be held in multiple units, the system is a Petri net as in Chapter~\ref{ch:petri}, and the markings are the multiplicities.
 
+\begin{newresult}[Reachability when only irrelevant capabilities are lost]\label{prop:irrelevant-loss}
+Let a capability system be given, call a capability \emph{relevant} if it occurs in $\mathrm{req}(a)$ for some action $a$, and let $\mathrm{Cl}(C_0)$ be the closure of $C_0$ in the monotone relaxation that ignores every loss.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item In every system, a capability $g$ can be obtained from $C_0$ only if $g\in\mathrm{Cl}(C_0)$, and every reachable configuration is contained in $\mathrm{Cl}(C_0)$.
+  \item If no action loses a relevant capability, then $g$ can be obtained from $C_0$ if and only if $g\in\mathrm{Cl}(C_0)$, the shortest plans of the system and of the relaxation coincide, and reachability is decided in time linear in the size of the rules.
+  \item Part~(b) fails as soon as one relevant capability is lost: there is a system with a single loss of a relevant capability in which $g\in\mathrm{Cl}(C_0)$ and $g$ cannot be obtained.
+\end{enumerate}
+\end{newresult}
+\assumes{Definition~\ref{def:capsys}; $\mathrm{gain}$ takes precedence over $\mathrm{lose}$ for a capability in both sets of one action.}
+\begin{proof}
+(a) By induction on the length of a run: the initial configuration lies in $\mathrm{Cl}(C_0)$; if $C\subseteq\mathrm{Cl}(C_0)$ and $a$ is enabled at $C$ then $\mathrm{req}(a)\subseteq\mathrm{Cl}(C_0)$, so $a$ is enabled in the relaxation at $\mathrm{Cl}(C_0)$ and $\mathrm{gain}(a)\subseteq\mathrm{Cl}(C_0)$, hence $C'\subseteq C\cup\mathrm{gain}(a)\subseteq\mathrm{Cl}(C_0)$. (b) Let $R$ be the set of relevant capabilities. A real run never loses a member of $R$, so the intersection of the configuration with $R$ only grows, as in the monotone relaxation, and the enabling of every action depends only on that intersection. Hence a plan of the relaxation, executed in order in the real system, enables each of its actions (by induction the real configuration contains the relaxed one on $R$, and the preconditions lie in $R$) and gains the same capabilities; the capability $g$ is held in the real configuration immediately after the action that first gains it in the relaxation, because gain takes precedence over loss. Conversely every real plan is a plan of the relaxation. So reachability, and the length of shortest plans, coincide with those of the relaxation, and Result~\ref{thm:closure} gives the algorithm. (c) Let $\mathrm{Cap}=\{z,x,y,g\}$ and $C_0=\{z\}$, with the actions $a$ (requires $z$, gains $x$, loses $z$), $b$ (requires $x$, gains $y$, loses $x$) and $c$ (requires $x,y$, gains $g$). The relaxation reaches $g$ by $a,b,c$. In the real system $a$ can be taken once because it destroys $z$, after which $x$ is held; $b$ destroys $x$ while creating $y$, and then $c$ is never enabled, since $x$ cannot be regained. Both $z$ and $x$ are relevant and lost.
+\end{proof}
+
+The result delimits the established hardness: the PSPACE-completeness of Result~\ref{thm:bylander} requires deleting capabilities that other actions need. The relaxation of part~(a) is a certificate of infeasibility in general, since a capability outside the closure cannot be obtained by any plan; the exact characterization of reachability for systems with deletions of relevant capabilities beyond this class is not claimed here.
+
 \begin{example}[Training]\label{ex:training}
 A skill that is gained after $k$ practice sessions is not a capability in the sense of Definition~\ref{def:capsys}, because the gain depends on a count. It is modelled by capabilities $t_1,\dots,t_k$ with a practice action gaining $t_{i}$ from $t_{i-1}$, and the skill is $t_k$. The monotone result applies and gives distance $k$. A skill that decays, so that $t_i$ is lost when unused, is a loss and takes the system outside the monotone case.
 \end{example}
@@ -125,7 +140,7 @@ Show that adding a loss to a single action of a monotone system can make the fam
 \end{exercise}
 
 \begin{exercise}
-Show that in a monotone system there is a shortest plan to any acquirable capability in which no action is repeated, and explain why repetition is useless in the monotone case but not in Example~\ref{ex:training} if the skill is modelled by a count instead of by capabilities $t_1,\dots,t_k$.
+Show that in a monotone system there is a shortest plan to any acquirable capability in which no action is repeated, and explain why repetition is useless in the monotone case but not in Example~\ref{ex:training} if the skill is modelled by a count instead of by capabilities $t_1,\dots,t_k$.\label{ex2:no-repeat}
 \end{exercise}
 
 \begin{exercise}
@@ -141,7 +156,7 @@ Verify the closure rounds, the three menus and the depths of the workshop of Sec
 \end{exercise}
 
 \begin{exercise}
-Prove that in a monotone system the depth function $d$ satisfies $d(c)=1+\min_{a:\,c\in\mathrm{gain}(a)}\max_{c'\in\mathrm{req}(a)}d(c')$ for $c\notin C$, with $d=0$ on $C$ and the minimum over the empty set equal to $\infty$.
+Prove that in a monotone system the depth function $d$ satisfies $d(c)=1+\min_{a:\,c\in\mathrm{gain}(a)}\max_{c'\in\mathrm{req}(a)}d(c')$ for $c\notin C$, with $d=0$ on $C$ and the minimum over the empty set equal to $\infty$.\label{ex2:depth-formula}
 \end{exercise}
 
 \begin{exercise}
@@ -149,7 +164,7 @@ Give a capability system in which the shortest sequential plan to a capability i
 \end{exercise}
 
 \begin{exercise}
-Show that every capability system, monotone or not, has a configuration graph on $2^{|\mathrm{Cap}|}$ vertices, and explain why for monotone systems the strongly connected components of this graph are singletons.
+Show that every capability system, monotone or not, has a configuration graph on $2^{|\mathrm{Cap}|}$ vertices, and explain why for monotone systems the strongly connected components of this graph are singletons.\label{ex2:config-graph}
 \end{exercise}
 
 \begin{exercise}

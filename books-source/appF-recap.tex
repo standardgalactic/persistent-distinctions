@@ -26,7 +26,7 @@ The union of all viability domains contained in $C$ is a viability domain, the \
 \end{newresult}
 \assumes{Finite system.}
 \begin{proof}
-A union of viability domains is a viability domain: a state in one of them has its action into that one, hence into the union. So the union $K$ of all viability domains inside $C$ is the greatest one. $\Gamma_C$ is monotone, and $S\subseteq\Gamma_C(S)$ with $S\subseteq C$ exactly states that $S$ is a viability domain, so by Result~\ref{pa:kt} the greatest fixed point is $K$ and the descending iteration reaches it in at most $|C|$ steps. If $x\in K$, the strategy ``choose an action into $K$'' keeps the trajectory in $K\subseteq C$ forever. If $x\notin K$ then $x$ is removed at some stage $k_x$; by induction on $k_x$, from $x$ every action has either a successor outside $C$ (when $k_x=1$) or a successor removed earlier (when $k_x>1$), so the adversary can force exit within $k_x$ steps.
+A union of viability domains is a viability domain: a state in one of them has its action into that one, hence into the union. So the union $K$ of all viability domains inside $C$ is the greatest one. $\Gamma_C$ is monotone, and $S\subseteq\Gamma_C(S)$ with $S\subseteq C$ exactly states that $S$ is a viability domain, so by Result~\ref{pa:kt} the greatest fixed point is $K$ and the descending iteration reaches it in at most $|C|$ steps. If $x\in K$, the strategy ``choose an action into $K$'' keeps the trajectory in $K\subseteq C$ forever. If $x\notin K$ then $x$ is removed at some stage $k_x$; by induction on $k_x$, from $x$ every action has either no successor at all or a successor outside $C$ (when $k_x=1$), or a successor removed earlier (when $k_x>1$), so the adversary can force the trajectory to stop or leave $C$ within $k_x$ steps.
 \end{proof}
 
 \begin{newresult}[A linear-time algorithm]\label{pr:kernel-alg}
@@ -57,7 +57,7 @@ Compute the condensation of the system on $\{1,\dots,6\}$ with transitions $1\to
 \end{exercise}
 
 \begin{exercise}
-Run the iteration of Result~\ref{pr:kernel} on the same system with $C=\{1,2,3,4,5\}$ and one action per state (deterministic). What is the kernel, and what is the exit step of state $3$?
+Run the iteration of Result~\ref{pr:kernel} on the same system with $C=\{1,2,3,4,5\}$, taking each state to have a single action whose successors are the states listed in the transitions, so that a disturbance chooses among them. What is the kernel, and what is the exit step of state $3$? Then let the controller choose the successor instead and explain why the kernel changes.
 \end{exercise}
 
 \begin{exercise}

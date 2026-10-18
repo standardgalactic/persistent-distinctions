@@ -40,14 +40,14 @@ An injective $r$ satisfies $\pi=(\pi\circ r^{-1})\circ r$. If $r(x)=r(x')$ with 
 
 \section{Histories, continuation equivalence, and maintainable representations}
 
-Let $\Events$ be an alphabet and $\Hist\subseteq\Events^{*}$ a prefix-closed set of histories. A \emph{property} is a function $P$ on $\Hist$. The \emph{continuation equivalence} is $h\approx_Ph'$ if and only if $\{w:hw\in\Hist\}=\{w:h'w\in\Hist\}$ and $P(hw)=P(h'w)$ for all such $w$. A representation $r$ of $\Hist$ is \emph{maintainable} if $\ker r$ is a right congruence: $r(h)=r(h')$ implies $r(ha)=r(h'a)$ for every event $a$ with $ha,h'a\in\Hist$.
+Let $\Events$ be an alphabet and $\Hist\subseteq\Events^{*}$ a prefix-closed set of histories. A \emph{property} is a function $P$ on $\Hist$. The \emph{continuation equivalence} is $h\approx_Ph'$ if and only if $\{w:hw\in\Hist\}=\{w:h'w\in\Hist\}$ and $P(hw)=P(h'w)$ for all such $w$. A representation $r$ of $\Hist$ is \emph{maintainable} if $\ker r$ is a right congruence that also determines which events are enabled: $r(h)=r(h')$ implies $\{a:ha\in\Hist\}=\{a:h'a\in\Hist\}$, and $r(ha)=r(h'a)$ for every event $a$ enabled at both. When $\Hist=\Events^{*}$ the enabling condition is vacuous. Without it a representation could identify two histories with different futures, and Result~\ref{a:nerode} would fail.
 
 \begin{established}[Myhill--Nerode]\label{a:nerode}
 The relation $\approx_P$ is the coarsest right congruence contained in $\ker P$. A maintainable representation $r$ is sufficient for $P$ if and only if $\ker r\subseteq{\approx_P}$, and the minimal number of values of a maintainable sufficient representation is the number of classes of $\approx_P$.
 \end{established}
 \source{Myhill (1957); Nerode (1958).}
 \begin{proof}
-Taking $w=\varepsilon$ shows $\approx_P\subseteq\ker P$. If $h\approx_Ph'$ and $ha\in\Hist$ then $\{w:haw\in\Hist\}=\{w:h'aw\in\Hist\}$ and $P(haw)=P(h'aw)$, so $ha\approx_Ph'a$. If $\sim$ is a right congruence inside $\ker P$ and $h\sim h'$ then $hw\sim h'w$ for every $w$, so $P(hw)=P(h'w)$, and the extensions agree because $\sim$ is a right congruence on a prefix-closed set; hence $\sim\ \subseteq\ \approx_P$. A maintainable representation sufficient for $P$ has kernel a right congruence inside $\ker P$, hence inside $\approx_P$, which gives the counting statement.
+Taking $w=\varepsilon$ shows $\approx_P\subseteq\ker P$. If $h\approx_Ph'$ and $ha\in\Hist$ then $\{w:haw\in\Hist\}=\{w:h'aw\in\Hist\}$ and $P(haw)=P(h'aw)$, so $ha\approx_Ph'a$. If $\sim$ is a right congruence inside $\ker P$ and $h\sim h'$ then $hw\sim h'w$ for every $w$, so $P(hw)=P(h'w)$, and the extensions agree because $\sim$ is a right congruence on a prefix-closed set; hence $\sim\ \subseteq\ \approx_P$, where for a maintainable relation the equality of the sets of extensions follows by induction on $|w|$ from the enabling condition. A maintainable representation sufficient for $P$ has kernel a right congruence inside $\ker P$, hence inside $\approx_P$, which gives the counting statement.
 \end{proof}
 
 \section{Safety and viable histories}
@@ -63,3 +63,65 @@ Prefix closure: if $hu$ is viable, extensions of $hu$ of every length give exten
 \end{proof}
 
 The set $\Viable(\mathcal S)$ is the pruned tree of $\mathcal S$ in the language of the first volume; Chapter~\ref{ch:viability} identifies it with the set of histories whose reached state lies in the viability kernel.
+
+\section{Counting, and computing the classes}
+
+\begin{newresult}[Counting the policies a representation serves]\label{a:count}
+If $r:X\to R$ is surjective with $|R|=k$, then $r$ is sufficient for exactly $|A|^{k}$ policies $X\to A$. If $r_1,r_2$ are representations, the policies sufficient for both are exactly those whose kernel contains $\ker r_1\vee\ker r_2$, and their number is $|A|^{c}$ where $c=|X/(\ker r_1\vee\ker r_2)|$.
+\end{newresult}
+\assumes{$r$ surjective; $A$ finite.}
+\begin{proof}
+By Result~\ref{a:factor} a policy is sufficient for $r$ if and only if it equals $d\circ r$ for some $d:R\to A$, and distinct $d$ give distinct policies because $r$ is surjective. There are $|A|^{k}$ such $d$. A policy is sufficient for both representations if and only if its kernel contains $\ker r_1$ and $\ker r_2$, hence their join, the smallest equivalence relation containing both, and conversely; such policies are the functions constant on the classes of the join, and there are $|A|^{c}$ of them. The join is not the intersection $\ker r_1\cap\ker r_2$, which is the kernel of the pair $(r_1,r_2)$ and governs the policies sufficient for the pair taken as one representation; the two agree only when one kernel refines the other.
+\end{proof}
+
+\begin{established}[Partition refinement computes the classes]\label{a:moore}
+Let a deterministic automaton have $N$ states, a finite alphabet, an output function $P$ on states and every event enabled everywhere. Define $\equiv_0$ by equal output and $q\equiv_{j+1}q'$ if $q\equiv_jq'$ and $\delta(q,a)\equiv_j\delta(q',a)$ for all $a$. Then $\equiv_{j+1}\subseteq\equiv_j$, if $\equiv_{j+1}=\equiv_j$ the sequence is constant from there on, this happens for some $j\le N-1$, and the limit is the continuation equivalence of the states.
+\end{established}
+\source{Moore (1956).}
+\begin{proof}
+Induction on $j$ gives $\equiv_{j+1}\subseteq\equiv_j$. If $\equiv_{j+1}=\equiv_j$ then the definition of $\equiv_{j+2}$ only uses $\equiv_{j+1}=\equiv_j$, so $\equiv_{j+2}=\equiv_{j+1}$. Each strict step increases the number of classes, which is between $1$ and $N$, so at most $N-1$ strict steps occur. By induction, $q\equiv_jq'$ if and only if the outputs agree on all words of length at most $j$ from $q$ and $q'$; the limit therefore identifies states exactly when outputs agree on all words.
+\end{proof}
+
+\begin{newresult}[Viable histories in a finite structure]\label{a:kernel}
+Let a finite deterministic transition structure have states $Q$, events $\Events$, a partial transition function $\delta$, an initial state $q_0$ and a set $G\subseteq Q$ of good states, and let $\mathcal S$ be the set of histories whose run is defined and stays in $G$. Put $K_0=G$ and $K_{j+1}=\{q\in K_j:\exists a,\ \delta(q,a)\in K_j\}$. Then $K_{j+1}\subseteq K_j$, the sequence is constant from some index $j^{*}\le|Q|$, and a history in $\mathcal S$ is viable if and only if its state lies in $K_{j^{*}}$.
+\end{newresult}
+\assumes{$Q$ and $\Events$ finite; $\delta$ deterministic.}
+\begin{proof}
+By induction $K_j$ is the set of states in $G$ from which some run of length $j$ stays in $G$, and the chain is decreasing. As in Result~\ref{a:moore}, equality at one step forces equality afterwards, and strict decrease happens at most $|Q|$ times. At the stable set $K$ every state has a successor in $K$, so a history whose state is in $K$ has an infinite run in $G$, hence is viable. Conversely a viable history has runs of every length in $G$, so its state is in every $K_j$.
+\end{proof}
+
+\section{Counterexamples isolating the assumptions}
+
+\begin{counterexample}[Sufficient and minimal at one step, but not maintainable]\label{a:ce-maintain}
+Let $\Events=\{a,b\}$, $\Hist=\Events^{*}$ and $P(h)=1$ if and only if $|h|\ge2$. The representation $r=P$ takes two values and is sufficient for $P$. It is not maintainable: $\varepsilon$ and $a$ have $P=0$, yet $\varepsilon\cdot a=a$ and $a\cdot a=aa$ have $P=0$ and $1$. The continuation equivalence of Result~\ref{a:nerode} has three classes, the histories of length $0$, of length $1$ and of length at least $2$, so any maintainable representation sufficient for $P$ needs three values. The gap between $|P(\Hist)|=2$ and $3$ is the price of maintenance. For the cap $|h|\ge n$ the gap is $n+1$ against $2$.
+\end{counterexample}
+
+\begin{counterexample}[An infinite alphabet defeats the successor property]\label{a:ce-alphabet}
+Let $\Events=\{a_n:n\ge1\}\cup\{b\}$ and let $\mathcal S$ be the set of prefixes of the words $a_nb^{\,n-1}$. For every $m$ the empty history has an acceptable extension of length $m$, namely a prefix of $a_mb^{m-1}$, so the empty history meets the defining condition of viability. No one-event extension is viable, because $a_n$ is acceptable only up to length $n$ and $b$ is not acceptable at all. Hence Result~\ref{a:viable} fails: the set of viable histories is not the largest subset with the successor property. The proof uses finiteness of $\Events$ exactly once, to find an event occurring first in infinitely many extensions.
+\end{counterexample}
+
+\begin{example}[A maintained size that grows while the one-shot size is constant]\label{a:ex-counter}
+Over $\Events=\{a,b\}$ let $P(h)=1$ if and only if the number of events $a$ in $h$ is divisible by $m$. The one-shot representation $P$ takes two values. The continuation equivalence identifies two histories exactly when their counts of $a$ agree modulo $m$: the extension $a^{\,m-j}$ turns count $j$ into $0$, and separates $j$ from $j'\ne j$ modulo $m$. So there are $m$ classes, and the maintained size is $m$ against the one-shot size $2$. The quantities differ by an arbitrary factor and are equal only when $m\le2$.
+\end{example}
+
+\section*{Exercises}
+
+\begin{exercise}
+Show that the factorization of Result~\ref{a:factor} fails to be unique when $r$ is not surjective, and state the correct uniqueness statement in that case.
+\end{exercise}
+
+\begin{exercise}
+Prove that the join $\ker r_1\vee\ker r_2$ of Result~\ref{a:count} is the transitive closure of $\ker r_1\cup\ker r_2$, and compute $c$ for $X=\{0,\dots,11\}$, $r_1(x)=x\bmod 4$ and $r_2(x)=x\bmod 6$.
+\end{exercise}
+
+\begin{exercise}
+Run the refinement of Result~\ref{a:moore} on the automaton with states $\{0,\dots,5\}$, $\delta(i,a)=\min(i+1,5)$, $\delta(i,b)=0$ and output $\mathbf 1[i\ge3]$, list $\equiv_0,\equiv_1,\dots$ and give the number of classes.
+\end{exercise}
+
+\begin{exercise}
+Using Result~\ref{a:kernel}, compute $K_0,K_1,\dots$ for the structure with states $\{1,\dots,6\}$, good states $\{1,\dots,5\}$, and transitions $1\to2\to3\to4$, $4\to4$, $5\to6$, $2\to5$ under distinct events, and identify the viable states. Show that the number of rounds can equal $|Q|-1$ by giving a family of structures with a path of length $n$ leading to a bad state.
+\end{exercise}
+
+\begin{exercise}
+Construct a prefix-closed $\mathcal S$ over a finite alphabet whose viable set is empty although $\mathcal S$ contains words of every finite length from a given state, or prove that none exists.
+\end{exercise}

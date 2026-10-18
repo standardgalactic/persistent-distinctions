@@ -106,11 +106,11 @@ A system identifies records by a content hash of the current text and later prom
 
 
 \begin{exercise}
-Extend Result~\ref{prop:undo-identity} to undo of depth two, in which the system keeps a stack of the two most recent previous contents and each undo pops it, and show that for $k=2$ there are $8$ classes. Identify the general pattern for undo of depth $d$ and $k$ contents.
+Extend Result~\ref{prop:undo-identity} to undo of depth two, in which the system keeps a stack of the two most recent previous contents and each undo pops it, and show that for $k=2$ there are $8$ classes. Identify the general pattern for undo of depth $d$ and $k$ contents.\label{ex:undo-depth}
 \end{exercise}
 
 \begin{exercise}
-Add a $\mathrm{redo}$ event that reverses the most recent undo. Describe the continuation equivalence for $k=2$ and show that it has $6$ classes, more than the $4$ of Result~\ref{prop:undo-identity}, listing a separating future for each pair.
+Add a $\mathrm{redo}$ event that reverses the most recent undo. Describe the continuation equivalence for $k=2$ and show that it has $6$ classes, more than the $4$ of Result~\ref{prop:undo-identity}, listing a separating future for each pair.\label{ex:redo}
 \end{exercise}
 
 \begin{exercise}

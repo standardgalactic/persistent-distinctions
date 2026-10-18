@@ -112,7 +112,7 @@ Without fairness, give an execution in which the sender retransmits forever, the
 
 
 \begin{exercise}
-Verify the formulas of Result~\ref{prop:fail-rates} for $c=\tfrac12$ by summing the distribution of $N$, and compute the probability that a batch of $1000$ units has at least one surplus application in the apply-first order, and at least one lost unit in the record-first order, for $c=0.001$.
+Verify the formulas of Result~\ref{prop:fail-rates} for $c=\tfrac12$ by summing the distribution of $N$, and compute the probability that a batch of $1000$ units has at least one surplus application in the apply-first order, and at least one lost unit in the record-first order, for $c=0.001$.\label{ex:fail-batch}
 \end{exercise}
 
 \begin{exercise}
@@ -120,6 +120,6 @@ Classify the following effects as idempotent or not: setting a field to a value,
 \end{exercise}
 
 \begin{exercise}
-Modify the crash model so that the crash probability depends on the step, $c_1$ before applying and $c_2$ between applying and recording, in the apply-first order, where $c_1$ is the probability of a crash before the effect is applied. Compute the distribution of $N$ and show that it depends only on $c_2$. Explain what this says about where in the handler reliability engineering effort is best spent.
+Modify the crash model so that the crash probability depends on the step, $c_1$ before applying and $c_2$ between applying and recording, in the apply-first order, where $c_1$ is the probability of a crash before the effect is applied. Compute the distribution of $N$ and show that it depends only on $c_2$. Explain what this says about where in the handler reliability engineering effort is best spent.\label{ex:two-crash}
 \end{exercise}
 

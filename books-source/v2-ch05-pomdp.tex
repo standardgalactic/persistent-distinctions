@@ -3,7 +3,7 @@
 \spec{When does a belief state serve as a sufficient representation for feasibility and decision?}
 {POMDPs and belief-state sufficiency (\r{A}str\"om; Smallwood and Sondik; Kaelbling, Littman, and Cassandra); predictive state representations (Littman, Sutton, and Singh).}
 {The belief is a maintainable representation; the coarsest representation sufficient for prediction is the quotient by the span of the prediction vectors, so the belief is minimal exactly under a rank condition (Result~\ref{thm:predictive}); almost-sure safety is decided on belief supports (Result~\ref{thm:support-safety}).}
-{Conditions under which the belief is a minimal sufficient representation for a stated policy family beyond prediction.}
+{None. The obligation of the outline, minimality of the belief beyond prediction, is proved here for the values of all finite-horizon policies (Result~\ref{thm:reward-sufficient}).}
 {Chapter~\ref{ch:mdp} and Appendix~\ref{app:suff}.}
 
 When the controller cannot see the state, it acts on what it has seen. The history of its actions and observations is the raw record, and a belief, the posterior distribution over the hidden state, is the standard summary. This chapter asks in what sense the belief is a sufficient representation, using the vocabulary of the first volume, and what is the least representation that does the same work. The answer is a rank condition, and it also delivers the form in which feasibility with certainty can be decided without tracking probabilities at all.
@@ -34,18 +34,18 @@ Call two positive-probability histories \emph{predictively equivalent}, $h\appro
 \begin{enumerate}[nosep,label=(\alph*)]
   \item $h\approx h'$ if and only if $b(h)-b(h')\perp Q$.
   \item $\approx$ is a right congruence on positive-probability histories, and it is the coarsest maintainable representation of the history that is sufficient for predicting future observations. The belief map is a finer maintainable representation, and its kernel is contained in $\approx$.
-  \item The minimal number of real parameters of such a representation is $\dim Q$, attained by the projection of the belief onto $Q$. In particular the belief is a minimal sufficient representation, for every set $B$ of reachable beliefs, if and only if $(B-B)\cap Q^{\perp}=\{0\}$, and for all beliefs if $Q=\mathbb R^{S}$.
+  \item The projection of the belief onto $Q$ is such a representation, and it has $\dim Q$ coordinates, of which one (the component along $\mathbf 1$, equal to $b\cdot\mathbf 1=1$) is the same for every belief; so the number of free real parameters is $\dim Q-1$, and no maintainable representation sufficient for prediction has fewer. In particular the belief is a minimal sufficient representation, for every set $B$ of reachable beliefs, if and only if $(B-B)\cap Q^{\perp}=\{0\}$, and for all beliefs if $Q=\mathbb R^{S}$.
 \end{enumerate}
 \end{newresult}
 \assumes{Finite POMDP; histories of positive probability.}
 \begin{proof}
-(a) is the definition, since $b\cdot q_w=b'\cdot q_w$ for all $w$ means $(b-b')\perp\operatorname{span}\{q_w\}$. (b) Suppose $h\approx h'$ and $\Pr(o\mid b(h),a)>0$. Taking the word $(a,o)$ gives $b(h)\cdot q_{(a,o)}=b(h')\cdot q_{(a,o)}$, so $\Pr(o\mid b(h'),a)=\Pr(o\mid b(h),a)>0$. For any word $w$, $\tau(b,a,o)\cdot q_w=(b\cdot q_{(a,o)w})/\Pr(o\mid b,a)$ where $(a,o)w$ is the concatenated word, and the numerators and denominators agree for $b(h),b(h')$. Hence $h\,a\,o\approx h'\,a\,o$. The relation is by definition the continuation equivalence of the prediction property, so by Result~\ref{a:nerode} it is the coarsest right congruence inside the kernel of prediction, which is the coarsest maintainable sufficient representation. Equal beliefs give equal predictions, so $\ker b\subseteq{\approx}$. (c) The map $b\mapsto(b\cdot q_w)_w$ factors through the orthogonal projection onto $Q$ and is injective on it, so predictive classes correspond to points of the projection, and the minimal dimension is $\dim Q$. The belief is injective modulo $\approx$ on $B$ exactly when two beliefs in $B$ with the same predictions are equal, that is, when $(B-B)\cap Q^{\perp}=\{0\}$.
+(a) is the definition, since $b\cdot q_w=b'\cdot q_w$ for all $w$ means $(b-b')\perp\operatorname{span}\{q_w\}$. (b) Suppose $h\approx h'$ and $\Pr(o\mid b(h),a)>0$. Taking the word $(a,o)$ gives $b(h)\cdot q_{(a,o)}=b(h')\cdot q_{(a,o)}$, so $\Pr(o\mid b(h'),a)=\Pr(o\mid b(h),a)>0$. For any word $w$, $\tau(b,a,o)\cdot q_w=(b\cdot q_{(a,o)w})/\Pr(o\mid b,a)$ where $(a,o)w$ is the concatenated word, and the numerators and denominators agree for $b(h),b(h')$. Hence $h\,a\,o\approx h'\,a\,o$. The relation is by definition the continuation equivalence of the prediction property, so by Result~\ref{a:nerode} it is the coarsest right congruence inside the kernel of prediction, which is the coarsest maintainable sufficient representation. Equal beliefs give equal predictions, so $\ker b\subseteq{\approx}$. (c) The map $b\mapsto(b\cdot q_w)_w$ factors through the orthogonal projection onto $Q$ and is injective on it, so predictive classes correspond to points of the projection, and the minimal dimension is $\dim Q$ coordinates, that is $\dim Q-1$ free parameters on normalized beliefs. The belief is injective modulo $\approx$ on $B$ exactly when two beliefs in $B$ with the same predictions are equal, that is, when $(B-B)\cap Q^{\perp}=\{0\}$.
 \end{proof}
 
 The rank condition is the familiar observability condition of linear systems theory, for a system whose output is a probability. When it fails, the belief carries more than the future depends on, and the excess is the component of the belief in $Q^{\perp}$.
 
 \begin{example}[Observationally identical hidden states]\label{ex:identical}
-Let $S=\{1,2,3\}$ with a single action, $Z(o\mid s')=1$ for the unique observation $o$ in every state (a blind system) and transition probabilities arbitrary. Then $q_w=\mathbf 1$ for every word $w$, $Q=\operatorname{span}\{\mathbf 1\}$ has dimension $1$, and all beliefs are predictively equivalent. The belief carries two parameters of information that no future observation can reveal, and the minimal representation for prediction has one value. If, however, the reward depends on the hidden state, the question that matters is no longer prediction of observations, and the minimal representation is that for the prediction of rewards; Exercise~\ref{ex:reward-pred} asks for this extension.
+Let $S=\{1,2,3\}$ with a single action, $Z(o\mid s')=1$ for the unique observation $o$ in every state (a blind system) and transition probabilities arbitrary. Then $q_w=\mathbf 1$ for every word $w$, $Q=\operatorname{span}\{\mathbf 1\}$ has dimension $1$, and all beliefs are predictively equivalent. The belief carries two parameters of information that no future observation can reveal, and the minimal representation for prediction has one value. If, however, the reward depends on the hidden state, the question that matters is no longer prediction of observations, and the minimal representation is that for the prediction of rewards; Result~\ref{thm:reward-sufficient} gives this extension.
 \end{example}
 
 \section{Certain safety with partial observation}
@@ -89,6 +89,22 @@ Let $\mathcal W'=\mathcal W\cup\{\Sigma'\ne\varnothing:\Sigma'\subseteq\Sigma\te
 
 The result shows that the winning region is described by its maximal elements, and the value of the observing action is the difference between the maximal elements with and without it. Deciding whether $\Sigma_0\in\mathcal W$ is EXPTIME-complete in general (Chatterjee, Doyen, Henzinger and Raskin, on games with imperfect information); the exponential is in the number of hidden states because supports are subsets.
 
+
+\begin{newresult}[Beyond prediction: sufficiency for the values of policies]\label{thm:reward-sufficient}
+Let rewards be $R(s,a)$ with $r_a=(R(s,a))_s$, and for a word $w=(a_1,o_1,\dots,a_k,o_k)$ and an action $a$ put $q^{R}_{w,a}=T_{a_1,o_1}\cdots T_{a_k,o_k}\,r_a$. Let $Q^{*}=\operatorname{span}\{q_w\}+\operatorname{span}\{q^{R}_{w,a}\}$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $Q^{*}$ is invariant under every $T_{a,o}$, contains $\mathbf 1$, and contains every $\alpha$-vector of Result~\ref{thm:alpha}; consequently $V_n(b)$ depends on $b$ only through its orthogonal projection onto $Q^{*}$.
+  \item The value from belief $b$ of every finite-horizon policy $\sigma$ is $\sum_{w,a}\gamma^{|w|}\,\mathbf 1[\sigma(w)=a]\,b\cdot q^{R}_{w,a}$, and two beliefs give all policies the same values and the same observation probabilities if and only if $b-b'\perp Q^{*}$.
+  \item The projection onto $Q^{*}$ is the coarsest maintainable representation of the history that is sufficient for the observation probabilities and for the values of all finite-horizon policies. The belief is a minimal sufficient representation for these, on a set $B$ of reachable beliefs, if and only if $(B-B)\cap Q^{*\perp}=\{0\}$, and for all beliefs if $Q^{*}=\mathbb R^{S}$.
+\end{enumerate}
+\end{newresult}
+\assumes{Finite POMDP and finite horizon; discount $\gamma\in(0,1]$, so that rewards at every depth count; histories of positive probability.}
+\begin{proof}
+(a) Applying $T_{a,o}$ to $q_w$ gives $q_{(a,o)w}$ and to $q^{R}_{w,a'}$ gives $q^{R}_{(a,o)w,a'}$, so the span is invariant; $\mathbf 1=q_\varepsilon$ and $r_a=q^{R}_{\varepsilon,a}$. The vectors of $\Gamma_0=\{0\}$ lie in $Q^{*}$, and if $\Gamma_{n-1}\subset Q^{*}$ then $r_a+\gamma\sum_oT_{a,o}\alpha_o\in Q^{*}$ by invariance, so $\Gamma_n\subset Q^{*}$ by the recursion in the proof of Result~\ref{thm:alpha}. Since $b\cdot\alpha=P_{Q^{*}}b\cdot\alpha$ for $\alpha\in Q^{*}$, $V_n(b)=\max_{\alpha\in\Gamma_n}P_{Q^{*}}b\cdot\alpha$. (b) The probability that the policy $\sigma$ reaches the word $w$ and then takes $a$ contributes the expected reward $b\,T_{a_1,o_1}\cdots T_{a_k,o_k}r_a$, discounted by $\gamma^{k}$, which is $\gamma^{k}\,b\cdot q^{R}_{w,a}$; summing over words gives the formula. If two beliefs give equal values to every policy, induction on $|w|$ shows $b\cdot q^{R}_{w,a}=b'\cdot q^{R}_{w,a}$: compare the policies that follow the actions of $w$ along every branch and then take $a$ at $w$ with the policy that stops at the prefix, the difference being the single term for $(w,a)$. Equal observation probabilities mean $b\cdot q_w=b'\cdot q_w$. The converse is the formula. (c) The relation $\approx^{*}$ defined by $b-b'\perp Q^{*}$ is a right congruence: if $h\approx^{*}h'$ then the denominators $b\cdot q_{(a,o)}$ agree by (b), and for each $q\in Q^{*}$, $\tau(b,a,o)\cdot q=b\,T_{a,o}q/(b\cdot q_{(a,o)})$ with $T_{a,o}q\in Q^{*}$ by (a), so the updated beliefs again satisfy $\perp Q^{*}$. By (b) it is the continuation equivalence of the property that lists observation probabilities and policy values, so by Result~\ref{a:nerode} it is the coarsest maintainable sufficient representation. The statement on minimality of the belief is the argument of Result~\ref{thm:predictive}(c) with $Q^{*}$ in place of $Q$.
+\end{proof}
+
+The result discharges the obligation of this chapter in the form that can be proved: the belief is sufficient and, under the stated rank condition on $Q^{*}$, minimal for the evaluation of every policy. It does not claim minimality for the single optimal policy, which may be sufficient with a coarser representation (for instance when one action is optimal at every belief); characterizing that case is a separate question about the geometry of the regions $\{b:\arg\max\text{ is }\alpha\}$.
+
 \section{The value function of the belief MDP}\label{sec:alpha}
 
 Beyond feasibility, the belief supports a value function with a useful shape.
@@ -112,23 +128,22 @@ The vectors in $\Gamma_n$ grow doubly exponentially in the horizon in the worst 
 \addcontentsline{toc}{section}{Exercises}
 
 \begin{exercise}
-For a two-state sensor with $S=\{L,H\}$, one action, $Z(o_H\mid H)=0.8$, $Z(o_H\mid L)=0.3$, and transitions that leave the state unchanged, compute $Q$ and show that the belief is minimal. Compute the belief after the observations $o_H,o_H,o_L$ from the uniform prior.
+For a two-state sensor with $S=\{L,H\}$, one action, $Z(o_H\mid H)=0.8$, $Z(o_H\mid L)=0.3$, and transitions that leave the state unchanged, compute $Q$ and show that the belief is minimal. Compute the belief after the observations $o_H,o_H,o_L$ from the uniform prior.\label{ex2:sensor}
 \end{exercise}
 
 \begin{exercise}
-Show that if two hidden states have identical transition rows and identical observation probabilities, then $e_1-e_2\in Q^{\perp}$, and conclude that the belief is not minimal on any set of beliefs containing two that differ only by moving mass between them.
+Show that if two hidden states have identical transition rows and identical observation probabilities, then $e_1-e_2\in Q^{\perp}$, and conclude that the belief is not minimal on any set of beliefs containing two that differ only by moving mass between them.\label{ex2:identical-rows}
 \end{exercise}
 
 \begin{exercise}\label{ex:reward-pred}
-Extend $q_w$ to include expected rewards by adding vectors $r_w$ whose entry at $s$ is the expected total reward over the word times the probability of its observations, both from $s$, and state and prove the analogue of Result~\ref{thm:predictive} for the joint prediction of observations and rewards.
-\end{exercise}
+In Example~\ref{ex:identical} let the single action leave the state unchanged and let $R(s,a)=s$. Compute $Q$ and $Q^{*}$, state the number of free parameters of the minimal representation for prediction and for the values of policies, and explain why they differ.\end{exercise}
 
 \begin{exercise}
 Construct a POMDP with $|S|=3$ and a constraint set $K$ for which the family $\mathcal W$ of Result~\ref{thm:support-safety} contains a support $\Sigma$ although no single state of $\Sigma$ would be safe under a policy that does not use observations.
 \end{exercise}
 
 \begin{exercise}
-Prove that the support is a coarsening of the belief, and describe the kernel of the support map in terms of which states carry positive probability. Show that the support is not a sufficient representation for expected reward.
+Prove that the support is a coarsening of the belief, and describe the kernel of the support map in terms of which states carry positive probability. Show that the support is not a sufficient representation for expected reward.\label{ex2:support-coarse}
 \end{exercise}
 
 \begin{exercise}
